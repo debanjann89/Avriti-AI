@@ -1,0 +1,223 @@
+"""
+Gemini Vision Service — garment analysis + hyperrealistic prompt engineering.
+"""
+
+import json
+from google import genai
+from google.genai import types
+from config import settings
+
+client = genai.Client(api_key=settings.GEMINI_API_KEY)
+
+ANALYSIS_PROMPT = """
+Analyze this garment image and return ONLY a valid JSON object (no markdown, no explanation) with these fields:
+
+{
+  "garment_type": "specific item e.g. anarkali kurta, shirt, blazer, saree, wrap dress",
+  "primary_color": "precise color e.g. deep burgundy, ivory, cobalt blue",
+  "secondary_color": "e.g. gold, ecru, charcoal (or null if none)",
+  "pattern": "e.g. solid, floral, paisley, geometric, block print, embroidered, striped",
+  "fabric_texture": "e.g. silk charmeuse, cotton poplin, chiffon, raw silk, jersey (infer from sheen/drape)",
+  "neckline": "e.g. V-neck, boat neck, round neck, sweetheart, mandarin collar",
+  "sleeve_type": "e.g. sleeveless, cap sleeve, three-quarter, full sleeve, bell sleeve",
+  "silhouette": "e.g. A-line, fitted, flowy, straight, empire waist, bodycon",
+  "hem_length": "e.g. mini, knee length, midi, maxi, ankle length",
+  "style": "e.g. casual, ethnic, formal, fusion, bohemian, streetwear, couture",
+  "occasion": "e.g. festive, office, wedding, daily wear, cocktail, beach",
+  "key_details": "precise styling details e.g. 'intricate zari embroidery on hem, side slit, self-fabric belt'"
+}
+
+Be extremely specific. The output drives a photorealistic fashion image generator.
+"""
+
+
+async def analyze_garment(
+    image_bytes: bytes, 
+    mime_type: str = "image/jpeg",
+    hint_category: str = None,
+    hint_description: str = None
+) -> dict:
+    """Send garment image to Gemini Vision and return structured metadata."""
+    instructions = ANALYSIS_PROMPT
+    if hint_category or hint_description:
+        guide = "\n\nGuiding Hints for Verification:"
+        if hint_category:
+            guide += f"\n- The user specified this item is a: {hint_category}"
+        if hint_description:
+            guide += f"\n- Item style description/reference details: {hint_description}"
+        guide += "\nUse these details to double-check and refine your analysis, ensuring color, pattern, texture, silhouette, and sleeve details are extremely realistic and align with this specification."
+        instructions = instructions + guide
+
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=[
+            types.Part.from_bytes(data=image_bytes, mime_type=mime_type),
+            instructions
+        ]
+    )
+
+    raw = response.text.strip()
+    # Strip accidental markdown fences
+    if raw.startswith("```"):
+        raw = raw.split("```")[1]
+        if raw.startswith("json"):
+            raw = raw[4:]
+
+    return json.loads(raw.strip())
+
+
+def build_tryon_prompt(garment: dict, persona: dict, camera_angle: str = "Front View") -> tuple[str, str]:
+    """
+    Build a hyperrealistic FLUX.1 prompt from Gemini garment data + persona, tailored to camera angles.
+    """
+    age_map = {
+        "Teen": "19-year-old",
+        "Young Adult": "26-year-old",
+        "Adult": "35-year-old",
+        "Senior": "52-year-old",
+    }
+    age = age_map.get(persona.get("age_group", "Young Adult"), "26-year-old")
+    ethnicity = persona.get("ethnicity", "South Asian")
+    body = persona.get("body_type", "Average").lower()
+    gender = persona.get("gender", "Woman").lower()
+
+    g = garment
+    secondary = f" with {g['secondary_color']} accents" if g.get("secondary_color") else ""
+    neckline = f", {g['neckline']}" if g.get("neckline") else ""
+    sleeve = f", {g['sleeve_type']} sleeves" if g.get("sleeve_type") else ""
+    silhouette = f", {g['silhouette']} silhouette" if g.get("silhouette") else ""
+    hem = f", {g['hem_length']} length" if g.get("hem_length") else ""
+
+    # Check if this is a men's upperwear item (shirt, t-shirt, polo, etc.)
+    is_men = gender == "man"
+    garment_type_lower = g.get("garment_type", "").lower()
+    is_upperwear = any(kw in garment_type_lower for kw in ["shirt", "t-shirt", "polo", "jacket", "blazer", "hoodie", "sweater", "top"])
+
+    # Base Model Descriptors
+    if is_men:
+        model_descriptor = f"handsome male fashion model, chiseled jawline, {age} {ethnicity}, {body} build"
+    else:
+        model_descriptor = f"beautiful female fashion model, graceful posture, {age} {ethnicity}, {body} build"
+
+    # Backdrop / Scene Selector logic
+    backdrop = persona.get("backdrop", "Minimalist Studio").lower().strip()
+    if "palace" in backdrop or "royal" in backdrop:
+        scene_desc = "Grand traditional Indian heritage royal palace stone courtyard backdrop, warm natural sunlight, ancient arches and columns in soft focus, realistic shadows. "
+    elif "festive" in backdrop or "lights" in backdrop:
+        scene_desc = "Intimate luxury festive evening background with warm golden hour string lights, glowing traditional oil lamps, elegant soft warm glowing bokeh, professional studio lighting. "
+    elif "garden" in backdrop or "outdoor" in backdrop:
+        scene_desc = "Lush green royal heritage garden backdrop, soft warm afternoon sunlight streaming through leaves, beautiful green leafy bokeh background, soft natural fill light. "
+    else:
+        # Default Neutral Grey Studio
+        scene_desc = "Solid professional neutral studio grey background, soft three-point fashion studio lighting, diffused key light, soft fill, subtle rim highlight. "
+
+    pose_desc = ""
+    outfit_desc = "Wearing clean dark blue denim jeans and white fashion sneakers. "
+    shot_type = "professional fashion photography, RAW photo, Canon EOS R5, 85mm f/1.4 lens, ISO 100, ultra sharp focus, natural skin texture, photorealistic fabric rendering, 8K UHD"
+
+    # Custom Poses for Men's Upperwear based on Camera Angles
+    if is_men and is_upperwear:
+        angle_clean = camera_angle.lower().strip()
+        if "front" in angle_clean:
+            # Pose 3: Standing Front Shot
+            pose_desc = "Standing confidently straight, facing front, one hand casually adjusting the shirt collar, looking forward, calm natural expression. "
+            outfit_desc = "Paired with dark blue denim jeans, confident model posture. "
+            shot_type = "Front-facing medium-full shot, RAW photo, professional studio photography, ultra sharp focus"
+        elif "three" in angle_clean or "3/4" in angle_clean:
+            # Pose 3/4
+            pose_desc = "Standing in a stylish three-quarter view, looking slightly past the camera, one hand resting on the hip, relaxed and confident fashion pose. "
+            outfit_desc = "Paired with dark blue denim jeans, elegant body turn. "
+            shot_type = "Three-quarter fashion shot, RAW photo, professional fashion photography, ultra sharp focus"
+        elif "side" in angle_clean or "profile" in angle_clean:
+            # Pose 2: Sitting on wooden high stool with sunglasses
+            pose_desc = "Sitting relaxed and leaning slightly on a tall wooden fashion studio stool, photographed from a stylish side angle, wearing dark modern sunglasses, looking slightly to the side with a cool confident posture. "
+            outfit_desc = "Paired with dark blue denim jeans and a classic black wristwatch, seated model posture. "
+            shot_type = "Medium shot, photographed from a 45-degree angle, RAW photo, professional fashion photography, soft shadows"
+        elif "wide" in angle_clean or "shot" in angle_clean:
+            # Pose 4: Full Body on wooden stool
+            pose_desc = "Full-body shot sitting comfortably on a high wooden studio stool, looking forward with a natural expression, hands resting on knees. "
+            outfit_desc = "Complete stylish outfit: wearing the upperwear paired with dark blue denim jeans, white fashion sneakers, and a black watch. "
+            shot_type = "Full body studio fashion shot, RAW photo, wide lens, ultra sharp focus"
+        elif "back" in angle_clean:
+            # Back View
+            pose_desc = "Back-facing view showing the fit, texture, and stitching details of the shirt back, clean standing posture, head turned slightly over the shoulder. "
+            outfit_desc = "Paired with dark blue denim jeans. "
+            shot_type = "Back shot, professional studio photography, sharp fabric details"
+        elif "close" in angle_clean or "detail" in angle_clean:
+            # Close-Up / Detail shot (Pose 1 style)
+            pose_desc = "Close-up detail shot focusing on the high-quality fabric weave, stitching, button placket, and collar lines. "
+            outfit_desc = ""
+            shot_type = "Macro studio photography, extreme close-up, shallow depth of field, fabric texture focus"
+        elif "low" in angle_clean or "hero" in angle_clean:
+            # Low Angle Hero Shot
+            pose_desc = "Standing tall with a powerful and confident posture, looking slightly down towards the camera lens, chest out, heroic pose. "
+            outfit_desc = "Paired with dark blue denim jeans and a premium watch. "
+            shot_type = "Low angle hero shot, dynamic perspective, professional fashion photography, powerful shadows"
+        elif "walk" in angle_clean or "dynamic" in angle_clean:
+            # Dynamic Walking Shot
+            pose_desc = "Captured in mid-stride walking forward, dynamic body motion, clothing fabric moving naturally with the stride, relaxed natural facial expression. "
+            outfit_desc = "Paired with dark blue denim jeans and white sneakers, walking model posture. "
+            shot_type = "Action fashion snapshot, dynamic walking shot, mid-stride capture, soft motion blur in background"
+        else:
+            pose_desc = "Standing confidently in a relaxed fashion pose. "
+            outfit_desc = "Paired with dark blue denim jeans. "
+            shot_type = "Professional fashion photography, RAW photo"
+    else:
+        # Standard Pose (for Women or other garments)
+        angle_clean = camera_angle.lower().strip()
+        if "back" in angle_clean:
+            pose_desc = "Back-facing view showing the elegant fit, embroidery, and back detailing of the garment. "
+        elif "close" in angle_clean or "detail" in angle_clean:
+            pose_desc = "Close-up macro detail shot focusing on the intricate embroidery, pattern, print, and fine stitch details of the garment. "
+            shot_type = "Macro fashion photography, extreme close-up, fabric details, shallow depth of field"
+        elif "low" in angle_clean or "hero" in angle_clean:
+            pose_desc = "Standing tall and elegant with a regal posture, looking slightly down towards the lens, showcasing the long lines of the outfit. "
+            shot_type = "Low angle elegant fashion shot, regal dynamic perspective"
+        elif "walk" in angle_clean or "dynamic" in angle_clean:
+            pose_desc = "Captured in dynamic motion, walking gracefully, fabric of the garment flowing beautifully in mid-air with soft wrinkles and realistic wind flow. "
+            shot_type = "Action fashion shot, dynamic movement capture, flowing fabric"
+        elif "three" in angle_clean or "3/4" in angle_clean:
+            pose_desc = "Standing in a graceful three-quarter body posture, body turned slightly, face looking towards the camera with a warm natural expression. "
+            shot_type = "Three-quarter elegant fashion shot, professional studio lighting"
+        else:
+            pose_desc = "Graceful natural pose, leaning slightly on a tall wooden fashion studio stool, relaxed expression. "
+        outfit_desc = "Wearing clean dark blue denim jeans and white fashion sneakers. "
+
+    positive = (
+        f"{shot_type}. "
+        f"{model_descriptor} in a {pose_desc}{outfit_desc}"
+        f"The model is wearing a highly detailed, authentic {g['primary_color']}{secondary} {g['garment_type']}{neckline}{sleeve}{silhouette}{hem}. "
+        f"The fabric is premium quality {g.get('fabric_texture', 'textile')} with a visible {g['pattern']} pattern. "
+        f"Exquisite garment details include {g['key_details']}. "
+        f"This is a {g['style']} style, perfect for {g.get('occasion', 'fashion')} wear. "
+        f"{scene_desc}"
+        "The garment drapes naturally on the model's body with realistic fabric folds, wrinkles, and authentic lighting shadows. "
+        "Extremely detailed skin texture with visible skin pores, sharp eyes, natural skin reflections, lifelike textures, professional editorial fashion photography."
+    )
+
+    negative = (
+        # AI/digital artifacts
+        "cartoon, anime, illustration, CGI, 3D render, painting, sketch, watercolor, "
+        "digital art, concept art, artificial, synthetic, plastic skin, waxy, "
+
+        # Body defects
+        "deformed, mutated, extra limbs, missing limbs, bad anatomy, bad proportions, "
+        "floating hands, disfigured face, cross-eyed, asymmetric face, ugly, "
+
+        # Image quality issues
+        "blurry, motion blur, out of focus, low quality, jpeg artifacts, pixelated, "
+        "noise, grain, overexposed, underexposed, flat lighting, harsh shadows, "
+
+        # Fashion-specific issues
+        "ill-fitting clothes, wrinkled background, cluttered background, props, "
+        "wrong garment color, pattern mismatch, clothing that doesn't match description, "
+        "cropped body, partial figure, headless, faceless, "
+
+        # Text/watermarks
+        "text, watermark, logo, signature, border, frame, "
+
+        # Gender issues
+        "wrong gender, gender ambiguity, crossdressing"
+    )
+
+    return positive, negative

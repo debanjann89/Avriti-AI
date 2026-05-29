@@ -1,0 +1,40 @@
+# OS-specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
+
+# Node/Frontend
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Python/Backend
+backend/venv/
+backend/.env
+backend/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Databases
+*.db
+*.sqlite3
+
+# Uploads / Static generated files
+backend/static/uploads/
