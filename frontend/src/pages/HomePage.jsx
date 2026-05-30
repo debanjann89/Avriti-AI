@@ -1,90 +1,429 @@
 import { Link } from 'react-router-dom';
 import { useProducts } from '../hooks/useProducts';
 import ProductCard from '../components/ProductCard';
-import { Sparkles, ArrowRight } from 'lucide-react';
+import { 
+  Sparkles, ArrowRight, Play, Search, ShoppingBag, 
+  ChevronRight, Star, Heart, CheckCircle2 
+} from 'lucide-react';
+import { useContext } from 'react';
+import { CartContext } from '../context/CartContext';
 
 export default function HomePage() {
   const { products } = useProducts();
   const featuredProducts = products.slice(0, 4);
+  const { toggleCart, cartItems } = useContext(CartContext);
+  const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+
+  // Categories metadata with luxury avatars
+  const categories = [
+    { 
+      name: "Women", 
+      count: "120+", 
+      img: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=150&q=80" 
+    },
+    { 
+      name: "Men", 
+      count: "100+", 
+      img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80" 
+    },
+    { 
+      name: "Kids", 
+      count: "70+", 
+      img: "https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&w=150&q=80" 
+    },
+    { 
+      name: "Jackets", 
+      count: "28+", 
+      img: "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=150&q=80" 
+    },
+    { 
+      name: "Swimwear", 
+      count: "70+", 
+      img: "https://images.unsplash.com/photo-1576430171212-61ee0e20686f?auto=format&fit=crop&w=150&q=80" 
+    }
+  ];
 
   return (
-    <div className="pb-16 bg-[#fffafb]">
-      {/* Hero Section */}
-      <section className="relative bg-black text-white h-[600px] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <img 
-            src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" 
-            alt="Hero Background" 
-            className="w-full h-full object-cover opacity-60"
-          />
-        </div>
-        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto mt-12">
-          <h1 className="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight drop-shadow-lg">
-            Embrace Your Roots. <br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-rose-400">
-              Perfect Your Fit.
-            </span>
-          </h1>
-          <p className="text-xl md:text-2xl mb-10 font-medium text-gray-100 drop-shadow-md max-w-2xl mx-auto">
-            Experience the elegance of Indian ethnic wear with our revolutionary AI-powered Virtual Try-On technology.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link to="/collections" className="bg-white text-pink-900 px-8 py-4 rounded-full font-bold text-lg hover:bg-pink-50 transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-1 w-full sm:w-auto">
-              Shop Collections
-            </Link>
-            <Link to="/try-on" className="bg-gradient-to-r from-pink-600 to-rose-600 text-white px-8 py-4 rounded-full font-bold text-lg hover:opacity-90 transition-opacity shadow-lg hover:shadow-xl transform hover:-translate-y-1 w-full sm:w-auto flex items-center justify-center gap-2 border border-pink-400/30">
-              <Sparkles className="w-5 h-5" /> Try On Now
-            </Link>
-          </div>
-        </div>
-      </section>
+    <div className="min-h-screen bg-[#edd8d8] py-8 px-4 sm:px-6 lg:px-8 font-sans overflow-x-hidden relative">
+      {/* Dynamic Embedded Styles for Premium 3D Effects and Animations */}
+      <style dangerouslySetInnerHTML={{__html: `
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+        
+        .font-display {
+          font-family: 'Playfair Display', serif;
+        }
+        
+        .text-3d-fashion {
+          color: #831843; /* Rose 900 */
+          font-family: 'Playfair Display', serif;
+          font-weight: 900;
+          text-shadow: 
+            1px 1px 0px #ffffff,
+            2px 2px 0px #fceeed,
+            3px 3px 0px #fbcfe8,
+            4px 4px 15px rgba(131, 24, 67, 0.25);
+        }
+        
+        .clay-tablet {
+          background: #fdf5f2;
+          border: 12px solid #ffffff;
+          box-shadow: 
+            0px 30px 60px -15px rgba(120, 80, 80, 0.35),
+            inset 0px -4px 12px rgba(120, 80, 80, 0.04),
+            inset 0px 4px 12px rgba(255, 255, 255, 0.9);
+          transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .neomorphic-dock {
+          background: rgba(255, 255, 255, 0.85);
+          backdrop-filter: blur(16px);
+          border: 1px solid rgba(255, 255, 255, 0.7);
+          box-shadow: 
+            0px 15px 35px rgba(120, 80, 80, 0.08),
+            inset 0px 2px 4px rgba(255, 255, 255, 0.9);
+        }
 
-      {/* Aavriti Try On Highlight Banner */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">
-        <div className="bg-gradient-to-br from-pink-50 to-rose-100 rounded-3xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between border border-pink-200 shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 -mt-20 -mr-20 w-64 h-64 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-          <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-64 h-64 bg-rose-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob" style={{ animationDelay: '2000ms' }}></div>
+        .category-pill {
+          transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .category-pill:hover {
+          transform: translateY(-6px) scale(1.03);
+          box-shadow: 0 12px 20px -8px rgba(131, 24, 67, 0.2);
+        }
+        
+        @keyframes float-saturn {
+          0%, 100% { transform: translateY(0px) rotate(-15deg); }
+          50% { transform: translateY(-12px) rotate(-13deg); }
+        }
+        
+        @keyframes float-star-1 {
+          0%, 100% { transform: translateY(0px) scale(1); }
+          50% { transform: translateY(-8px) scale(1.15); }
+        }
+        
+        @keyframes float-star-2 {
+          0%, 100% { transform: translateY(0px) scale(1) rotate(0deg); }
+          50% { transform: translateY(10px) scale(0.9) rotate(45deg); }
+        }
+
+        .animate-saturn {
+          animation: float-saturn 6s ease-in-out infinite;
+        }
+
+        .animate-star-1 {
+          animation: float-star-1 4.5s ease-in-out infinite;
+        }
+
+        .animate-star-2 {
+          animation: float-star-2 5.5s ease-in-out infinite;
+        }
+      `}} />
+
+      {/* Main Luxury Tablet Frame Container */}
+      <div className="max-w-7xl mx-auto clay-tablet rounded-[48px] p-6 sm:p-10 relative overflow-hidden">
+        
+        {/* Soft Background Accent Circles */}
+        <div className="absolute top-0 left-0 w-96 h-96 bg-gradient-to-tr from-pink-200/20 to-rose-200/20 rounded-full mix-blend-multiply filter blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-br from-pink-200/20 to-orange-200/20 rounded-full mix-blend-multiply filter blur-3xl pointer-events-none" />
+
+        {/* ================= 1. THE INTEGRATED 3D HEADER ================= */}
+        <header className="flex justify-between items-center pb-8 border-b border-pink-100/50 relative z-30">
           
-          <div className="relative z-10 md:w-2/3 mb-8 md:mb-0">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-100 text-pink-700 font-semibold text-sm mb-4">
-              <Sparkles className="w-4 h-4" /> AI Powered
+          {/* Brand Logo Group */}
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-600 to-rose-600 flex items-center justify-center text-white shadow-md shadow-pink-500/20 transform group-hover:scale-105 transition-transform duration-300">
+              <Sparkles className="w-5 h-5 stroke-[2.5]" />
             </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Meet <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-600 to-rose-500">Aavriti Try On</span>
-            </h2>
-            <p className="text-gray-700 text-lg mb-6 max-w-xl leading-relaxed">
-              Not sure how that Lehenga or Kurta will look on you? Upload your photo and see yourself in our stunning ethnic collection instantly. No more sizing guesswork.
-            </p>
-            <Link to="/try-on" className="inline-flex items-center text-pink-700 font-bold hover:text-pink-800 group">
-              Launch Studio <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+            <div className="leading-tight">
+              <h2 className="text-xl font-display font-black text-pink-950 tracking-tight leading-none">Aavriti AI</h2>
+              <span className="text-[9px] text-pink-700 font-extrabold uppercase tracking-widest leading-none mt-1 block">Indian Fashion Reimagined</span>
+            </div>
+          </Link>
+
+          {/* Navigation Links */}
+          <nav className="hidden md:flex items-center gap-8">
+            <Link to="/collections" className="text-pink-950/70 hover:text-pink-700 font-extrabold text-xs uppercase tracking-widest transition-colors">Collections</Link>
+            <span className="text-pink-950/70 hover:text-pink-700 font-extrabold text-xs uppercase tracking-widest cursor-pointer transition-colors">Categories</span>
+            <Link to="/try-on" className="text-pink-700 hover:text-pink-800 font-extrabold text-xs uppercase tracking-widest transition-colors flex items-center gap-1.5">
+              <span>AI Stylist</span>
+              <Sparkles className="w-3.5 h-3.5 text-orange-500 fill-orange-500" />
             </Link>
+            <Link to="/about" className="text-pink-950/70 hover:text-pink-700 font-extrabold text-xs uppercase tracking-widest transition-colors">About Us</Link>
+            <span className="text-pink-950/70 hover:text-pink-700 font-extrabold text-xs uppercase tracking-widest cursor-pointer transition-colors">Blog</span>
+          </nav>
+
+          {/* Header Action Buttons */}
+          <div className="flex items-center gap-3">
+            <button className="w-10 h-10 rounded-full bg-white/70 hover:bg-white flex items-center justify-center text-pink-950 shadow-sm border border-pink-100/50 hover:scale-105 transition-all">
+              <Search className="w-4 h-4" />
+            </button>
+            <button 
+              onClick={toggleCart} 
+              className="w-10 h-10 rounded-full bg-gradient-to-r from-pink-600 to-rose-600 hover:opacity-95 flex items-center justify-center text-white shadow-lg shadow-pink-500/20 hover:scale-105 transition-all relative"
+            >
+              <ShoppingBag className="w-4 h-4" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-white text-pink-700 text-[8px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center border border-pink-200 shadow-sm">
+                  {cartCount}
+                </span>
+              )}
+            </button>
           </div>
-          <div className="relative z-10 md:w-1/3 flex justify-center">
-             <div className="w-48 h-48 md:w-64 md:h-64 rounded-full border-4 border-white shadow-xl overflow-hidden bg-white">
-                <img src="/Logo.jpg" alt="Aavriti Try On AI" className="w-full h-full object-cover" />
-             </div>
+        </header>
+
+        {/* ================= 2. THE MAIN HERO BODY GRID ================= */}
+        <div className="grid grid-cols-12 gap-8 items-center py-10 md:py-16 relative z-10">
+          
+          {/* --- LEFT COLUMN: FASHION FOCUSED TITLE & OFFERS --- */}
+          <div className="col-span-12 lg:col-span-4 space-y-6 text-center lg:text-left relative z-20">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-100 text-pink-700 font-extrabold text-[10px] uppercase tracking-wider border border-pink-200/40">
+              <Sparkles className="w-3.5 h-3.5 fill-pink-100" />
+              <span>SaaS Virtual Showroom</span>
+            </div>
+
+            <div className="space-y-2">
+              <h1 className="text-[52px] sm:text-[68px] leading-[0.9] text-3d-fashion tracking-tighter uppercase font-display select-none">
+                Fashion<br/>Focused
+              </h1>
+              <p className="text-xs text-pink-800/60 font-black tracking-widest uppercase pl-1 mt-1">#Season2026</p>
+            </div>
+
+            <div className="space-y-1">
+              <h3 className="text-4xl font-extrabold text-pink-950 font-display">25% OFF</h3>
+              <p className="text-xs text-pink-900/60 font-semibold tracking-wide">Our all-new premium ethnic arrivals</p>
+            </div>
+
+            {/* CTA Action Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
+              <Link 
+                to="/collections" 
+                className="w-full sm:w-auto px-8 py-4 rounded-full font-bold text-xs uppercase tracking-widest text-white bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 shadow-lg shadow-pink-500/25 flex items-center justify-center gap-2 transform hover:scale-[1.02] active:scale-100 transition-all cursor-pointer"
+              >
+                <span>Shop Now</span>
+                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+              </Link>
+              <Link 
+                to="/try-on"
+                className="w-full sm:w-auto px-6 py-4 rounded-full font-bold text-xs uppercase tracking-widest text-pink-900 bg-white/70 hover:bg-white border border-pink-150 shadow-sm flex items-center justify-center gap-2 transform hover:scale-[1.02] active:scale-100 transition-all cursor-pointer"
+              >
+                <Play className="w-3.5 h-3.5 fill-pink-900 stroke-none" />
+                <span>Watch Lookbook</span>
+              </Link>
+            </div>
+
+            {/* Customer Social Proof Overlay */}
+            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 pt-6 border-t border-pink-100/40">
+              <div className="flex -space-x-3">
+                <img className="w-9 h-9 rounded-full border-2 border-white object-cover shadow-sm" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&q=80" alt="Avatar" />
+                <img className="w-9 h-9 rounded-full border-2 border-white object-cover shadow-sm" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&q=80" alt="Avatar" />
+                <img className="w-9 h-9 rounded-full border-2 border-white object-cover shadow-sm" src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=80&q=80" alt="Avatar" />
+                <div className="w-9 h-9 rounded-full border-2 border-white bg-pink-100 text-pink-700 font-extrabold text-[9px] flex items-center justify-center shadow-sm">
+                  50K+
+                </div>
+              </div>
+              <div className="text-center lg:text-left">
+                <p className="text-[10px] text-pink-950 font-black uppercase tracking-wider">Loved by 50K+</p>
+                <p className="text-[9px] text-pink-800/60 font-bold uppercase tracking-wider mt-0.5">Happy Fashionistas worldwide ❤️</p>
+              </div>
+            </div>
+          </div>
+
+          {/* --- CENTER COLUMN: 3D MODEL & FLOATING Saturn RINGS --- */}
+          <div className="col-span-12 lg:col-span-5 flex justify-center items-center relative py-8 lg:py-0 select-none">
+            
+            {/* Soft pink blur circle background */}
+            <div className="absolute w-[290px] h-[290px] rounded-full bg-gradient-to-tr from-pink-300/40 to-rose-400/30 filter blur-xl animate-pulse" />
+
+            {/* Backdrop Ring (Behind Model Circle) */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-saturn z-10">
+              <svg className="w-[440px] h-[340px] overflow-visible" viewBox="0 0 400 400">
+                <defs>
+                  <linearGradient id="ringGradBack" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#db2777" />
+                    <stop offset="50%" stopColor="#f43f5e" />
+                    <stop offset="100%" stopColor="#e11d48" />
+                  </linearGradient>
+                </defs>
+                {/* Back half arc of Saturn ring */}
+                <path 
+                  d="M 40,200 A 160,50 0 0 1 360,200" 
+                  fill="none" 
+                  stroke="url(#ringGradBack)" 
+                  strokeWidth="22" 
+                  strokeLinecap="round" 
+                  transform="rotate(-15, 200, 200)"
+                />
+              </svg>
+            </div>
+
+            {/* Interactive Model Mask Circle */}
+            <div className="w-[300px] h-[300px] sm:w-[330px] sm:h-[330px] rounded-full bg-gradient-to-br from-pink-100 to-rose-200 border-[8px] border-white shadow-2xl relative overflow-hidden z-20 flex items-end justify-center group">
+              
+              {/* Internal circular grid or background */}
+              <div className="absolute inset-0 bg-[radial-gradient(#f43f5e_1px,transparent_1px)] [background-size:16px_16px] opacity-25" />
+              
+              {/* Premium cropped Indian fashion model */}
+              <img 
+                src="https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=800&q=80" 
+                alt="Aavriti Model" 
+                className="h-[105%] w-auto object-cover object-bottom scale-110 translate-y-3 transform group-hover:scale-115 transition-transform duration-700 ease-out select-none pointer-events-none"
+              />
+            </div>
+
+            {/* Front Ring (In Front of Model Circle for overlapping 3D effect!) */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-saturn z-30">
+              <svg className="w-[440px] h-[340px] overflow-visible filter drop-shadow-[0_15px_15px_rgba(131,24,67,0.35)]" viewBox="0 0 400 400">
+                <defs>
+                  <linearGradient id="ringGradFront" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#db2777" />
+                    <stop offset="50%" stopColor="#f43f5e" />
+                    <stop offset="100%" stopColor="#9f1239" />
+                  </linearGradient>
+                </defs>
+                {/* Front half arc of Saturn ring */}
+                <path 
+                  d="M 360,200 A 160,50 0 0 1 40,200" 
+                  fill="none" 
+                  stroke="url(#ringGradFront)" 
+                  strokeWidth="22" 
+                  strokeLinecap="round" 
+                  transform="rotate(-15, 200, 200)"
+                />
+              </svg>
+            </div>
+
+            {/* Floating 3D Star Sparkles */}
+            <div className="absolute top-10 right-4 animate-star-1 z-30 text-rose-500 drop-shadow-md">
+              <svg className="w-8 h-8 fill-rose-500" viewBox="0 0 24 24">
+                <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4Z" />
+              </svg>
+            </div>
+            <div className="absolute bottom-16 left-6 animate-star-2 z-30 text-pink-400 drop-shadow-sm">
+              <svg className="w-5 h-5 fill-pink-400" viewBox="0 0 24 24">
+                <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4Z" />
+              </svg>
+            </div>
+            <div className="absolute top-28 left-4 animate-star-2 z-10 text-rose-300 opacity-60">
+              <svg className="w-4 h-4 fill-rose-300" viewBox="0 0 24 24">
+                <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4Z" />
+              </svg>
+            </div>
+          </div>
+
+          {/* --- RIGHT COLUMN: ARRIVAL DETAILS & DESCRIPTIONS --- */}
+          <div className="col-span-12 lg:col-span-3 space-y-6 text-center lg:text-left relative z-20 pl-0 lg:pl-6">
+            
+            {/* Explore Badge */}
+            <div className="space-y-1.5 flex flex-col items-center lg:items-start">
+              <p className="text-[10px] text-pink-800/60 font-black tracking-widest uppercase">Explore New</p>
+              <h4 className="text-sm font-black text-pink-950 uppercase tracking-widest flex items-center gap-1.5 font-display">
+                <span>Arrival Collection</span>
+                <span className="w-4 h-[2px] bg-pink-900 inline-block" />
+              </h4>
+            </div>
+
+            {/* Man Collection Pill Button */}
+            <div className="flex justify-center lg:justify-start">
+              <Link 
+                to="/collections" 
+                className="px-5 py-2.5 rounded-full bg-pink-100 text-pink-900 border border-pink-200/40 hover:bg-pink-200/40 font-extrabold text-[9px] uppercase tracking-widest flex items-center gap-2 transform hover:translate-x-1 transition-all"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5 text-pink-700" />
+                <span>Man Collection</span>
+                <ArrowRight className="w-3 h-3 text-pink-700" />
+              </Link>
+            </div>
+
+            {/* Short Editorial Description Block */}
+            <div className="space-y-4">
+              <div className="flex justify-center lg:justify-start gap-1">
+                <Star className="w-3 h-3 fill-rose-400 text-rose-400" />
+                <Star className="w-3 h-3 fill-rose-400 text-rose-400" />
+                <Star className="w-3 h-3 fill-rose-400 text-rose-400" />
+              </div>
+              <p className="text-xs text-pink-950/70 font-semibold leading-relaxed max-w-sm mx-auto lg:mx-0">
+                Fashion is a form of self-expression and autonomy at a particular period. Experience personalized styling that captures your heritage beautifully.
+              </p>
+              <Link 
+                to="/about"
+                className="inline-flex items-center gap-1 text-[9px] font-black text-pink-800 hover:text-pink-950 uppercase tracking-widest border-b-2 border-pink-700/30 pb-0.5 transition-colors cursor-pointer"
+              >
+                <span>Read More</span>
+                <ChevronRight className="w-3 h-3 stroke-[3]" />
+              </Link>
+            </div>
+          </div>
+
+        </div>
+
+        {/* ================= 3. THE BOTTOM CATEGORY DOCK BAR ================= */}
+        <div className="mt-6 md:mt-10 relative z-30">
+          <div className="neomorphic-dock rounded-[32px] p-3 flex flex-col md:flex-row justify-between items-center gap-4">
+            
+            {/* Category Elements List */}
+            <div className="w-full md:w-auto flex flex-wrap md:flex-nowrap justify-around md:justify-start items-center gap-4 pl-0 md:pl-2">
+              {categories.map((cat, idx) => (
+                <Link 
+                  key={idx} 
+                  to={`/collections?category=${cat.name.toLowerCase()}`}
+                  className="flex items-center gap-3 category-pill p-1.5 pr-4 bg-white/60 hover:bg-white rounded-full border border-pink-100/50 shadow-sm shrink-0 cursor-pointer"
+                >
+                  {/* Category Circle Avatar */}
+                  <div className="w-9 h-9 rounded-full overflow-hidden border border-pink-200 shadow-sm flex items-center justify-center shrink-0">
+                    <img src={cat.img} alt={cat.name} className="w-full h-full object-cover" />
+                  </div>
+                  {/* Title & Count */}
+                  <div>
+                    <p className="text-[10px] text-pink-950 font-black tracking-tight leading-none">{cat.name}</p>
+                    <span className="text-[8px] text-pink-600/70 font-bold uppercase tracking-wider leading-none mt-0.5 block">{cat.count} Items</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            {/* Next Category Arrow Button */}
+            <div className="hidden md:flex pr-2">
+              <Link 
+                to="/collections" 
+                className="w-10 h-10 rounded-full bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 flex items-center justify-center text-white shadow-md hover:scale-105 transition-all shrink-0 cursor-pointer"
+              >
+                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+              </Link>
+            </div>
+
           </div>
         </div>
-      </section>
 
-      {/* Featured Products */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20">
-        <div className="flex justify-between items-end mb-10">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900">Festive Collection</h2>
-            <p className="mt-2 text-gray-500">Handpicked ethnic wear for your virtual wardrobe.</p>
+      </div>
+
+      {/* ================= 4. THE FESTIVE CATALOG SECTION ================= */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20 relative z-20">
+        <div className="flex flex-col sm:flex-row justify-between items-center sm:items-end mb-10 gap-4">
+          <div className="text-center sm:text-left">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pink-100/70 text-pink-700 font-extrabold text-[9px] uppercase tracking-widest border border-pink-200/20 mb-2">
+              <Heart className="w-3 h-3 fill-pink-600 text-pink-600" />
+              <span>Curated Festive Looks</span>
+            </div>
+            <h2 className="text-3xl font-black text-pink-950 font-display tracking-tight leading-none mt-1">Festive Catalog Highlights</h2>
+            <p className="mt-2 text-xs text-pink-900/60 font-semibold tracking-wide">Explore high-quality traditional sarees, lehengas, and ethnic options.</p>
           </div>
-          <Link to="/collections" className="hidden sm:block text-pink-600 font-medium hover:text-pink-700 transition-colors">
-            View all →
+          <Link 
+            to="/collections" 
+            className="text-[10px] font-black text-pink-700 hover:text-pink-800 uppercase tracking-widest border-b-2 border-pink-700/20 pb-0.5 flex items-center gap-1 transition-all"
+          >
+            <span>View Full Catalog</span>
+            <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
           </Link>
         </div>
         
+        {/* Responsive Catalog Products Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {featuredProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </section>
+
     </div>
   );
 }
