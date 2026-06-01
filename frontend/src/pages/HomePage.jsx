@@ -99,6 +99,33 @@ export default function HomePage() {
         .animate-float-sphere {
           animation: float-sphere 5.5s ease-in-out infinite;
         }
+        
+        @keyframes sheen-sweep {
+          0% { left: -100%; }
+          100% { left: 200%; }
+        }
+        .btn-sheen-sweep {
+          position: relative;
+          overflow: hidden;
+        }
+        .btn-sheen-sweep::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 55%;
+          height: 100%;
+          background: linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.4) 50%,
+            rgba(255, 255, 255, 0) 100%
+          );
+          transform: skewX(-25deg);
+        }
+        .btn-sheen-sweep:hover::before {
+          animation: sheen-sweep 1.3s infinite ease-in-out;
+        }
       `}} />
 
       {/* ================= 1. Standalone Full-Width 3D Editorial Hero ================= */}
@@ -136,7 +163,7 @@ export default function HomePage() {
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-3">
                 <Link 
                   to="/collections" 
-                  className="w-full sm:w-auto px-10 py-4.5 rounded-full font-extrabold text-xs uppercase tracking-widest text-white btn-3d-primary flex items-center justify-center gap-2 transform active:scale-98 cursor-pointer"
+                  className="w-full sm:w-auto px-10 py-4.5 rounded-full font-extrabold text-xs uppercase tracking-widest text-white btn-3d-primary btn-sheen-sweep flex items-center justify-center gap-2 transform active:scale-98 cursor-pointer"
                 >
                   <span>Shop Now</span>
                   <ArrowRight className="w-4 h-4 stroke-[2.5]" />
@@ -156,18 +183,21 @@ export default function HomePage() {
             <div className="col-span-12 lg:col-span-4 flex justify-center items-center relative py-12 lg:py-0 select-none h-[600px] lg:h-[700px] overflow-visible">
               
               {/* === 3D Geometric Layers Backdrop === */}
+              {/* Central Luxury Backdrop Studio Glow Effect */}
+              <div className="absolute w-[500px] h-[500px] bg-[#D81B60]/12 rounded-full filter blur-[100px] pointer-events-none animate-pulse z-0 translate-y-[65px]" />
+
               {/* 1. Large Pale pink circular platform disk */}
-              <div className="absolute w-[460px] h-[460px] lg:w-[520px] lg:h-[520px] rounded-full bg-[#F8D7DA]/40 border-4 border-white shadow-xl animate-float-slow z-5 pointer-events-none" />
+              <div className="absolute w-[460px] h-[460px] lg:w-[520px] lg:h-[520px] rounded-full bg-[#F8D7DA]/40 border-4 border-white shadow-xl animate-float-slow z-5 pointer-events-none translate-y-[65px]" />
 
               {/* 2. Overlapping angled Rose disc */}
-              <div className="absolute w-[320px] h-[320px] lg:w-[380px] lg:h-[380px] rounded-full bg-gradient-to-tr from-[#D81B60]/20 to-[#A30D45]/30 shadow-lg translate-x-16 -translate-y-14 animate-float-fast z-5 pointer-events-none" />
+              <div className="absolute w-[320px] h-[320px] lg:w-[380px] lg:h-[380px] rounded-full bg-gradient-to-tr from-[#D81B60]/20 to-[#A30D45]/30 shadow-lg translate-x-12 translate-y-[20px] lg:translate-y-[20px] animate-float-fast z-5 pointer-events-none" />
 
               {/* 3. Neomorphic Soft floating spheres */}
-              <div className="absolute w-18 h-18 rounded-full bg-gradient-to-br from-white to-[#F8D7DA] shadow-md -translate-x-44 translate-y-32 animate-float-sphere z-30 border border-white/50 pointer-events-none" />
-              <div className="absolute w-11 h-11 rounded-full bg-gradient-to-tr from-[#D81B60]/10 to-[#F8D7DA] shadow-inner translate-x-40 translate-y-36 animate-float-sphere z-30 border border-[#F8D7DA]/30 pointer-events-none" />
+              <div className="absolute w-18 h-18 rounded-full bg-gradient-to-br from-white to-[#F8D7DA] shadow-md -translate-x-40 -translate-y-24 animate-float-sphere z-30 border border-white/50 pointer-events-none" />
+              <div className="absolute w-11 h-11 rounded-full bg-gradient-to-tr from-[#D81B60]/10 to-[#F8D7DA] shadow-inner translate-x-32 -translate-y-32 animate-float-sphere z-30 border border-[#F8D7DA]/30 pointer-events-none" />
 
               {/* 4. Elegant 3D Sculptural Rings & Spheres */}
-              <div className="absolute w-32 h-32 rounded-full border-2 border-[#D81B60]/30 -translate-y-48 translate-x-28 animate-float-slow z-5 pointer-events-none" />
+              <div className="absolute w-32 h-32 rounded-full border-2 border-[#D81B60]/30 -translate-y-28 translate-x-24 animate-float-slow z-5 pointer-events-none" />
 
               {/* === Backdrop Saturn 3D Ring (Layered behind transparent model) === */}
               {/* Translated down by translate-y-[25px] lg:translate-y-[65px] to sit exactly in the middle of her body/waist */}
@@ -272,6 +302,16 @@ export default function HomePage() {
               {/* 3D Star Sparkle accents floating in front of model */}
               <div className="absolute top-6 right-0 animate-float-fast z-30 text-[#D81B60] drop-shadow-md">
                 <svg className="w-8 h-8 fill-[#D81B60]" viewBox="0 0 24 24">
+                  <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4Z" />
+                </svg>
+              </div>
+              <div className="absolute top-24 left-4 animate-float-slow z-30 text-[#D81B60]/70 drop-shadow-sm">
+                <svg className="w-4 h-4 fill-[#D81B60]" viewBox="0 0 24 24">
+                  <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4Z" />
+                </svg>
+              </div>
+              <div className="absolute bottom-24 right-4 animate-float-fast z-30 text-[#D81B60]/80 drop-shadow-sm">
+                <svg className="w-4.5 h-4.5 fill-[#D81B60]" viewBox="0 0 24 24">
                   <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4Z" />
                 </svg>
               </div>
