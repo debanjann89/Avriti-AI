@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingCart, Search, Menu, User, Sparkles, Sliders, MapPin, ShoppingBag, LogOut, ChevronDown } from 'lucide-react';
 import { useContext, useState, useRef, useEffect } from 'react';
 import { AuthContext } from '../../context/AuthContext';
@@ -10,6 +10,7 @@ export default function Navbar() {
   const { cartItems, toggleCart } = useContext(CartContext);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const navigate = useNavigate();
 
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -38,37 +39,45 @@ export default function Navbar() {
           <div className="flex justify-between items-center h-16">
             
             {/* Left Brand logo & link */}
-            <div className="flex items-center space-x-6">
-              <Link to="/" className="text-2xl font-black bg-gradient-to-r from-pink-600 to-rose-500 bg-clip-text text-transparent">
-                Aavriti.in
-              </Link>
+            <div className="flex items-center space-x-8">
+              <div className="flex flex-col">
+                <Link to="/" className="text-2xl font-black bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent leading-none">
+                  Aavriti AI
+                </Link>
+                <span className="text-[9px] text-gray-400 font-extrabold uppercase tracking-widest mt-1 leading-none">
+                  Indian Fashion, Reimagined for You
+                </span>
+              </div>
               
-              <div className="hidden lg:flex space-x-5 ml-4">
-                <Link to="/collections" className="text-gray-600 hover:text-pink-600 font-bold text-xs uppercase tracking-widest transition-all">
+              <div className="hidden lg:flex space-x-6 ml-6">
+                <Link to="/collections" className="text-gray-700 hover:text-pink-600 font-extrabold text-[11px] uppercase tracking-widest transition-all">
                   Collections
                 </Link>
-                <Link to="/about" className="text-gray-600 hover:text-pink-600 font-bold text-xs uppercase tracking-widest transition-all">
+                <Link to="/collections" className="text-gray-700 hover:text-pink-600 font-extrabold text-[11px] uppercase tracking-widest transition-all">
+                  Categories
+                </Link>
+                <Link to="/try-on" className="text-pink-700 hover:text-pink-850 font-extrabold text-[11px] uppercase tracking-widest transition-all flex items-center gap-1">
+                  <span>AI Stylist</span>
+                  <Sparkles className="w-3 h-3 text-orange-500 fill-orange-500 animate-pulse" />
+                </Link>
+                <Link to="/about" className="text-gray-700 hover:text-pink-600 font-extrabold text-[11px] uppercase tracking-widest transition-all">
                   About Us
                 </Link>
-              </div>
-            </div>
-            
-            {/* Search Input bar */}
-            <div className="hidden md:flex flex-1 max-w-md mx-8">
-              <div className="relative w-full">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="h-4 w-4 text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  className="block w-full pl-9 pr-3 py-2 border border-gray-200 rounded-full leading-5 bg-pink-50/30 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-pink-500 focus:border-pink-500 text-xs transition-all"
-                  placeholder="Search sarees, lehengas..."
-                />
+                <a href="#" className="text-gray-700 hover:text-pink-600 font-extrabold text-[11px] uppercase tracking-widest transition-all">
+                  Blog
+                </a>
               </div>
             </div>
             
             {/* Right Buttons group */}
             <div className="flex items-center space-x-4 sm:space-x-5">
+              {/* Search Icon Trigger */}
+              <button 
+                onClick={() => navigate('/collections')}
+                className="w-10 h-10 rounded-full bg-slate-50 hover:bg-pink-50/50 border border-slate-100 flex items-center justify-center text-gray-600 hover:text-pink-600 transition-all cursor-pointer"
+              >
+                <Search className="h-4.5 w-4.5 stroke-[1.8]" />
+              </button>
               
               {/* Shopping Cart Trigger */}
               <button onClick={toggleCart} className="text-gray-500 hover:text-pink-600 transition-colors relative cursor-pointer p-1">
