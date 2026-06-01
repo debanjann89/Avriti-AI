@@ -170,8 +170,8 @@ export default function HomePage() {
               <div className="absolute w-32 h-32 rounded-full border-2 border-[#D81B60]/30 -translate-y-48 translate-x-28 animate-float-slow z-5 pointer-events-none" />
 
               {/* === Backdrop Saturn 3D Ring (Layered behind transparent model) === */}
-              {/* Translated down by translate-y-[80px] lg:translate-y-[150px] to sit exactly in the middle of her body/waist */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-saturn z-10 translate-y-[80px] lg:translate-y-[150px]">
+              {/* Translated down by translate-y-[50px] lg:translate-y-[110px] to sit exactly in the middle of her body/waist */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-saturn z-10 translate-y-[50px] lg:translate-y-[110px]">
                 <svg className="w-[620px] h-[480px] lg:w-[680px] lg:h-[530px] overflow-visible" viewBox="0 0 400 400">
                   <linearGradient id="saturnBackGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stopColor="#9f1239" />
@@ -221,13 +221,13 @@ export default function HomePage() {
                 <img 
                   src="/media__1780342681756.png" 
                   alt="Aavriti Model" 
-                  className="h-full w-auto object-contain drop-shadow-[0_20px_45px_rgba(0,0,0,0.18)] transform scale-[2.25] lg:scale-[2.5] translate-y-[80px] lg:translate-y-[150px]"
+                  className="h-full w-auto object-contain drop-shadow-[0_20px_45px_rgba(0,0,0,0.18)] transform scale-[2.25] lg:scale-[2.5] translate-y-[50px] lg:translate-y-[110px]"
                 />
               </div>
 
               {/* === Front Saturn 3D Ring (Layered in front of model for 3D wrap!) === */}
-              {/* Translated down by translate-y-[80px] lg:translate-y-[150px] to sit exactly in the middle of her body/waist */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-saturn z-30 translate-y-[80px] lg:translate-y-[150px]">
+              {/* Translated down by translate-y-[50px] lg:translate-y-[110px] to sit exactly in the middle of her body/waist */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-saturn z-30 translate-y-[50px] lg:translate-y-[110px]">
                 <svg className="w-[620px] h-[480px] lg:w-[680px] lg:h-[530px] overflow-visible filter drop-shadow-[0_18px_22px_rgba(163,13,69,0.35)]" viewBox="0 0 400 400">
                   <linearGradient id="saturnFrontGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stopColor="#D81B60" />
