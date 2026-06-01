@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ShoppingCart, Search, Menu, User, Sparkles, Sliders, MapPin, ShoppingBag, LogOut, ChevronDown } from 'lucide-react';
 import { useContext, useState, useRef, useEffect } from 'react';
 import { AuthContext } from '../../context/AuthContext';
@@ -11,6 +11,7 @@ export default function Navbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -78,20 +79,40 @@ export default function Navbar() {
               </Link>
               
               <div className="hidden lg:flex space-x-6 items-center ml-8">
-                <Link to="/collections" className="nav-link-premium font-extrabold text-[10px] uppercase tracking-widest">
+                <Link 
+                  to="/collections" 
+                  className={location.pathname === '/collections' 
+                    ? "px-4 py-2 rounded-full bg-[#F8D7DA]/75 border border-[#D81B60]/20 text-[#D81B60] font-black text-[10px] uppercase tracking-widest shadow-sm shadow-pink-100/30 hover:scale-[1.02] transition-all" 
+                    : "nav-link-premium font-extrabold text-[10px] uppercase tracking-widest"}
+                >
                   Collections
                 </Link>
                 <Link to="/collections" className="nav-link-premium font-extrabold text-[10px] uppercase tracking-widest">
                   Categories
                 </Link>
-                <Link to="/try-on" className="px-4 py-2 rounded-full bg-[#F8D7DA]/70 border border-[#D81B60]/20 hover:border-[#D81B60]/40 text-[#D81B60] font-black text-[10px] uppercase tracking-widest transition-all flex items-center gap-1.5 shadow-sm shadow-pink-100 hover:shadow-md hover:shadow-pink-200/40 hover:scale-[1.03] active:scale-98">
+                <Link 
+                  to="/try-on" 
+                  className={location.pathname === '/try-on' 
+                    ? "px-4 py-2 rounded-full bg-[#F8D7DA]/75 border border-[#D81B60]/20 text-[#D81B60] font-black text-[10px] uppercase tracking-widest shadow-sm shadow-pink-100/30 hover:scale-[1.02] flex items-center gap-1.5 transition-all" 
+                    : "nav-link-premium font-extrabold text-[10px] uppercase tracking-widest flex items-center gap-1.5"}
+                >
                   <span>AI Stylist</span>
-                  <Sparkles className="w-3.5 h-3.5 text-orange-500 fill-orange-500 animate-pulse" />
+                  <Sparkles className={`w-3.5 h-3.5 ${location.pathname === '/try-on' ? 'text-orange-500 fill-orange-500 animate-pulse' : 'text-[#D81B60] fill-none'}`} />
                 </Link>
-                <Link to="/about" className="nav-link-premium font-extrabold text-[10px] uppercase tracking-widest">
+                <Link 
+                  to="/about" 
+                  className={location.pathname === '/about' 
+                    ? "px-4 py-2 rounded-full bg-[#F8D7DA]/75 border border-[#D81B60]/20 text-[#D81B60] font-black text-[10px] uppercase tracking-widest shadow-sm shadow-pink-100/30 hover:scale-[1.02] transition-all" 
+                    : "nav-link-premium font-extrabold text-[10px] uppercase tracking-widest"}
+                >
                   About Us
                 </Link>
-                <a href="#" className="nav-link-premium font-extrabold text-[10px] uppercase tracking-widest">
+                <a 
+                  href="#" 
+                  className={location.pathname === '/blog' 
+                    ? "px-4 py-2 rounded-full bg-[#F8D7DA]/75 border border-[#D81B60]/20 text-[#D81B60] font-black text-[10px] uppercase tracking-widest shadow-sm shadow-pink-100/30 hover:scale-[1.02] transition-all" 
+                    : "nav-link-premium font-extrabold text-[10px] uppercase tracking-widest"}
+                >
                   Blog
                 </a>
               </div>

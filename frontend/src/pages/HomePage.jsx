@@ -176,6 +176,24 @@ export default function HomePage() {
                   <span>Watch Lookbook</span>
                 </Link>
               </div>
+
+              {/* Premium Campaign Micro-Stats Tray to fill empty space under buttons */}
+              <div className="flex items-center gap-6 pt-6 border-t border-pink-100/30 w-full justify-center lg:justify-start">
+                <div className="text-center lg:text-left">
+                  <span className="block text-lg font-black text-[#D81B60] font-jakarta leading-none">50K+</span>
+                  <span className="text-[8px] text-[#1E1E1E]/50 font-bold uppercase tracking-wider mt-1 block">Happy Clients</span>
+                </div>
+                <div className="w-[1px] h-6 bg-pink-100/40" />
+                <div className="text-center lg:text-left">
+                  <span className="block text-lg font-black text-[#D81B60] font-jakarta leading-none">4.9★</span>
+                  <span className="text-[8px] text-[#1E1E1E]/50 font-bold uppercase tracking-wider mt-1 block">Editorial Rating</span>
+                </div>
+                <div className="w-[1px] h-6 bg-pink-100/40" />
+                <div className="text-center lg:text-left">
+                  <span className="block text-lg font-black text-[#D81B60] font-jakarta leading-none">100%</span>
+                  <span className="text-[8px] text-[#1E1E1E]/50 font-bold uppercase tracking-wider mt-1 block">AI Tailored Fit</span>
+                </div>
+              </div>
             </div>
 
             {/* --- CENTER SECTION (35%): TRANSPARENT MODEL OVERLAPPING 3D SATURN RINGS & GEOMETRIC ELEMENTS --- */}
@@ -200,8 +218,8 @@ export default function HomePage() {
               <div className="absolute w-32 h-32 rounded-full border-2 border-[#D81B60]/30 -translate-y-28 translate-x-24 animate-float-slow z-5 pointer-events-none" />
 
               {/* === Backdrop Saturn 3D Ring (Layered behind transparent model) === */}
-              {/* Translated down by translate-y-[15px] lg:translate-y-[35px] to sit exactly in the middle of her body/waist */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-saturn z-10 translate-y-[15px] lg:translate-y-[35px]">
+              {/* Translated down by translate-y-[20px] lg:translate-y-[48px] to sit exactly in the middle of her body/waist */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-saturn z-10 translate-y-[20px] lg:translate-y-[48px]">
                 <svg className="w-[620px] h-[480px] lg:w-[680px] lg:h-[530px] overflow-visible" viewBox="0 0 400 400">
                   <linearGradient id="saturnBackGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stopColor="#9f1239" />
@@ -246,18 +264,18 @@ export default function HomePage() {
               </div>
 
               {/* === TRANSPARENT EXPLICIT MODEL IMAGE (z-index: 20) === */}
-              {/* Scale adjusted to 2.1x/2.3x so she occupies massive screen space without bottom clipping */}
+              {/* Scale adjusted to 2.2x/2.42x so she occupies massive screen space and flows till the bottom of the section */}
               <div className="relative z-20 h-[600px] lg:h-[670px] w-auto flex items-end justify-center select-none pointer-events-none overflow-visible">
                 <img 
                   src="/media__1780342681756.png" 
                   alt="Aavriti Model" 
-                  className="h-full w-auto object-contain drop-shadow-[0_20px_45px_rgba(0,0,0,0.18)] transform scale-[2.1] lg:scale-[2.3] translate-y-[15px] lg:translate-y-[35px]"
+                  className="h-full w-auto object-contain drop-shadow-[0_20px_45px_rgba(0,0,0,0.18)] transform scale-[2.2] lg:scale-[2.42] translate-y-[20px] lg:translate-y-[48px]"
                 />
               </div>
 
               {/* === Front Saturn 3D Ring (Layered in front of model for 3D wrap!) === */}
-              {/* Translated down by translate-y-[15px] lg:translate-y-[35px] to sit exactly in the middle of her body/waist */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-saturn z-30 translate-y-[15px] lg:translate-y-[35px]">
+              {/* Translated down by translate-y-[20px] lg:translate-y-[48px] to sit exactly in the middle of her body/waist */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-saturn z-30 translate-y-[20px] lg:translate-y-[48px]">
                 <svg className="w-[620px] h-[480px] lg:w-[680px] lg:h-[530px] overflow-visible filter drop-shadow-[0_18px_22px_rgba(163,13,69,0.35)]" viewBox="0 0 400 400">
                   <linearGradient id="saturnFrontGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stopColor="#D81B60" />
@@ -357,6 +375,12 @@ export default function HomePage() {
                   <span>Read More</span>
                   <ChevronRight className="w-3.5 h-3.5 stroke-[3]" />
                 </Link>
+              </div>
+
+              {/* Luxury Campaign Editorial Badge to fill empty space under right block */}
+              <div className="pt-6 border-t border-pink-100/30 flex flex-col items-center lg:items-start space-y-1">
+                <span className="text-[7.5px] text-[#A30D45]/70 font-black uppercase tracking-[0.25em]">Avriti AI Campaign 2026</span>
+                <span className="text-[7px] text-[#1E1E1E]/40 font-bold uppercase tracking-wider">All Rights Reserved — Reimagining Indian Fashion</span>
               </div>
             </div>
 
