@@ -129,14 +129,14 @@ export default function HomePage() {
       `}} />
 
       {/* ================= 1. Standalone Full-Width 3D Editorial Hero ================= */}
-      <section className="relative w-full pt-6 pb-12 lg:pt-10 lg:pb-16 bg-[#FFF8F8] overflow-hidden select-none">
+      <section className="relative w-full pt-6 pb-6 lg:pt-10 lg:pb-8 bg-[#FFF8F8] overflow-hidden select-none">
         
         {/* Soft Background Accent Ambient Lighting */}
         <div className="absolute top-[-10%] left-[-10%] w-[700px] h-[700px] bg-gradient-to-tr from-[#F8D7DA]/35 to-transparent rounded-full filter blur-3xl pointer-events-none" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[700px] h-[700px] bg-gradient-to-br from-[#F8D7DA]/25 to-transparent rounded-full filter blur-3xl pointer-events-none" />
         
         {/* Connecting Ambient Pink Glow at the boundary */}
-        <div className="absolute bottom-0 left-[20%] w-[600px] h-[250px] bg-[#D81B60]/8 rounded-full filter blur-[80px] pointer-events-none z-10" />
+        <div className="absolute bottom-[-100px] left-[20%] w-[600px] h-[300px] bg-[#D81B60]/4 rounded-full filter blur-[100px] pointer-events-none z-10" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-12 gap-8 items-center">
@@ -391,8 +391,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ================= 2. THE CURATED CATALOG Highlights (Floating Overlap Design) ================= */}
-      <section className="relative z-30 max-w-7xl mx-auto w-full px-6 sm:px-8 lg:px-10 -mt-10 lg:-mt-14 bg-white/75 backdrop-blur-lg rounded-[32px] py-10 lg:py-12 shadow-[0_-25px_60px_rgba(216,27,96,0.06)] border border-white/80">
+      {/* ================= 2. THE CURATED CATALOG Highlights (Fullpage Flow Design) ================= */}
+      <section className="relative z-20 w-full bg-gradient-to-b from-[#FFF8F8] via-[#FFF8F8] to-white py-16 lg:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row justify-between items-center sm:items-end mb-10 gap-4">
           <div className="text-center sm:text-left">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F8D7DA] text-[#A30D45] font-extrabold text-[9px] uppercase tracking-widest mb-2">
@@ -417,7 +418,8 @@ export default function HomePage() {
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
-      </section>
+      </div>
+    </section>
 
     </div>
   );
