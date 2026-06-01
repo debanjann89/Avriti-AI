@@ -344,36 +344,42 @@ export default function HomePage() {
             </div>
 
             {/* --- RIGHT COLUMN (20%) --- */}
-            <div className="col-span-12 lg:col-span-3 space-y-8 text-center lg:text-left relative z-20 pl-0 lg:pl-8 pb-8 lg:pb-0">
+            <div className="col-span-12 lg:col-span-3 space-y-8 text-center lg:text-left relative z-20 pl-0 lg:pl-8 pb-8 lg:pb-0 select-none">
               
-              {/* Explore Badge */}
-              <div className="space-y-1.5 flex flex-col items-center lg:items-start">
-                <p className="text-[10px] text-[#A30D45]/70 font-black tracking-widest uppercase">Explore New</p>
-                <h4 className="text-xs font-black text-[#1E1E1E] uppercase tracking-widest flex items-center gap-1.5 font-jakarta">
-                  <span>Arrival</span>
-                  <span className="w-4 h-[2px] bg-[#1E1E1E] inline-block" />
+              {/* Explore Badge with Creative Asymmetric Typography */}
+              <div className="space-y-1.5 flex flex-col items-center lg:items-start select-none">
+                <span className="text-[9px] text-[#D81B60] font-black uppercase tracking-[0.25em] font-jakarta">Editorial Showcase</span>
+                <h4 className="text-4xl font-black text-[#1E1E1E] leading-[0.88] font-jakarta uppercase tracking-tighter">
+                  New<br/>
+                  <span className="text-[#A30D45] font-display italic font-bold normal-case tracking-normal">Aesthetics</span>
                 </h4>
               </div>
 
-              {/* Man Collection Button */}
-              <div className="flex justify-center lg:justify-start">
+              {/* Man Collection Button Card */}
+              <div className="flex flex-col items-center lg:items-start space-y-2">
+                <span className="text-[7.5px] text-[#1E1E1E]/40 font-black uppercase tracking-widest font-jakarta">Current Showcase</span>
                 <Link 
                   to="/collections" 
-                  className="px-6 py-3 rounded-full bg-[#F8D7DA]/60 hover:bg-[#F8D7DA] text-[#A30D45] border border-pink-200/40 font-extrabold text-[10px] uppercase tracking-widest flex items-center gap-2 transform hover:translate-x-1.5 transition-all shadow-sm"
+                  className="px-6 py-3 rounded-full bg-[#F8D7DA]/50 hover:bg-[#F8D7DA]/80 text-[#A30D45] border border-[#D81B60]/10 hover:border-[#D81B60]/25 font-extrabold text-[10px] uppercase tracking-widest flex items-center gap-2 transform hover:translate-x-1 transition-all shadow-sm duration-300 cursor-pointer"
                 >
-                  <span>Man Collection</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-[#A30D45]" />
+                  <span>Explore Men's Wear</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-[#A30D45] stroke-[2.5]" />
                 </Link>
               </div>
 
-              {/* Minimal Fashion Statement Block */}
-              <div className="space-y-4 pt-2">
-                <p className="text-xs text-[#1E1E1E]/70 font-semibold leading-relaxed max-w-sm mx-auto lg:mx-0 font-sans">
-                  "Fashion is a form of self-expression and individuality."
+              {/* Editorial Statement Quote Card */}
+              <div className="space-y-4 pt-2 relative flex flex-col items-center lg:items-start">
+                <span className="absolute -top-7 -left-1 text-8xl text-[#F8D7DA]/60 font-display pointer-events-none select-none">“</span>
+                <p className="text-[13px] text-[#1E1E1E]/80 font-display italic font-bold leading-relaxed max-w-xs text-center lg:text-left relative z-10 pl-2">
+                  Fashion is a form of self-expression, a language that reimagines individuality.
                 </p>
+                <div className="flex items-center gap-2 pl-2">
+                  <span className="w-6 h-[1px] bg-[#A30D45]/30 inline-block" />
+                  <span className="text-[8px] text-[#A30D45]/70 font-black uppercase tracking-widest font-jakarta">Avriti AI Stylist</span>
+                </div>
                 <Link 
                   to="/about"
-                  className="inline-flex items-center gap-1 text-[9px] font-black text-[#D81B60] hover:text-[#A30D45] uppercase tracking-widest border-b-2 border-[#D81B60]/30 pb-0.5 transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1 text-[9px] font-black text-[#D81B60] hover:text-[#A30D45] uppercase tracking-widest border-b-2 border-[#D81B60]/30 pb-0.5 transition-colors cursor-pointer pl-2 pt-1"
                 >
                   <span>Read More</span>
                   <ChevronRight className="w-3.5 h-3.5 stroke-[3]" />
@@ -381,9 +387,14 @@ export default function HomePage() {
               </div>
 
               {/* Luxury Campaign Editorial Badge to fill empty space under right block */}
-              <div className="pt-6 border-t border-pink-100/30 flex flex-col items-center lg:items-start space-y-1">
-                <span className="text-[7.5px] text-[#A30D45]/70 font-black uppercase tracking-[0.25em]">Avriti AI Campaign 2026</span>
-                <span className="text-[7px] text-[#1E1E1E]/40 font-bold uppercase tracking-wider">All Rights Reserved — Reimagining Indian Fashion</span>
+              <div className="pt-6 border-t border-pink-100/30 w-full flex flex-col items-center lg:items-start space-y-2 select-none">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#D81B60]" />
+                  <span className="text-[8px] text-[#1E1E1E] font-black uppercase tracking-[0.2em] font-jakarta">Avriti AI © 2026</span>
+                </div>
+                <p className="text-[7.5px] text-[#1E1E1E]/40 font-semibold tracking-wider uppercase leading-normal text-center lg:text-left max-w-[200px]">
+                  All rights reserved. Reimagining traditional Indian fashion through state-of-the-art AI technology.
+                </p>
               </div>
             </div>
 
