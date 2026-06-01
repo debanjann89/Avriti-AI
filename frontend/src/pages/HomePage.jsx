@@ -212,7 +212,7 @@ export default function HomePage() {
                 <img 
                   src="/media__1780342681756.png" 
                   alt="Aavriti Model" 
-                  className="h-full w-auto object-contain drop-shadow-[0_15px_35px_rgba(0,0,0,0.18)]"
+                  className="h-full w-auto object-contain drop-shadow-[0_15px_35px_rgba(0,0,0,0.18)] transform scale-[1.38] translate-y-8 lg:translate-y-12"
                 />
               </div>
 
