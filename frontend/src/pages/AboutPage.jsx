@@ -1,4 +1,4 @@
-import { Sparkles, Heart, Shield, Cpu, Code, ArrowRight, Leaf, Users, Star } from 'lucide-react';
+import { Sparkles, Heart, Shield, Cpu, Code, ArrowRight, Leaf, Users, Star, Compass } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function AboutPage() {
@@ -20,8 +20,8 @@ export default function AboutPage() {
           color: #1E1E1E;
           font-family: 'Plus Jakarta Sans', sans-serif;
           font-weight: 900;
-          letter-spacing: -0.04em;
-          line-height: 0.82;
+          letter-spacing: -0.045em;
+          line-height: 0.8;
           text-shadow: 
             1px 1px 0px #ffffff,
             3px 3px 0px rgba(216, 27, 96, 0.08);
@@ -42,19 +42,19 @@ export default function AboutPage() {
           box-shadow: 0 45px 80px rgba(163, 13, 69, 0.1);
         }
 
-        .logo-emblem-large {
+        .logo-emblem-massive {
           box-shadow: 
-            0px 25px 55px rgba(216, 27, 96, 0.22),
-            0px 4px 15px rgba(0, 0, 0, 0.03),
-            inset 0px 2px 4px rgba(255, 255, 255, 0.4);
-          border: 6px solid #ffffff;
+            0px 30px 70px rgba(216, 27, 96, 0.25),
+            0px 10px 30px rgba(0, 0, 0, 0.05),
+            inset 0px 4px 8px rgba(255, 255, 255, 0.5);
+          border: 10px solid #ffffff;
           transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .logo-emblem-large:hover {
-          transform: rotate(4deg) scale(1.04);
+        .logo-emblem-massive:hover {
+          transform: rotate(3deg) scale(1.03);
           box-shadow: 
-            0px 30px 60px rgba(216, 27, 96, 0.32),
-            inset 0px 2px 4px rgba(255, 255, 255, 0.6);
+            0px 35px 80px rgba(216, 27, 96, 0.35),
+            inset 0px 4px 8px rgba(255, 255, 255, 0.7);
         }
 
         .profile-glow {
@@ -69,11 +69,26 @@ export default function AboutPage() {
           0%, 100% { transform: translateY(0px) rotate(0deg); }
           50% { transform: translateY(12px) rotate(-5deg); }
         }
+        @keyframes rotate-orbit-slow {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        @keyframes rotate-orbit-fast {
+          0% { transform: rotate(360deg); }
+          100% { transform: rotate(0deg); }
+        }
+
         .animate-float-slow {
           animation: float-slow 8.5s ease-in-out infinite;
         }
         .animate-float-fast {
           animation: float-fast 6s ease-in-out infinite;
+        }
+        .animate-orbit-slow {
+          animation: rotate-orbit-slow 25s linear infinite;
+        }
+        .animate-orbit-fast {
+          animation: rotate-orbit-fast 18s linear infinite;
         }
       `}} />
 
@@ -107,42 +122,196 @@ export default function AboutPage() {
       <div className="max-w-[1440px] mx-auto px-6 sm:px-8 lg:px-16 relative z-10 pt-16 lg:pt-24">
         
         {/* ================= 1. Widescreen 2-Column Split Hero Layout ================= */}
-        <div className="grid grid-cols-12 gap-8 lg:gap-16 items-center mb-28 lg:mb-36">
+        <div className="grid grid-cols-12 gap-8 lg:gap-20 items-center mb-28 lg:mb-36">
           
           {/* Left Column: Chiseled Text & Info */}
-          <div className="col-span-12 lg:col-span-7 space-y-6 text-center lg:text-left">
+          <div className="col-span-12 lg:col-span-6 space-y-8 text-center lg:text-left">
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#F8D7DA] text-[#A30D45] font-extrabold text-[10px] uppercase tracking-widest shadow-sm shadow-pink-100/50">
               <Sparkles className="w-3.5 h-3.5 fill-[#F8D7DA]" />
-              <span>The Premium Fashion-Tech Atelier</span>
+              <span>The Heritage AI Atelier</span>
             </div>
-            <h1 className="text-[64px] sm:text-[90px] lg:text-[112px] leading-[0.8] text-editorial-title uppercase font-jakarta select-none text-center lg:text-left">
-              Aavriti AI
-            </h1>
-            <p className="text-sm sm:text-base lg:text-[17px] text-[#1E1E1E]/65 leading-relaxed font-sans font-medium max-w-2xl">
-              Blending traditional Indian heritage weaves with progressive neural fabric physics solvers to reconstruct virtual outfit draping. Aavriti AI empowers individuals across the globe to interact intimately with royal handloomed sarees, bridal lehengas, and fusion wear instantly on their personal portraits.
+            
+            <div className="space-y-3">
+              <h1 className="text-[64px] sm:text-[96px] lg:text-[116px] leading-[0.8] text-editorial-title uppercase font-jakarta select-none text-center lg:text-left">
+                Aavriti AI
+              </h1>
+              <p className="text-xs text-[#A30D45]/70 font-black tracking-widest uppercase pl-1 block font-jakarta">Weaving Tradition & Predictive Style</p>
+            </div>
+
+            <p className="text-sm sm:text-base lg:text-[16.5px] text-[#1E1E1E]/65 leading-relaxed font-sans font-medium max-w-2xl">
+              Aavriti AI blends handloom Indian heritage weaves with advanced generative neural fabric solvers to reconstruct virtual outfit draping. We empower ethnic wear lovers globally to interact intimately with royal handloomed sarees, bridal lehengas, and ethnic options instantly on their personal portraits.
             </p>
-            <p className="text-xs sm:text-sm text-[#1E1E1E]/50 leading-relaxed font-sans font-semibold">
-              Our high-fidelity technology parses textile densities, thread structures, and zaris directly from flatlaid product screenshots, generating a realistic 3D draping compose in under 3.5 seconds.
-            </p>
+
+            {/* Editorial Fuchsia Quote Banner */}
+            <div className="p-5 border-l-4 border-[#D81B60] bg-[#D81B60]/4 rounded-r-2xl max-w-2xl select-none">
+              <p className="text-sm font-bold text-[#A30D45] font-display italic tracking-wide leading-relaxed">
+                "Where timeless heritage craftsmanship meets aesthetic predictive intelligence."
+              </p>
+            </div>
           </div>
 
-          {/* Right Column: Premium Circular Logo Emblem */}
-          <div className="col-span-12 lg:col-span-5 flex justify-center lg:justify-end">
-            <div className="logo-emblem-large w-56 h-56 sm:w-64 sm:h-64 lg:w-72 lg:h-72 rounded-full overflow-hidden bg-white flex items-center justify-center cursor-pointer">
+          {/* Right Column: Massive Logo Emblem with Rotating Orbit Halos */}
+          <div className="col-span-12 lg:col-span-6 flex justify-center lg:justify-end relative py-12 lg:py-0 overflow-visible">
+            
+            {/* 1. Large pale pink background platform circle shadow */}
+            <div className="absolute w-[360px] h-[360px] lg:w-[480px] lg:h-[480px] rounded-full bg-[#F8D7DA]/25 z-0 pointer-events-none filter blur-sm translate-y-2" />
+
+            {/* 2. Outer Rotating Halo Dotted Ring */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-orbit-slow z-0">
+              <svg className="w-[340px] h-[340px] sm:w-[400px] sm:h-[400px] lg:w-[500px] lg:h-[500px] overflow-visible" viewBox="0 0 400 400">
+                <circle cx="200" cy="200" r="178" fill="none" stroke="#D81B60" strokeWidth="1.5" strokeDasharray="8 30" opacity="0.45" />
+              </svg>
+            </div>
+
+            {/* 3. Inner Counter-Rotating Halo Ring */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-orbit-fast z-0">
+              <svg className="w-[340px] h-[340px] sm:w-[400px] sm:h-[400px] lg:w-[500px] lg:h-[500px] overflow-visible" viewBox="0 0 400 400">
+                <circle cx="200" cy="200" r="192" fill="none" stroke="#A30D45" strokeWidth="1" strokeDasharray="40 120" opacity="0.35" />
+              </svg>
+            </div>
+
+            {/* 4. Massive Circular Logo Shield */}
+            <div className="logo-emblem-massive w-[280px] h-[280px] sm:w-[340px] sm:h-[340px] lg:w-[420px] lg:h-[420px] rounded-full overflow-hidden bg-white flex items-center justify-center cursor-pointer relative z-10 select-none">
               <img 
                 src="/Logo.jpg" 
                 alt="Aavriti AI Logo" 
                 className="w-full h-full object-cover"
               />
             </div>
+
           </div>
 
         </div>
 
-        {/* ================= 2. The Core Pillars Section ================= */}
+        {/* ================= 2. Our Vision widescreen panel ================= */}
+        <div className="mb-28 lg:mb-36">
+          <div className="glass-card-lg rounded-[44px] p-8 sm:p-12 lg:p-16 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-bl from-[#D81B60]/4 to-transparent rounded-bl-[240px] pointer-events-none" />
+            
+            <div className="grid grid-cols-12 gap-8 lg:gap-12 items-center">
+              
+              <div className="col-span-12 lg:col-span-7 space-y-6">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#A30D45]/10 text-[#A30D45] font-extrabold text-[9px] uppercase tracking-widest">
+                  <Compass className="w-3.5 h-3.5 animate-spin-slow" />
+                  <span>Atelier Horizon</span>
+                </div>
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#1E1E1E] uppercase font-jakarta tracking-tight leading-none">
+                  Our Vision
+                </h2>
+                <div className="space-y-4 text-xs sm:text-sm text-[#1E1E1E]/60 leading-relaxed font-sans font-medium">
+                  <p>
+                    We envision a borderless digital catalog where local Indian handloom weaves are rendered instantly on global profiles. Our dream is to democratize online couture fitting by linking historical weaver cooperatives directly to international buyers, ensuring craftsmanship survives in the age of predictive retail.
+                  </p>
+                  <p>
+                    Through our custom physics fabric solvers, Aavriti AI establishes realistic, high-fidelity visualizations. This tactile confidence reduces purchase return loops by up to 60%, drastically cutting down logistics packing waste and carbon emissions. Fine design becomes deeply personal, digital, and sustainable.
+                  </p>
+                </div>
+              </div>
+
+              {/* Multi-Stats Tray Overlay */}
+              <div className="col-span-12 lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-4 lg:pl-6 select-none">
+                <div className="p-6 rounded-2xl bg-white/60 border border-pink-100/30">
+                  <span className="block text-3xl font-black text-[#D81B60] font-jakarta leading-none">60%</span>
+                  <span className="text-[9px] text-[#1E1E1E]/50 font-bold uppercase tracking-wider mt-2 block">Return Reduction</span>
+                </div>
+                <div className="p-6 rounded-2xl bg-white/60 border border-pink-100/30">
+                  <span className="block text-3xl font-black text-[#D81B60] font-jakarta leading-none">10K+</span>
+                  <span className="text-[9px] text-[#1E1E1E]/50 font-bold uppercase tracking-wider mt-2 block">Handlooms Linked</span>
+                </div>
+                <div className="p-6 rounded-2xl bg-white/60 border border-pink-100/30">
+                  <span className="block text-3xl font-black text-[#D81B60] font-jakarta leading-none">3.5s</span>
+                  <span className="text-[9px] text-[#1E1E1E]/50 font-bold uppercase tracking-wider mt-2 block">Rendering Time</span>
+                </div>
+                <div className="p-6 rounded-2xl bg-white/60 border border-pink-100/30">
+                  <span className="block text-3xl font-black text-[#D81B60] font-jakarta leading-none">Ultra HD</span>
+                  <span className="text-[9px] text-[#1E1E1E]/50 font-bold uppercase tracking-wider mt-2 block">Physics solver</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        {/* ================= 3. Future Plans (Atelier Roadmap) ================= */}
+        <div className="mb-28 lg:mb-36">
+          
+          <div className="text-center max-w-2xl mx-auto space-y-3 mb-16 select-none">
+            <span className="text-[9px] text-[#D81B60] font-black uppercase tracking-[0.25em] font-jakarta font-bold">The Strategic Roadmap</span>
+            <h2 className="text-3xl sm:text-4xl font-black text-[#1E1E1E] uppercase font-jakarta tracking-tight">
+              Future Plans
+            </h2>
+            <div className="w-12 h-[2px] bg-[#D81B60]/40 mx-auto" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            
+            {/* Phase 1 */}
+            <div className="glass-card-lg rounded-[32px] p-8 flex flex-col justify-between space-y-6 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-pink-500/5 to-transparent rounded-bl-[60px] pointer-events-none" />
+              <div className="space-y-4">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#D81B60]/10 text-[#D81B60] font-bold text-[8.5px] uppercase tracking-wider">
+                  Phase 01 // Q3 2026
+                </span>
+                <h3 className="text-xl font-black text-[#1E1E1E] uppercase font-jakarta tracking-tight group-hover:text-[#D81B60] transition-colors duration-300">
+                  Neural Draping v2
+                </h3>
+                <p className="text-[12px] text-[#1E1E1E]/60 font-medium leading-relaxed font-sans">
+                  Upgrading our GPU rendering pipelines to support realistic thread-density shaders. This allows high-accuracy projection of sheer fabrics, transparent organzas, net textures, and gold zari reflection indexes.
+                </p>
+              </div>
+              <div className="pt-4 border-t border-pink-100/25 flex items-center justify-between">
+                <span className="text-[8.5px] font-black text-[#D81B60]/50 font-jakarta uppercase tracking-widest">Advanced shader mesh</span>
+                <Cpu className="w-4 h-4 text-[#D81B60]/30" />
+              </div>
+            </div>
+
+            {/* Phase 2 */}
+            <div className="glass-card-lg rounded-[32px] p-8 flex flex-col justify-between space-y-6 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-rose-500/5 to-transparent rounded-bl-[60px] pointer-events-none" />
+              <div className="space-y-4">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#A30D45]/10 text-[#A30D45] font-bold text-[8.5px] uppercase tracking-wider">
+                  Phase 02 // Q1 2027
+                </span>
+                <h3 className="text-xl font-black text-[#1E1E1E] uppercase font-jakarta tracking-tight group-hover:text-[#A30D45] transition-colors duration-300">
+                  Artisan Direct API
+                </h3>
+                <p className="text-[12px] text-[#1E1E1E]/60 font-medium leading-relaxed font-sans">
+                  Developing simplified mobile catalog upload portals for rural handloom cooperatives across India. Allowing weavers to photograph and link their custom heritage threads directly onto buyer visualization screens.
+                </p>
+              </div>
+              <div className="pt-4 border-t border-pink-100/25 flex items-center justify-between">
+                <span className="text-[8.5px] font-black text-[#A30D45]/50 font-jakarta uppercase tracking-widest">Cooperative upload API</span>
+                <Users className="w-4 h-4 text-[#A30D45]/30" />
+              </div>
+            </div>
+
+            {/* Phase 3 */}
+            <div className="glass-card-lg rounded-[32px] p-8 flex flex-col justify-between space-y-6 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-pink-500/5 to-transparent rounded-bl-[60px] pointer-events-none" />
+              <div className="space-y-4">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#D81B60]/10 text-[#D81B60] font-bold text-[8.5px] uppercase tracking-wider">
+                  Phase 03 // Q3 2027
+                </span>
+                <h3 className="text-xl font-black text-[#1E1E1E] uppercase font-jakarta tracking-tight group-hover:text-[#D81B60] transition-colors duration-300">
+                  Immersive AR Mirror
+                </h3>
+                <p className="text-[12px] text-[#1E1E1E]/60 font-medium leading-relaxed font-sans">
+                  Packaging the Aavriti Try-On neural rendering algorithms into a physical smart mirror software module. Deploying immersive mirrors inside retail boutique hubs and festive bridal studios for hybrid in-store draping.
+                </p>
+              </div>
+              <div className="pt-4 border-t border-pink-100/25 flex items-center justify-between">
+                <span className="text-[8.5px] font-black text-[#D81B60]/50 font-jakarta uppercase tracking-widest">Hybrid retail mirrors</span>
+                <Compass className="w-4 h-4 text-[#D81B60]/30" />
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* ================= 4. The Core Pillars Section ================= */}
         <div className="mb-28 lg:mb-36">
           <div className="text-center max-w-2xl mx-auto space-y-3 mb-16 select-none">
-            <span className="text-[9px] text-[#D81B60] font-black uppercase tracking-[0.25em] font-jakarta">Atelier Foundations</span>
+            <span className="text-[9px] text-[#D81B60] font-black uppercase tracking-[0.25em] font-jakarta font-bold">Atelier Foundations</span>
             <h2 className="text-3xl sm:text-4xl font-black text-[#1E1E1E] uppercase font-jakarta tracking-tight">
               Our Core Pillars
             </h2>
@@ -158,7 +327,7 @@ export default function AboutPage() {
                   <Star className="w-5 h-5 fill-[#D81B60]" />
                 </div>
                 <h3 className="text-lg font-black text-[#1E1E1E] uppercase font-jakarta tracking-tight">
-                  01 / Heritage Revival
+                  01 / Weaver Support
                 </h3>
                 <p className="text-[11.5px] text-[#1E1E1E]/60 font-medium leading-relaxed font-sans">
                   We bridge the gap for traditional handloom weavers. By providing interactive digital draping channels, local Indian craftsman can showcase luxury fabrics to global customers.
@@ -202,7 +371,7 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* ================= 3. Deep Visual Tech Pipeline Section ================= */}
+        {/* ================= 5. Deep Visual Tech Pipeline Section ================= */}
         <div className="glass-card-lg rounded-[40px] p-8 sm:p-12 mb-28 lg:mb-36 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-[#D81B60]/4 to-transparent rounded-bl-[200px] pointer-events-none" />
           
@@ -263,11 +432,11 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* ================= 4. The Founders Showcase Section ================= */}
+        {/* ================= 6. The Founders Showcase Section ================= */}
         <div className="space-y-16 mb-28 lg:mb-36">
           
           <div className="text-center max-w-2xl mx-auto space-y-3 select-none">
-            <span className="text-[9px] text-[#D81B60] font-black uppercase tracking-[0.25em] font-jakarta">The Architects</span>
+            <span className="text-[9px] text-[#D81B60] font-black uppercase tracking-[0.25em] font-jakarta font-bold">The Architects</span>
             <h2 className="text-3xl sm:text-4xl font-black text-[#1E1E1E] uppercase font-jakarta tracking-tight">
               Meet the Developers
             </h2>
@@ -361,7 +530,7 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* ================= 5. Bottom CTA ================= */}
+        {/* ================= 7. Bottom CTA ================= */}
         <div className="text-center select-none">
           <h3 className="text-2xl font-black text-[#1E1E1E] uppercase font-jakarta tracking-tight mb-2">
             Ready to visualize your select fits?
