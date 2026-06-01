@@ -9,7 +9,8 @@ import { AuthContext } from "../context/AuthContext";
 import { 
   User, Check, Lock, Upload, Camera, Sparkles, 
   Download, Image as ImageIcon, Shirt, Sliders, 
-  Info, ArrowRight, LayoutGrid, Settings
+  Info, ArrowRight, LayoutGrid, Settings,
+  AlertCircle, RefreshCw, Eye
 } from "lucide-react";
 
 
