@@ -32,12 +32,6 @@ export default function HomePage() {
             3px 3px 0px rgba(163, 13, 69, 0.08);
         }
 
-        .depth-card {
-          box-shadow: 
-            0px 30px 60px rgba(163, 13, 69, 0.08),
-            0px 4px 20px rgba(0, 0, 0, 0.02);
-        }
-
         .btn-3d-primary {
           background: #D81B60;
           box-shadow: 
@@ -69,6 +63,10 @@ export default function HomePage() {
             0px 10px 20px rgba(216, 27, 96, 0.08);
         }
 
+        @keyframes float-saturn {
+          0%, 100% { transform: translateY(0px) rotate(-15deg); }
+          50% { transform: translateY(-12px) rotate(-13deg); }
+        }
         @keyframes float-shape-slow {
           0%, 100% { transform: translateY(0px) rotate(0deg); }
           50% { transform: translateY(-15px) rotate(8deg); }
@@ -82,6 +80,9 @@ export default function HomePage() {
           50% { transform: translateY(-10px) translateX(8px); }
         }
 
+        .animate-saturn {
+          animation: float-saturn 6.5s ease-in-out infinite;
+        }
         .animate-float-slow {
           animation: float-shape-slow 8s ease-in-out infinite;
         }
@@ -143,34 +144,119 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* --- CENTER SECTION (35%): RECTANGULAR MODEL OVERLAPPING FLOATING GEOMETRIC ELEMENTS --- */}
-            <div className="col-span-12 lg:col-span-4 flex justify-center items-center relative py-12 lg:py-0 select-none">
+            {/* --- CENTER SECTION (35%): TRANSPARENT MODEL OVERLAPPING 3D SATURN RINGS & GEOMETRIC ELEMENTS --- */}
+            <div className="col-span-12 lg:col-span-4 flex justify-center items-center relative py-12 lg:py-0 select-none h-[520px]">
               
               {/* === 3D Geometric Layers Backdrop === */}
               {/* 1. Large Pale pink circular platform disk */}
-              <div className="absolute w-[360px] h-[360px] rounded-full bg-[#F8D7DA]/40 border-4 border-white shadow-xl animate-float-slow z-10 pointer-events-none" />
+              <div className="absolute w-[360px] h-[360px] rounded-full bg-[#F8D7DA]/40 border-4 border-white shadow-xl animate-float-slow z-5 pointer-events-none" />
 
               {/* 2. Overlapping angled Rose disc */}
-              <div className="absolute w-[240px] h-[240px] rounded-full bg-gradient-to-tr from-[#D81B60]/20 to-[#A30D45]/30 shadow-lg translate-x-12 -translate-y-8 animate-float-fast z-10 pointer-events-none" />
+              <div className="absolute w-[240px] h-[240px] rounded-full bg-gradient-to-tr from-[#D81B60]/20 to-[#A30D45]/30 shadow-lg translate-x-12 -translate-y-8 animate-float-fast z-5 pointer-events-none" />
 
               {/* 3. Neomorphic Soft floating spheres */}
               <div className="absolute w-12 h-12 rounded-full bg-gradient-to-br from-white to-[#F8D7DA] shadow-md -translate-x-32 translate-y-16 animate-float-sphere z-30 border border-white/50 pointer-events-none" />
               <div className="absolute w-8 h-8 rounded-full bg-gradient-to-tr from-[#D81B60]/10 to-[#F8D7DA] shadow-inner translate-x-28 translate-y-24 animate-float-sphere z-30 border border-[#F8D7DA]/30 pointer-events-none" />
 
               {/* 4. Elegant 3D Sculptural Rings & Spheres */}
-              <div className="absolute w-20 h-20 rounded-full border-2 border-[#D81B60]/30 -translate-y-28 translate-x-16 animate-float-slow z-10 pointer-events-none" />
+              <div className="absolute w-20 h-20 rounded-full border-2 border-[#D81B60]/30 -translate-y-28 translate-x-16 animate-float-slow z-5 pointer-events-none" />
 
-              {/* === Rectangular Model Portrait (z-index: 20) === */}
-              <div className="w-[310px] h-[430px] rounded-2xl border-[10px] border-white shadow-2xl relative overflow-hidden z-20 flex items-end justify-center bg-gradient-to-b from-[#FFF8F8] to-[#F8D7DA]">
-                {/* Clean rectangular edge framework */}
-                <div className="absolute inset-0 bg-[radial-gradient(#D81B60_1.2px,transparent_1.2px)] [background-size:20px_20px] opacity-15" />
-                
-                {/* Premium cropped Indian fashion model in pink embroidery */}
+              {/* === Backdrop Saturn 3D Ring (Layered behind transparent model) === */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-saturn z-10">
+                <svg className="w-[430px] h-[330px] overflow-visible" viewBox="0 0 400 400">
+                  <linearGradient id="saturnBackGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#9f1239" />
+                    <stop offset="40%" stopColor="#D81B60" />
+                    <stop offset="70%" stopColor="#F8D7DA" />
+                    <stop offset="100%" stopColor="#A30D45" />
+                  </linearGradient>
+                  
+                  {/* 1. Deep Back Shadow Base */}
+                  <path 
+                    d="M 40,200 A 160,50 0 0 1 360,200" 
+                    fill="none" 
+                    stroke="#6b0c22" 
+                    strokeWidth="26" 
+                    strokeLinecap="round" 
+                    opacity="0.18"
+                    transform="rotate(-15, 200, 200)"
+                  />
+                  
+                  {/* 2. Main Glow Back Body */}
+                  <path 
+                    d="M 40,200 A 160,50 0 0 1 360,200" 
+                    fill="none" 
+                    stroke="url(#saturnBackGrad)" 
+                    strokeWidth="22" 
+                    strokeLinecap="round" 
+                    transform="rotate(-15, 200, 200)"
+                  />
+
+                  {/* 3. Highlight Back Spine */}
+                  <path 
+                    d="M 40,200 A 160,50 0 0 1 360,200" 
+                    fill="none" 
+                    stroke="#ffffff" 
+                    strokeWidth="4" 
+                    strokeLinecap="round" 
+                    opacity="0.45"
+                    strokeDasharray="40 180"
+                    transform="rotate(-15, 200, 200)"
+                  />
+                </svg>
+              </div>
+
+              {/* === TRANSPARENT EXPLICIT MODEL IMAGE (z-index: 20) === */}
+              {/* Perfectly centers the user's transparent model bride portrait */}
+              <div className="relative z-20 h-[500px] w-auto flex items-end justify-center select-none pointer-events-none">
                 <img 
                   src="/media__1780342681756.png" 
-                  alt="Aavriti Model in Pink Anarkali" 
-                  className="h-[105%] w-auto object-cover object-bottom scale-110 translate-y-2 transition-transform duration-700 hover:scale-115 select-none pointer-events-none"
+                  alt="Aavriti Model" 
+                  className="h-full w-auto object-contain drop-shadow-[0_15px_30px_rgba(0,0,0,0.15)]"
                 />
+              </div>
+
+              {/* === Front Saturn 3D Ring (Layered in front of model for 3D wrap!) === */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-saturn z-30">
+                <svg className="w-[430px] h-[330px] overflow-visible filter drop-shadow-[0_18px_22px_rgba(163,13,69,0.35)]" viewBox="0 0 400 400">
+                  <linearGradient id="saturnFrontGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#D81B60" />
+                    <stop offset="50%" stopColor="#F8D7DA" />
+                    <stop offset="100%" stopColor="#A30D45" />
+                  </linearGradient>
+                  
+                  {/* 1. Deep Front Shadow Base */}
+                  <path 
+                    d="M 360,200 A 160,50 0 0 1 40,200" 
+                    fill="none" 
+                    stroke="#5c071a" 
+                    strokeWidth="26" 
+                    strokeLinecap="round" 
+                    opacity="0.18"
+                    transform="rotate(-15, 200, 200)"
+                  />
+
+                  {/* 2. Main Glow Front Body (Recreating claymorphic volume) */}
+                  <path 
+                    d="M 360,200 A 160,50 0 0 1 40,200" 
+                    fill="none" 
+                    stroke="url(#saturnFrontGrad)" 
+                    strokeWidth="22" 
+                    strokeLinecap="round" 
+                    transform="rotate(-15, 200, 200)"
+                  />
+
+                  {/* 3. 3D Glossy Spine Highlight Reflection */}
+                  <path 
+                    d="M 360,200 A 160,50 0 0 1 40,200" 
+                    fill="none" 
+                    stroke="#ffffff" 
+                    strokeWidth="4.5" 
+                    strokeLinecap="round" 
+                    opacity="0.65"
+                    transform="rotate(-15, 200, 200)"
+                  />
+                </svg>
               </div>
 
               {/* 3D Star Sparkle accents floating in front of model */}
