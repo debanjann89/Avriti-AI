@@ -143,6 +143,18 @@ export default function HomePage() {
             
             {/* --- LEFT COLUMN (45%) --- */}
             <div className="col-span-12 lg:col-span-5 space-y-8 text-center lg:text-left relative z-20 pb-8 lg:pb-0">
+              {/* Star effects on Left Column */}
+              <div className="absolute top-[2%] left-[102%] animate-float-fast z-30 text-[#D81B60] opacity-80 pointer-events-none hidden lg:block">
+                <svg className="w-4 h-4 fill-[#D81B60]" viewBox="0 0 24 24">
+                  <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4Z" />
+                </svg>
+              </div>
+              <div className="absolute -bottom-4 left-[20%] animate-float-slow z-30 text-[#A30D45]/70 opacity-60 pointer-events-none hidden lg:block">
+                <svg className="w-3.5 h-3.5 fill-[#A30D45]" viewBox="0 0 24 24">
+                  <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4Z" />
+                </svg>
+              </div>
+
               <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#F8D7DA] text-[#A30D45] font-extrabold text-[10px] uppercase tracking-widest shadow-sm shadow-pink-100/50">
                 <Sparkles className="w-3.5 h-3.5 fill-[#F8D7DA]" />
                 <span>Premium Editorial Edition</span>
@@ -331,6 +343,16 @@ export default function HomePage() {
                   <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4Z" />
                 </svg>
               </div>
+              <div className="absolute top-[40%] -left-8 animate-float-fast z-30 text-[#D81B60]/85 pointer-events-none">
+                <svg className="w-6 h-6 fill-[#D81B60]" viewBox="0 0 24 24">
+                  <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4Z" />
+                </svg>
+              </div>
+              <div className="absolute bottom-[35%] -right-8 animate-float-slow z-30 text-[#A30D45]/75 pointer-events-none">
+                <svg className="w-5 h-5 fill-[#A30D45]" viewBox="0 0 24 24">
+                  <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4Z" />
+                </svg>
+              </div>
               <div className="absolute bottom-24 right-4 animate-float-fast z-30 text-[#D81B60]/80 drop-shadow-sm">
                 <svg className="w-4.5 h-4.5 fill-[#D81B60]" viewBox="0 0 24 24">
                   <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4Z" />
@@ -345,7 +367,18 @@ export default function HomePage() {
 
             {/* --- RIGHT COLUMN (20%) --- */}
             <div className="col-span-12 lg:col-span-3 flex flex-col items-center lg:items-end justify-center relative z-20 pl-0 lg:pl-16 pb-8 lg:pb-0 select-none text-center lg:text-right space-y-6">
-              
+              {/* Star effects on Right Column */}
+              <div className="absolute -top-6 -left-6 animate-float-slow z-30 text-[#D81B60]/75 pointer-events-none hidden lg:block">
+                <svg className="w-4.5 h-4.5 fill-[#D81B60]" viewBox="0 0 24 24">
+                  <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4Z" />
+                </svg>
+              </div>
+              <div className="absolute bottom-[20%] -left-10 animate-float-fast z-30 text-[#A30D45]/60 pointer-events-none hidden lg:block">
+                <svg className="w-3.5 h-3.5 fill-[#A30D45]" viewBox="0 0 24 24">
+                  <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4Z" />
+                </svg>
+              </div>
+
               {/* Explore Badge with Creative Asymmetric Typography */}
               <div className="space-y-1.5 flex flex-col items-center lg:items-end select-none">
                 <span className="text-[9px] text-[#D81B60] font-black uppercase tracking-[0.25em] font-jakarta">Editorial Showcase</span>
@@ -373,7 +406,6 @@ export default function HomePage() {
 
               {/* Minimal Campaign Stamp */}
               <div className="pt-4 border-t border-pink-100/20 w-full flex flex-col items-center lg:items-end space-y-1 select-none">
-                <span className="text-[7.5px] text-[#1E1E1E]/70 font-black uppercase tracking-[0.22em] font-jakarta">Campaign Line '26</span>
                 <span className="text-[7px] text-[#1E1E1E]/40 font-bold uppercase tracking-wider">Avriti AI © All Rights Reserved</span>
               </div>
             </div>
