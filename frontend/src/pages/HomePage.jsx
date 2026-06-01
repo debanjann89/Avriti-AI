@@ -344,7 +344,7 @@ export default function HomePage() {
             </div>
 
             {/* --- RIGHT COLUMN (20%) --- */}
-            <div className="col-span-12 lg:col-span-3 space-y-8 text-center lg:text-left relative z-20 pl-0 lg:pl-8 pb-8 lg:pb-0 select-none">
+            <div className="col-span-12 lg:col-span-3 flex items-center justify-center lg:justify-start relative z-20 pl-0 lg:pl-8 pb-8 lg:pb-0 select-none">
               
               {/* Explore Badge with Creative Asymmetric Typography */}
               <div className="space-y-1.5 flex flex-col items-center lg:items-start select-none">
@@ -353,48 +353,6 @@ export default function HomePage() {
                   New<br/>
                   <span className="text-[#A30D45] font-display italic font-bold normal-case tracking-normal">Aesthetics</span>
                 </h4>
-              </div>
-
-              {/* Man Collection Button Card */}
-              <div className="flex flex-col items-center lg:items-start space-y-2">
-                <span className="text-[7.5px] text-[#1E1E1E]/40 font-black uppercase tracking-widest font-jakarta">Current Showcase</span>
-                <Link 
-                  to="/collections" 
-                  className="px-6 py-3 rounded-full bg-[#F8D7DA]/50 hover:bg-[#F8D7DA]/80 text-[#A30D45] border border-[#D81B60]/10 hover:border-[#D81B60]/25 font-extrabold text-[10px] uppercase tracking-widest flex items-center gap-2 transform hover:translate-x-1 transition-all shadow-sm duration-300 cursor-pointer"
-                >
-                  <span>Shop Collections</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-[#A30D45] stroke-[2.5]" />
-                </Link>
-              </div>
-
-              {/* Editorial Statement Quote Card */}
-              <div className="space-y-4 pt-2 relative flex flex-col items-center lg:items-start">
-                <span className="absolute -top-7 -left-1 text-8xl text-[#F8D7DA]/60 font-display pointer-events-none select-none">“</span>
-                <p className="text-[13px] text-[#1E1E1E]/80 font-display italic font-bold leading-relaxed max-w-xs text-center lg:text-left relative z-10 pl-2">
-                  Reimagining traditional elegance. Instantly visualize our luxury sarees, lehengas, and kurtas on yourself using advanced AI Try-On.
-                </p>
-                <div className="flex items-center gap-2 pl-2">
-                  <span className="w-6 h-[1px] bg-[#A30D45]/30 inline-block" />
-                  <span className="text-[8px] text-[#A30D45]/70 font-black uppercase tracking-widest font-jakarta">Avriti AI Stylist</span>
-                </div>
-                <Link 
-                  to="/about"
-                  className="inline-flex items-center gap-1 text-[9px] font-black text-[#D81B60] hover:text-[#A30D45] uppercase tracking-widest border-b-2 border-[#D81B60]/30 pb-0.5 transition-colors cursor-pointer pl-2 pt-1"
-                >
-                  <span>Read More</span>
-                  <ChevronRight className="w-3.5 h-3.5 stroke-[3]" />
-                </Link>
-              </div>
-
-              {/* Luxury Campaign Editorial Badge to fill empty space under right block */}
-              <div className="pt-6 border-t border-pink-100/30 w-full flex flex-col items-center lg:items-start space-y-2 select-none">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#D81B60]" />
-                  <span className="text-[8px] text-[#1E1E1E] font-black uppercase tracking-[0.2em] font-jakarta">Avriti AI © 2026</span>
-                </div>
-                <p className="text-[7.5px] text-[#1E1E1E]/40 font-semibold tracking-wider uppercase leading-normal text-center lg:text-left max-w-[200px]">
-                  All rights reserved. Reimagining traditional Indian fashion through state-of-the-art AI technology.
-                </p>
               </div>
             </div>
 
