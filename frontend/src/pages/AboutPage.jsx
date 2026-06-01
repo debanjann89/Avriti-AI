@@ -151,29 +151,51 @@ export default function AboutPage() {
           </div>
 
           {/* Right Column: Massive Logo Emblem with Rotating Orbit Halos */}
-          <div className="col-span-12 lg:col-span-6 flex justify-center lg:justify-center relative py-12 lg:py-0 overflow-visible">
+          <div className="col-span-12 lg:col-span-6 flex justify-center lg:justify-end relative py-12 lg:py-0 overflow-visible">
             
             {/* Dedicated Relative Wrapper for Perfect Center Alignment of Logo and Rings! */}
-            <div className="relative w-[280px] h-[280px] sm:w-[340px] sm:h-[340px] lg:w-[420px] lg:h-[420px] flex items-center justify-center overflow-visible">
+            <div className="relative w-[220px] h-[220px] sm:w-[260px] sm:h-[260px] lg:w-[320px] lg:h-[320px] flex items-center justify-center overflow-visible">
               
               {/* 1. Large pale pink background platform circle shadow */}
-              <div className="absolute w-[300px] h-[300px] sm:w-[360px] sm:h-[360px] lg:w-[460px] lg:h-[460px] rounded-full bg-[#F8D7DA]/25 z-0 pointer-events-none filter blur-sm translate-y-2" />
+              <div className="absolute w-[240px] h-[240px] sm:w-[280px] sm:h-[280px] lg:w-[350px] lg:h-[350px] rounded-full bg-[#F8D7DA]/25 z-0 pointer-events-none filter blur-sm translate-y-2" />
 
-              {/* 2. Outer Rotating Halo Dotted Ring */}
-              <div className="absolute w-[340px] h-[340px] sm:w-[410px] sm:h-[410px] lg:w-[500px] lg:h-[500px] flex items-center justify-center pointer-events-none animate-orbit-slow z-0 overflow-visible">
+              {/* 2. Outer Rotating Halo Dotted Ring (Expanded larger to cover horizontal space beautifully) */}
+              <div className="absolute w-[320px] h-[320px] sm:w-[380px] sm:h-[380px] lg:w-[480px] lg:h-[480px] flex items-center justify-center pointer-events-none animate-orbit-slow z-0 overflow-visible">
                 <svg className="w-full h-full overflow-visible" viewBox="0 0 400 400">
-                  <circle cx="200" cy="200" r="184" fill="none" stroke="#D81B60" strokeWidth="1.5" strokeDasharray="8 30" opacity="0.45" />
+                  <circle cx="200" cy="200" r="235" fill="none" stroke="#D81B60" strokeWidth="1.5" strokeDasharray="8 30" opacity="0.45" />
                 </svg>
               </div>
 
-              {/* 3. Inner Counter-Rotating Halo Ring */}
-              <div className="absolute w-[340px] h-[340px] sm:w-[410px] sm:h-[410px] lg:w-[500px] lg:h-[500px] flex items-center justify-center pointer-events-none animate-orbit-fast z-0 overflow-visible">
+              {/* 3. Inner Counter-Rotating Halo Ring (Expanded larger to cover space) */}
+              <div className="absolute w-[320px] h-[320px] sm:w-[380px] sm:h-[380px] lg:w-[480px] lg:h-[480px] flex items-center justify-center pointer-events-none animate-orbit-fast z-0 overflow-visible">
                 <svg className="w-full h-full overflow-visible" viewBox="0 0 400 400">
-                  <circle cx="200" cy="200" r="196" fill="none" stroke="#A30D45" strokeWidth="1" strokeDasharray="40 120" opacity="0.35" />
+                  <circle cx="200" cy="200" r="215" fill="none" stroke="#A30D45" strokeWidth="1" strokeDasharray="40 120" opacity="0.35" />
                 </svg>
               </div>
 
-              {/* 4. Massive Circular Logo Shield */}
+              {/* 4. Twinkling 3D Star Sparkle Trail floating in the empty space between Text and Logo */}
+              <div className="absolute top-[10%] left-[-45px] animate-float-slow z-30 text-[#D81B60] opacity-70 pointer-events-none hidden lg:block">
+                <svg className="w-5 h-5 fill-[#D81B60]" viewBox="0 0 24 24">
+                  <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4Z" />
+                </svg>
+              </div>
+              <div className="absolute bottom-[20%] left-[-95px] animate-float-fast z-30 text-[#A30D45] opacity-60 pointer-events-none hidden lg:block">
+                <svg className="w-4 h-4 fill-[#A30D45]" viewBox="0 0 24 24">
+                  <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4Z" />
+                </svg>
+              </div>
+              <div className="absolute top-[60%] left-[-145px] animate-float-slow z-30 text-[#D81B60] opacity-50 pointer-events-none hidden lg:block">
+                <svg className="w-4.5 h-4.5 fill-[#D81B60]" viewBox="0 0 24 24">
+                  <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4Z" />
+                </svg>
+              </div>
+              <div className="absolute top-[25%] left-[-195px] animate-float-fast z-30 text-[#A30D45] opacity-40 pointer-events-none hidden lg:block">
+                <svg className="w-3.5 h-3.5 fill-[#A30D45]" viewBox="0 0 24 24">
+                  <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4Z" />
+                </svg>
+              </div>
+
+              {/* 5. Circular Logo Shield */}
               <div className="logo-emblem-massive w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center cursor-pointer relative z-10 select-none">
                 <img 
                   src="/Logo.jpg" 
