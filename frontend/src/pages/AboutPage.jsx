@@ -132,7 +132,7 @@ export default function AboutPage() {
             </div>
             
             <div className="space-y-3">
-              <h1 className="text-[64px] sm:text-[96px] lg:text-[116px] leading-[0.8] text-editorial-title uppercase font-jakarta select-none text-center lg:text-left">
+              <h1 className="text-[54px] sm:text-[76px] lg:text-[84px] leading-[0.85] text-editorial-title uppercase font-jakarta select-none text-center lg:text-left tracking-tighter lg:whitespace-nowrap">
                 Aavriti AI
               </h1>
               <p className="text-xs text-[#A30D45]/70 font-black tracking-widest uppercase pl-1 block font-jakarta">Weaving Tradition & Predictive Style</p>
