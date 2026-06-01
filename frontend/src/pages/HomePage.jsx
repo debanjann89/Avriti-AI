@@ -11,25 +11,32 @@ export default function HomePage() {
     <div className="min-h-screen bg-[#FFF8F8] pb-20 font-sans overflow-x-hidden relative">
       {/* Premium Embedded Fonts and Typography Enhancements */}
       <style dangerouslySetInnerHTML={{__html: `
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Syne:wght@800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap');
         
         .font-display {
           font-family: 'Playfair Display', serif;
         }
 
-        .font-syne {
-          font-family: 'Syne', sans-serif;
+        .font-jakarta {
+          font-family: 'Plus Jakarta Sans', sans-serif;
         }
         
         .text-3d-luxury {
           color: #1E1E1E;
-          font-family: 'Syne', sans-serif;
-          font-weight: 850;
-          letter-spacing: -0.05em;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-weight: 900;
+          letter-spacing: -0.045em;
+          line-height: 0.85;
           text-shadow: 
             1px 1px 0px #ffffff,
             2px 2px 0px rgba(216, 27, 96, 0.12),
-            3px 3px 0px rgba(163, 13, 69, 0.08);
+            3px 3px 0px rgba(163, 13, 69, 0.06);
+        }
+
+        .depth-card {
+          box-shadow: 
+            0px 30px 60px rgba(163, 13, 69, 0.08),
+            0px 4px 20px rgba(0, 0, 0, 0.02);
         }
 
         .btn-3d-primary {
@@ -65,58 +72,58 @@ export default function HomePage() {
 
         @keyframes float-saturn {
           0%, 100% { transform: translateY(0px) rotate(-15deg); }
-          50% { transform: translateY(-12px) rotate(-13deg); }
+          50% { transform: translateY(-15px) rotate(-13deg); }
         }
         @keyframes float-shape-slow {
           0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-15px) rotate(8deg); }
+          50% { transform: translateY(-20px) rotate(8deg); }
         }
         @keyframes float-shape-fast {
           0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); }
-          50% { transform: translateY(12px) rotate(-12deg) scale(1.05); }
+          50% { transform: translateY(15px) rotate(-12deg) scale(1.05); }
         }
         @keyframes float-sphere {
           0%, 100% { transform: translateY(0px) translateX(0px); }
-          50% { transform: translateY(-10px) translateX(8px); }
+          50% { transform: translateY(-12px) translateX(10px); }
         }
 
         .animate-saturn {
-          animation: float-saturn 6.5s ease-in-out infinite;
+          animation: float-saturn 7s ease-in-out infinite;
         }
         .animate-float-slow {
-          animation: float-shape-slow 8s ease-in-out infinite;
+          animation: float-shape-slow 8.5s ease-in-out infinite;
         }
         .animate-float-fast {
-          animation: float-shape-fast 6s ease-in-out infinite;
+          animation: float-shape-fast 6.5s ease-in-out infinite;
         }
         .animate-float-sphere {
-          animation: float-sphere 5s ease-in-out infinite;
+          animation: float-sphere 5.5s ease-in-out infinite;
         }
       `}} />
 
       {/* ================= 1. Standalone Full-Width 3D Editorial Hero ================= */}
-      <section className="relative w-full py-16 lg:py-24 bg-[#FFF8F8] overflow-hidden select-none">
+      <section className="relative w-full pt-16 pb-0 lg:pt-24 bg-[#FFF8F8] overflow-hidden select-none border-b border-pink-100/20">
         
         {/* Soft Background Accent Ambient Lighting */}
-        <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-gradient-to-tr from-[#F8D7DA]/30 to-transparent rounded-full filter blur-3xl pointer-events-none" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-gradient-to-br from-[#F8D7DA]/20 to-transparent rounded-full filter blur-3xl pointer-events-none" />
+        <div className="absolute top-[-10%] left-[-10%] w-[700px] h-[700px] bg-gradient-to-tr from-[#F8D7DA]/35 to-transparent rounded-full filter blur-3xl pointer-events-none" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[700px] h-[700px] bg-gradient-to-br from-[#F8D7DA]/25 to-transparent rounded-full filter blur-3xl pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-12 gap-8 items-center">
             
             {/* --- LEFT COLUMN (45%) --- */}
-            <div className="col-span-12 lg:col-span-5 space-y-8 text-center lg:text-left relative z-20">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#F8D7DA] text-[#A30D45] font-extrabold text-[10px] uppercase tracking-widest">
+            <div className="col-span-12 lg:col-span-5 space-y-8 text-center lg:text-left relative z-20 pb-8 lg:pb-0">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#F8D7DA] text-[#A30D45] font-extrabold text-[10px] uppercase tracking-widest shadow-sm shadow-pink-100/50">
                 <Sparkles className="w-3.5 h-3.5 fill-[#F8D7DA]" />
                 <span>Premium Editorial Edition</span>
               </div>
 
-              {/* Massive Bold Uppercase Fashion-Editorial Typography */}
+              {/* Massive Bold Uppercase Fashion-Editorial Typography (Plus Jakarta Sans to avoid squeezed wide Syne stretch) */}
               <div className="space-y-1">
-                <h1 className="text-[64px] sm:text-[84px] lg:text-[96px] leading-[0.82] text-3d-luxury uppercase font-syne select-none">
+                <h1 className="text-[64px] sm:text-[84px] lg:text-[96px] leading-[0.82] text-3d-luxury uppercase font-jakarta select-none">
                   Fashion<br/>Focused
                 </h1>
-                <p className="text-[10px] text-[#A30D45]/70 font-black tracking-widest uppercase pl-1.5 mt-3 font-syne">2026 Season Line</p>
+                <p className="text-[10px] text-[#A30D45]/70 font-black tracking-widest uppercase pl-1.5 mt-3 font-jakarta">2026 Season Line</p>
               </div>
 
               {/* Subheading Offer info */}
@@ -145,25 +152,26 @@ export default function HomePage() {
             </div>
 
             {/* --- CENTER SECTION (35%): TRANSPARENT MODEL OVERLAPPING 3D SATURN RINGS & GEOMETRIC ELEMENTS --- */}
-            <div className="col-span-12 lg:col-span-4 flex justify-center items-center relative py-12 lg:py-0 select-none h-[580px] lg:h-[650px]">
+            {/* Height scaled up to 660px to accommodate a massive, zoomed-in model and rings layout */}
+            <div className="col-span-12 lg:col-span-4 flex justify-center items-center relative py-12 lg:py-0 select-none h-[560px] lg:h-[660px] overflow-visible">
               
               {/* === 3D Geometric Layers Backdrop === */}
               {/* 1. Large Pale pink circular platform disk */}
-              <div className="absolute w-[420px] h-[420px] lg:w-[460px] lg:h-[460px] rounded-full bg-[#F8D7DA]/40 border-4 border-white shadow-xl animate-float-slow z-5 pointer-events-none" />
+              <div className="absolute w-[420px] h-[420px] lg:w-[480px] lg:h-[480px] rounded-full bg-[#F8D7DA]/40 border-4 border-white shadow-xl animate-float-slow z-5 pointer-events-none" />
 
               {/* 2. Overlapping angled Rose disc */}
-              <div className="absolute w-[290px] h-[290px] lg:w-[320px] lg:h-[320px] rounded-full bg-gradient-to-tr from-[#D81B60]/20 to-[#A30D45]/30 shadow-lg translate-x-14 -translate-y-10 animate-float-fast z-5 pointer-events-none" />
+              <div className="absolute w-[290px] h-[290px] lg:w-[340px] lg:h-[340px] rounded-full bg-gradient-to-tr from-[#D81B60]/20 to-[#A30D45]/30 shadow-lg translate-x-14 -translate-y-12 animate-float-fast z-5 pointer-events-none" />
 
               {/* 3. Neomorphic Soft floating spheres */}
-              <div className="absolute w-14 h-14 rounded-full bg-gradient-to-br from-white to-[#F8D7DA] shadow-md -translate-x-36 translate-y-24 animate-float-sphere z-30 border border-white/50 pointer-events-none" />
-              <div className="absolute w-9 h-9 rounded-full bg-gradient-to-tr from-[#D81B60]/10 to-[#F8D7DA] shadow-inner translate-x-32 translate-y-28 animate-float-sphere z-30 border border-[#F8D7DA]/30 pointer-events-none" />
+              <div className="absolute w-16 h-16 rounded-full bg-gradient-to-br from-white to-[#F8D7DA] shadow-md -translate-x-40 translate-y-28 animate-float-sphere z-30 border border-white/50 pointer-events-none" />
+              <div className="absolute w-10 h-10 rounded-full bg-gradient-to-tr from-[#D81B60]/10 to-[#F8D7DA] shadow-inner translate-x-36 translate-y-32 animate-float-sphere z-30 border border-[#F8D7DA]/30 pointer-events-none" />
 
               {/* 4. Elegant 3D Sculptural Rings & Spheres */}
-              <div className="absolute w-24 h-24 rounded-full border-2 border-[#D81B60]/30 -translate-y-36 translate-x-20 animate-float-slow z-5 pointer-events-none" />
+              <div className="absolute w-28 h-28 rounded-full border-2 border-[#D81B60]/30 -translate-y-40 translate-x-24 animate-float-slow z-5 pointer-events-none" />
 
               {/* === Backdrop Saturn 3D Ring (Layered behind transparent model) === */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-saturn z-10">
-                <svg className="w-[520px] h-[400px] lg:w-[580px] lg:h-[450px] overflow-visible" viewBox="0 0 400 400">
+                <svg className="w-[560px] h-[430px] lg:w-[620px] lg:h-[480px] overflow-visible" viewBox="0 0 400 400">
                   <linearGradient id="saturnBackGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stopColor="#9f1239" />
                     <stop offset="40%" stopColor="#D81B60" />
@@ -207,18 +215,18 @@ export default function HomePage() {
               </div>
 
               {/* === TRANSPARENT EXPLICIT MODEL IMAGE (z-index: 20) === */}
-              {/* Perfectly centers the user's transparent model bride portrait with majestic size scaling */}
-              <div className="relative z-20 h-[560px] lg:h-[630px] w-auto flex items-end justify-center select-none pointer-events-none">
+              {/* Scale increased to 1.68x and translated down to fill the bottom viewport space completely and avoid cutoff gaps */}
+              <div className="relative z-20 h-[560px] lg:h-[630px] w-auto flex items-end justify-center select-none pointer-events-none overflow-visible">
                 <img 
                   src="/media__1780342681756.png" 
                   alt="Aavriti Model" 
-                  className="h-full w-auto object-contain drop-shadow-[0_15px_35px_rgba(0,0,0,0.18)] transform scale-[1.38] translate-y-8 lg:translate-y-12"
+                  className="h-full w-auto object-contain drop-shadow-[0_20px_45px_rgba(0,0,0,0.18)] transform scale-[1.68] translate-y-16 lg:translate-y-24"
                 />
               </div>
 
               {/* === Front Saturn 3D Ring (Layered in front of model for 3D wrap!) === */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-saturn z-30">
-                <svg className="w-[520px] h-[400px] lg:w-[580px] lg:h-[450px] overflow-visible filter drop-shadow-[0_18px_22px_rgba(163,13,69,0.35)]" viewBox="0 0 400 400">
+                <svg className="w-[560px] h-[430px] lg:w-[620px] lg:h-[480px] overflow-visible filter drop-shadow-[0_18px_22px_rgba(163,13,69,0.35)]" viewBox="0 0 400 400">
                   <linearGradient id="saturnFrontGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stopColor="#D81B60" />
                     <stop offset="50%" stopColor="#F8D7DA" />
@@ -273,12 +281,12 @@ export default function HomePage() {
             </div>
 
             {/* --- RIGHT COLUMN (20%) --- */}
-            <div className="col-span-12 lg:col-span-3 space-y-8 text-center lg:text-left relative z-20 pl-0 lg:pl-8">
+            <div className="col-span-12 lg:col-span-3 space-y-8 text-center lg:text-left relative z-20 pl-0 lg:pl-8 pb-8 lg:pb-0">
               
               {/* Explore Badge */}
               <div className="space-y-1.5 flex flex-col items-center lg:items-start">
                 <p className="text-[10px] text-[#A30D45]/70 font-black tracking-widest uppercase">Explore New</p>
-                <h4 className="text-xs font-black text-[#1E1E1E] uppercase tracking-widest flex items-center gap-1.5 font-syne">
+                <h4 className="text-xs font-black text-[#1E1E1E] uppercase tracking-widest flex items-center gap-1.5 font-jakarta">
                   <span>Arrival</span>
                   <span className="w-4 h-[2px] bg-[#1E1E1E] inline-block" />
                 </h4>
