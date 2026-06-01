@@ -34,36 +34,69 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-pink-100 font-sans">
+      <style dangerouslySetInnerHTML={{__html: `
+        .nav-link-premium {
+          position: relative;
+          color: #1E1E1E;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .nav-link-premium::after {
+          content: '';
+          position: absolute;
+          bottom: -4px;
+          left: 0;
+          width: 0;
+          height: 2px;
+          border-radius: 9999px;
+          background: linear-gradient(90deg, #D81B60, #A30D45);
+          transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .nav-link-premium:hover::after {
+          width: 100%;
+        }
+        .nav-link-premium:hover {
+          color: #D81B60;
+          transform: translateY(-0.5px);
+        }
+        
+        .navbar-luxury-blur {
+          background: rgba(255, 248, 248, 0.88);
+          backdrop-filter: blur(16px) saturate(180%);
+          box-shadow: 
+            0px 4px 30px rgba(216, 27, 96, 0.02),
+            0px 1px 0px rgba(216, 27, 96, 0.06);
+        }
+      `}} />
+      <nav className="navbar-luxury-blur sticky top-0 z-50 border-b border-[#D81B60]/10 font-sans">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             
             {/* Left Brand logo & link */}
             <div className="flex items-center space-x-8">
               <div className="flex flex-col">
-                <Link to="/" className="text-2xl font-black bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent leading-none">
+                <Link to="/" className="text-2xl font-black font-jakarta tracking-tight bg-gradient-to-r from-[#D81B60] via-[#A30D45] to-[#D81B60] bg-clip-text text-transparent leading-none hover:scale-[1.01] transition-transform">
                   Aavriti AI
                 </Link>
-                <span className="text-[9px] text-gray-400 font-extrabold uppercase tracking-widest mt-1 leading-none">
+                <span className="text-[7.5px] text-[#A30D45]/80 font-black uppercase tracking-[0.18em] mt-1.5 leading-none">
                   Indian Fashion, Reimagined for You
                 </span>
               </div>
               
-              <div className="hidden lg:flex space-x-6 ml-6">
-                <Link to="/collections" className="text-gray-700 hover:text-pink-600 font-extrabold text-[11px] uppercase tracking-widest transition-all">
+              <div className="hidden lg:flex space-x-6 items-center ml-8">
+                <Link to="/collections" className="nav-link-premium font-extrabold text-[10px] uppercase tracking-widest">
                   Collections
                 </Link>
-                <Link to="/collections" className="text-gray-700 hover:text-pink-600 font-extrabold text-[11px] uppercase tracking-widest transition-all">
+                <Link to="/collections" className="nav-link-premium font-extrabold text-[10px] uppercase tracking-widest">
                   Categories
                 </Link>
-                <Link to="/try-on" className="text-pink-700 hover:text-pink-850 font-extrabold text-[11px] uppercase tracking-widest transition-all flex items-center gap-1">
+                <Link to="/try-on" className="px-4 py-2 rounded-full bg-[#F8D7DA]/70 border border-[#D81B60]/20 hover:border-[#D81B60]/40 text-[#D81B60] font-black text-[10px] uppercase tracking-widest transition-all flex items-center gap-1.5 shadow-sm shadow-pink-100 hover:shadow-md hover:shadow-pink-200/40 hover:scale-[1.03] active:scale-98">
                   <span>AI Stylist</span>
-                  <Sparkles className="w-3 h-3 text-orange-500 fill-orange-500 animate-pulse" />
+                  <Sparkles className="w-3.5 h-3.5 text-orange-500 fill-orange-500 animate-pulse" />
                 </Link>
-                <Link to="/about" className="text-gray-700 hover:text-pink-600 font-extrabold text-[11px] uppercase tracking-widest transition-all">
+                <Link to="/about" className="nav-link-premium font-extrabold text-[10px] uppercase tracking-widest">
                   About Us
                 </Link>
-                <a href="#" className="text-gray-700 hover:text-pink-600 font-extrabold text-[11px] uppercase tracking-widest transition-all">
+                <a href="#" className="nav-link-premium font-extrabold text-[10px] uppercase tracking-widest">
                   Blog
                 </a>
               </div>
@@ -74,38 +107,41 @@ export default function Navbar() {
               {/* Search Icon Trigger */}
               <button 
                 onClick={() => navigate('/collections')}
-                className="w-10 h-10 rounded-full bg-slate-50 hover:bg-pink-50/50 border border-slate-100 flex items-center justify-center text-gray-600 hover:text-pink-600 transition-all cursor-pointer"
+                className="w-9.5 h-9.5 rounded-full bg-white border border-[#D81B60]/10 hover:border-[#D81B60]/35 text-[#1E1E1E] hover:text-[#D81B60] flex items-center justify-center transition-all duration-300 hover:scale-[1.05] hover:shadow-md hover:shadow-pink-100/50 cursor-pointer shadow-sm"
               >
-                <Search className="h-4.5 w-4.5 stroke-[1.8]" />
+                <Search className="h-4.5 w-4.5 stroke-[2]" />
               </button>
               
               {/* Shopping Cart Trigger */}
-              <button onClick={toggleCart} className="text-gray-500 hover:text-pink-600 transition-colors relative cursor-pointer p-1">
-                <ShoppingCart className="h-5 w-5" />
+              <button 
+                onClick={toggleCart} 
+                className="w-9.5 h-9.5 rounded-full bg-white border border-[#D81B60]/10 hover:border-[#D81B60]/35 text-[#1E1E1E] hover:text-[#D81B60] flex items-center justify-center transition-all duration-300 hover:scale-[1.05] hover:shadow-md hover:shadow-pink-100/50 cursor-pointer shadow-sm relative"
+              >
+                <ShoppingCart className="h-4.5 w-4.5 stroke-[2]" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-[9px] font-extrabold leading-none text-white bg-pink-600 rounded-full shrink-0 shadow-sm shadow-pink-100">
+                  <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-[8.5px] font-black leading-none text-white bg-[#D81B60] rounded-full shrink-0 shadow-sm shadow-pink-200 animate-pulse">
                     {cartCount}
                   </span>
                 )}
               </button>
-
+              
               {/* Dynamic User Profile Picture & Dropdown menu */}
               {user ? (
                 <div className="relative" ref={dropdownRef}>
                   <button 
                     onClick={() => setIsDropdownOpen(prev => !prev)}
-                    className="flex items-center gap-1.5 focus:outline-none hover:opacity-90 transition-opacity cursor-pointer p-1"
+                    className="flex items-center gap-1 focus:outline-none hover:opacity-95 transition-opacity cursor-pointer p-0.5"
                   >
                     {user.profile_picture ? (
-                      <div className="w-8 h-8 rounded-full border border-pink-200 overflow-hidden bg-white shadow-sm flex items-center justify-center shrink-0">
+                      <div className="w-8.5 h-8.5 rounded-full border border-pink-200 overflow-hidden bg-white shadow-sm flex items-center justify-center shrink-0">
                         <img src={user.profile_picture} alt={user.name} className="w-full h-full object-cover" />
                       </div>
                     ) : (
-                      <div className="w-8 h-8 rounded-full border border-pink-100 bg-pink-50 flex items-center justify-center text-pink-600 shadow-inner shrink-0">
+                      <div className="w-8.5 h-8.5 rounded-full border border-[#D81B60]/20 bg-[#F8D7DA]/40 flex items-center justify-center text-[#D81B60] shadow-inner shrink-0 hover:border-[#D81B60]/40 transition-colors">
                         <User className="h-4.5 w-4.5 stroke-[2]" />
                       </div>
                     )}
-                    <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${isDropdownOpen ? 'transform rotate-180 text-pink-600' : ''}`} />
+                    <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${isDropdownOpen ? 'transform rotate-180 text-[#D81B60]' : ''}`} />
                   </button>
 
                   {/* Dropdown Card */}

@@ -102,7 +102,7 @@ export default function HomePage() {
       `}} />
 
       {/* ================= 1. Standalone Full-Width 3D Editorial Hero ================= */}
-      <section className="relative w-full pt-16 pb-0 lg:pt-24 bg-[#FFF8F8] overflow-hidden select-none border-b border-pink-100/20">
+      <section className="relative w-full pt-6 pb-0 lg:pt-10 bg-[#FFF8F8] overflow-hidden select-none border-b border-pink-100/20">
         
         {/* Soft Background Accent Ambient Lighting */}
         <div className="absolute top-[-10%] left-[-10%] w-[700px] h-[700px] bg-gradient-to-tr from-[#F8D7DA]/35 to-transparent rounded-full filter blur-3xl pointer-events-none" />
