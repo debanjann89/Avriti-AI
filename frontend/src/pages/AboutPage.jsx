@@ -119,10 +119,10 @@ export default function AboutPage() {
         </svg>
       </div>
 
-      <div className="max-w-[1440px] mx-auto px-6 sm:px-8 lg:px-16 relative z-10 pt-16 lg:pt-24">
+      <div className="max-w-[1200px] mx-auto px-6 sm:px-8 lg:px-12 relative z-10 pt-16 lg:pt-24">
         
         {/* ================= 1. Widescreen 2-Column Split Hero Layout ================= */}
-        <div className="grid grid-cols-12 gap-8 lg:gap-20 items-center mb-28 lg:mb-36">
+        <div className="grid grid-cols-12 gap-8 lg:gap-12 items-center mb-28 lg:mb-36">
           
           {/* Left Column: Chiseled Text & Info */}
           <div className="col-span-12 lg:col-span-6 space-y-8 text-center lg:text-left">
@@ -151,7 +151,7 @@ export default function AboutPage() {
           </div>
 
           {/* Right Column: Massive Logo Emblem with Rotating Orbit Halos */}
-          <div className="col-span-12 lg:col-span-6 flex justify-center lg:justify-end relative py-12 lg:py-0 overflow-visible">
+          <div className="col-span-12 lg:col-span-6 flex justify-center lg:justify-center relative py-12 lg:py-0 overflow-visible">
             
             {/* Dedicated Relative Wrapper for Perfect Center Alignment of Logo and Rings! */}
             <div className="relative w-[280px] h-[280px] sm:w-[340px] sm:h-[340px] lg:w-[420px] lg:h-[420px] flex items-center justify-center overflow-visible">
