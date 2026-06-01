@@ -153,30 +153,35 @@ export default function AboutPage() {
           {/* Right Column: Massive Logo Emblem with Rotating Orbit Halos */}
           <div className="col-span-12 lg:col-span-6 flex justify-center lg:justify-end relative py-12 lg:py-0 overflow-visible">
             
-            {/* 1. Large pale pink background platform circle shadow */}
-            <div className="absolute w-[360px] h-[360px] lg:w-[480px] lg:h-[480px] rounded-full bg-[#F8D7DA]/25 z-0 pointer-events-none filter blur-sm translate-y-2" />
+            {/* Dedicated Relative Wrapper for Perfect Center Alignment of Logo and Rings! */}
+            <div className="relative w-[280px] h-[280px] sm:w-[340px] sm:h-[340px] lg:w-[420px] lg:h-[420px] flex items-center justify-center overflow-visible">
+              
+              {/* 1. Large pale pink background platform circle shadow */}
+              <div className="absolute w-[300px] h-[300px] sm:w-[360px] sm:h-[360px] lg:w-[460px] lg:h-[460px] rounded-full bg-[#F8D7DA]/25 z-0 pointer-events-none filter blur-sm translate-y-2" />
 
-            {/* 2. Outer Rotating Halo Dotted Ring */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-orbit-slow z-0">
-              <svg className="w-[340px] h-[340px] sm:w-[400px] sm:h-[400px] lg:w-[500px] lg:h-[500px] overflow-visible" viewBox="0 0 400 400">
-                <circle cx="200" cy="200" r="178" fill="none" stroke="#D81B60" strokeWidth="1.5" strokeDasharray="8 30" opacity="0.45" />
-              </svg>
-            </div>
+              {/* 2. Outer Rotating Halo Dotted Ring */}
+              <div className="absolute w-[340px] h-[340px] sm:w-[410px] sm:h-[410px] lg:w-[500px] lg:h-[500px] flex items-center justify-center pointer-events-none animate-orbit-slow z-0 overflow-visible">
+                <svg className="w-full h-full overflow-visible" viewBox="0 0 400 400">
+                  <circle cx="200" cy="200" r="184" fill="none" stroke="#D81B60" strokeWidth="1.5" strokeDasharray="8 30" opacity="0.45" />
+                </svg>
+              </div>
 
-            {/* 3. Inner Counter-Rotating Halo Ring */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-orbit-fast z-0">
-              <svg className="w-[340px] h-[340px] sm:w-[400px] sm:h-[400px] lg:w-[500px] lg:h-[500px] overflow-visible" viewBox="0 0 400 400">
-                <circle cx="200" cy="200" r="192" fill="none" stroke="#A30D45" strokeWidth="1" strokeDasharray="40 120" opacity="0.35" />
-              </svg>
-            </div>
+              {/* 3. Inner Counter-Rotating Halo Ring */}
+              <div className="absolute w-[340px] h-[340px] sm:w-[410px] sm:h-[410px] lg:w-[500px] lg:h-[500px] flex items-center justify-center pointer-events-none animate-orbit-fast z-0 overflow-visible">
+                <svg className="w-full h-full overflow-visible" viewBox="0 0 400 400">
+                  <circle cx="200" cy="200" r="196" fill="none" stroke="#A30D45" strokeWidth="1" strokeDasharray="40 120" opacity="0.35" />
+                </svg>
+              </div>
 
-            {/* 4. Massive Circular Logo Shield */}
-            <div className="logo-emblem-massive w-[280px] h-[280px] sm:w-[340px] sm:h-[340px] lg:w-[420px] lg:h-[420px] rounded-full overflow-hidden bg-white flex items-center justify-center cursor-pointer relative z-10 select-none">
-              <img 
-                src="/Logo.jpg" 
-                alt="Aavriti AI Logo" 
-                className="w-full h-full object-cover"
-              />
+              {/* 4. Massive Circular Logo Shield */}
+              <div className="logo-emblem-massive w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center cursor-pointer relative z-10 select-none">
+                <img 
+                  src="/Logo.jpg" 
+                  alt="Aavriti AI Logo" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
             </div>
 
           </div>
