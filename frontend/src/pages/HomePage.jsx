@@ -138,34 +138,44 @@ export default function HomePage() {
         {/* Connecting Ambient Pink Glow at the boundary */}
         <div className="absolute bottom-[-100px] left-[20%] w-[600px] h-[300px] bg-[#D81B60]/4 rounded-full filter blur-[100px] pointer-events-none z-10" />
 
-        {/* Widescreen Background Constellation (Subtle, floating star sparkles scattered all over the Hero page) */}
-        <div className="absolute top-[12%] left-[6%] animate-float-slow z-5 text-[#D81B60]/40 pointer-events-none hidden sm:block">
+        {/* Organic Background Constellation (Floating 3D star sparkles scattered organically/randomly all over the Hero section background) */}
+        <div className="absolute top-[7%] left-[14%] animate-float-slow z-5 text-[#D81B60]/35 pointer-events-none hidden sm:block">
           <svg className="w-4 h-4 fill-[#D81B60]" viewBox="0 0 24 24">
             <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4Z" />
           </svg>
         </div>
-        <div className="absolute bottom-[20%] left-[8%] animate-float-fast z-5 text-[#A30D45]/30 pointer-events-none hidden sm:block">
-          <svg className="w-3.5 h-3.5 fill-[#A30D45]" viewBox="0 0 24 24">
+        <div className="absolute bottom-[32%] left-[4%] animate-float-fast z-5 text-[#A30D45]/30 pointer-events-none hidden sm:block">
+          <svg className="w-3 h-3 fill-[#A30D45]" viewBox="0 0 24 24">
             <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4Z" />
           </svg>
         </div>
-        <div className="absolute top-[8%] left-[28%] animate-float-fast z-5 text-[#D81B60]/30 pointer-events-none hidden lg:block">
+        <div className="absolute top-[18%] left-[37%] animate-float-fast z-5 text-[#D81B60]/40 pointer-events-none hidden lg:block">
           <svg className="w-3.5 h-3.5 fill-[#D81B60]" viewBox="0 0 24 24">
             <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4Z" />
           </svg>
         </div>
-        <div className="absolute top-[10%] right-[6%] animate-float-slow z-5 text-[#D81B60]/45 pointer-events-none hidden sm:block">
+        <div className="absolute bottom-[45%] left-[24%] animate-float-slow z-5 text-[#D81B60]/30 pointer-events-none hidden lg:block">
+          <svg className="w-3 h-3 fill-[#D81B60]" viewBox="0 0 24 24">
+            <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4Z" />
+          </svg>
+        </div>
+        <div className="absolute top-[15%] right-[19%] animate-float-slow z-5 text-[#D81B60]/45 pointer-events-none hidden sm:block">
           <svg className="w-4.5 h-4.5 fill-[#D81B60]" viewBox="0 0 24 24">
             <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4Z" />
           </svg>
         </div>
-        <div className="absolute top-[32%] right-[12%] animate-float-fast z-5 text-[#A30D45]/30 pointer-events-none hidden lg:block">
+        <div className="absolute top-[48%] right-[8%] animate-float-fast z-5 text-[#A30D45]/30 pointer-events-none hidden lg:block">
           <svg className="w-3.5 h-3.5 fill-[#A30D45]" viewBox="0 0 24 24">
             <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4Z" />
           </svg>
         </div>
-        <div className="absolute bottom-[18%] right-[8%] animate-float-slow z-5 text-[#D81B60]/40 pointer-events-none hidden sm:block">
+        <div className="absolute bottom-[12%] right-[22%] animate-float-slow z-5 text-[#D81B60]/40 pointer-events-none hidden sm:block">
           <svg className="w-4 h-4 fill-[#D81B60]" viewBox="0 0 24 24">
+            <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4Z" />
+          </svg>
+        </div>
+        <div className="absolute top-[55%] right-[28%] animate-float-fast z-5 text-[#A30D45]/35 pointer-events-none hidden lg:block">
+          <svg className="w-4 h-4 fill-[#A30D45]" viewBox="0 0 24 24">
             <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4Z" />
           </svg>
         </div>
