@@ -152,26 +152,27 @@ export default function HomePage() {
             </div>
 
             {/* --- CENTER SECTION (35%): TRANSPARENT MODEL OVERLAPPING 3D SATURN RINGS & GEOMETRIC ELEMENTS --- */}
-            {/* Height scaled up to 660px to accommodate a massive, zoomed-in model and rings layout */}
-            <div className="col-span-12 lg:col-span-4 flex justify-center items-center relative py-12 lg:py-0 select-none h-[560px] lg:h-[660px] overflow-visible">
+            {/* Height scaled up to 700px to accommodate a massive, zoomed-in model and rings layout */}
+            <div className="col-span-12 lg:col-span-4 flex justify-center items-center relative py-12 lg:py-0 select-none h-[600px] lg:h-[700px] overflow-visible">
               
               {/* === 3D Geometric Layers Backdrop === */}
               {/* 1. Large Pale pink circular platform disk */}
-              <div className="absolute w-[420px] h-[420px] lg:w-[480px] lg:h-[480px] rounded-full bg-[#F8D7DA]/40 border-4 border-white shadow-xl animate-float-slow z-5 pointer-events-none" />
+              <div className="absolute w-[460px] h-[460px] lg:w-[520px] lg:h-[520px] rounded-full bg-[#F8D7DA]/40 border-4 border-white shadow-xl animate-float-slow z-5 pointer-events-none" />
 
               {/* 2. Overlapping angled Rose disc */}
-              <div className="absolute w-[290px] h-[290px] lg:w-[340px] lg:h-[340px] rounded-full bg-gradient-to-tr from-[#D81B60]/20 to-[#A30D45]/30 shadow-lg translate-x-14 -translate-y-12 animate-float-fast z-5 pointer-events-none" />
+              <div className="absolute w-[320px] h-[320px] lg:w-[380px] lg:h-[380px] rounded-full bg-gradient-to-tr from-[#D81B60]/20 to-[#A30D45]/30 shadow-lg translate-x-16 -translate-y-14 animate-float-fast z-5 pointer-events-none" />
 
               {/* 3. Neomorphic Soft floating spheres */}
-              <div className="absolute w-16 h-16 rounded-full bg-gradient-to-br from-white to-[#F8D7DA] shadow-md -translate-x-40 translate-y-28 animate-float-sphere z-30 border border-white/50 pointer-events-none" />
-              <div className="absolute w-10 h-10 rounded-full bg-gradient-to-tr from-[#D81B60]/10 to-[#F8D7DA] shadow-inner translate-x-36 translate-y-32 animate-float-sphere z-30 border border-[#F8D7DA]/30 pointer-events-none" />
+              <div className="absolute w-18 h-18 rounded-full bg-gradient-to-br from-white to-[#F8D7DA] shadow-md -translate-x-44 translate-y-32 animate-float-sphere z-30 border border-white/50 pointer-events-none" />
+              <div className="absolute w-11 h-11 rounded-full bg-gradient-to-tr from-[#D81B60]/10 to-[#F8D7DA] shadow-inner translate-x-40 translate-y-36 animate-float-sphere z-30 border border-[#F8D7DA]/30 pointer-events-none" />
 
               {/* 4. Elegant 3D Sculptural Rings & Spheres */}
-              <div className="absolute w-28 h-28 rounded-full border-2 border-[#D81B60]/30 -translate-y-40 translate-x-24 animate-float-slow z-5 pointer-events-none" />
+              <div className="absolute w-32 h-32 rounded-full border-2 border-[#D81B60]/30 -translate-y-48 translate-x-28 animate-float-slow z-5 pointer-events-none" />
 
               {/* === Backdrop Saturn 3D Ring (Layered behind transparent model) === */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-saturn z-10">
-                <svg className="w-[560px] h-[430px] lg:w-[620px] lg:h-[480px] overflow-visible" viewBox="0 0 400 400">
+              {/* Translated down by translate-y-16 lg:translate-y-24 to sit exactly in the middle of her body/waist */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-saturn z-10 translate-y-16 lg:translate-y-24">
+                <svg className="w-[620px] h-[480px] lg:w-[680px] lg:h-[530px] overflow-visible" viewBox="0 0 400 400">
                   <linearGradient id="saturnBackGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stopColor="#9f1239" />
                     <stop offset="40%" stopColor="#D81B60" />
@@ -215,18 +216,19 @@ export default function HomePage() {
               </div>
 
               {/* === TRANSPARENT EXPLICIT MODEL IMAGE (z-index: 20) === */}
-              {/* Scale increased to 1.68x and translated down to fill the bottom viewport space completely and avoid cutoff gaps */}
-              <div className="relative z-20 h-[560px] lg:h-[630px] w-auto flex items-end justify-center select-none pointer-events-none overflow-visible">
+              {/* Scale increased to 1.92x so she occupies a massive, dominant screen space */}
+              <div className="relative z-20 h-[600px] lg:h-[670px] w-auto flex items-end justify-center select-none pointer-events-none overflow-visible">
                 <img 
                   src="/media__1780342681756.png" 
                   alt="Aavriti Model" 
-                  className="h-full w-auto object-contain drop-shadow-[0_20px_45px_rgba(0,0,0,0.18)] transform scale-[1.68] translate-y-16 lg:translate-y-24"
+                  className="h-full w-auto object-contain drop-shadow-[0_20px_45px_rgba(0,0,0,0.18)] transform scale-[1.92] translate-y-16 lg:translate-y-24"
                 />
               </div>
 
               {/* === Front Saturn 3D Ring (Layered in front of model for 3D wrap!) === */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-saturn z-30">
-                <svg className="w-[560px] h-[430px] lg:w-[620px] lg:h-[480px] overflow-visible filter drop-shadow-[0_18px_22px_rgba(163,13,69,0.35)]" viewBox="0 0 400 400">
+              {/* Translated down by translate-y-16 lg:translate-y-24 to sit exactly in the middle of her body/waist */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-saturn z-30 translate-y-16 lg:translate-y-24">
+                <svg className="w-[620px] h-[480px] lg:w-[680px] lg:h-[530px] overflow-visible filter drop-shadow-[0_18px_22px_rgba(163,13,69,0.35)]" viewBox="0 0 400 400">
                   <linearGradient id="saturnFrontGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stopColor="#D81B60" />
                     <stop offset="50%" stopColor="#F8D7DA" />
