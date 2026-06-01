@@ -19,11 +19,8 @@ function App() {
       <CartProvider>
         <BrowserRouter>
           <Routes>
-            {/* Standalone immersive 3D Hero landing page */}
-            <Route path="/" element={<HomePage />} />
-            
-            {/* Standard retail subpages nested under global Layout */}
-            <Route element={<Layout />}>
+            <Route path="/" element={<Layout />}>
+              <Route index element={<HomePage />} />
               <Route path="product/:id" element={<ProductPage />} />
               <Route path="try-on" element={<TryOnPage />} />
               <Route path="about" element={<AboutPage />} />
