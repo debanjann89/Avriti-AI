@@ -175,8 +175,8 @@ export default function HomePage() {
                   to="/try-on"
                   className="w-full sm:w-auto px-8 py-4.5 rounded-full font-extrabold text-xs uppercase tracking-widest text-[#1E1E1E] btn-3d-secondary flex items-center justify-center gap-2 transform active:scale-98 cursor-pointer"
                 >
-                  <Play className="w-3.5 h-3.5 fill-[#1E1E1E] stroke-none" />
-                  <span>Watch Lookbook</span>
+                  <Sparkles className="w-3.5 h-3.5 text-[#D81B60] fill-[#D81B60]" />
+                  <span>AI Virtual Try-On</span>
                 </Link>
               </div>
 
@@ -362,7 +362,7 @@ export default function HomePage() {
                   to="/collections" 
                   className="px-6 py-3 rounded-full bg-[#F8D7DA]/50 hover:bg-[#F8D7DA]/80 text-[#A30D45] border border-[#D81B60]/10 hover:border-[#D81B60]/25 font-extrabold text-[10px] uppercase tracking-widest flex items-center gap-2 transform hover:translate-x-1 transition-all shadow-sm duration-300 cursor-pointer"
                 >
-                  <span>Explore Men's Wear</span>
+                  <span>Shop Collections</span>
                   <ArrowRight className="w-3.5 h-3.5 text-[#A30D45] stroke-[2.5]" />
                 </Link>
               </div>
@@ -371,7 +371,7 @@ export default function HomePage() {
               <div className="space-y-4 pt-2 relative flex flex-col items-center lg:items-start">
                 <span className="absolute -top-7 -left-1 text-8xl text-[#F8D7DA]/60 font-display pointer-events-none select-none">“</span>
                 <p className="text-[13px] text-[#1E1E1E]/80 font-display italic font-bold leading-relaxed max-w-xs text-center lg:text-left relative z-10 pl-2">
-                  Fashion is a form of self-expression, a language that reimagines individuality.
+                  Reimagining traditional elegance. Instantly visualize our luxury sarees, lehengas, and kurtas on yourself using advanced AI Try-On.
                 </p>
                 <div className="flex items-center gap-2 pl-2">
                   <span className="w-6 h-[1px] bg-[#A30D45]/30 inline-block" />
