@@ -344,15 +344,37 @@ export default function HomePage() {
             </div>
 
             {/* --- RIGHT COLUMN (20%) --- */}
-            <div className="col-span-12 lg:col-span-3 flex items-center justify-center lg:justify-start relative z-20 pl-0 lg:pl-8 pb-8 lg:pb-0 select-none">
+            <div className="col-span-12 lg:col-span-3 flex flex-col items-center lg:items-end justify-center relative z-20 pl-0 lg:pl-16 pb-8 lg:pb-0 select-none text-center lg:text-right space-y-6">
               
               {/* Explore Badge with Creative Asymmetric Typography */}
-              <div className="space-y-1.5 flex flex-col items-center lg:items-start select-none">
+              <div className="space-y-1.5 flex flex-col items-center lg:items-end select-none">
                 <span className="text-[9px] text-[#D81B60] font-black uppercase tracking-[0.25em] font-jakarta">Editorial Showcase</span>
                 <h4 className="text-4xl font-black text-[#1E1E1E] leading-[0.88] font-jakarta uppercase tracking-tighter">
                   New<br/>
                   <span className="text-[#A30D45] font-display italic font-bold normal-case tracking-normal">Aesthetics</span>
                 </h4>
+              </div>
+
+              {/* Restored Creative Right-Aligned Copy */}
+              <div className="space-y-4 max-w-xs">
+                <p className="text-[11px] text-[#1E1E1E]/60 font-semibold leading-relaxed tracking-wide font-sans">
+                  Experience a curated collection of royal Indian sarees, lehengas, and kurtas. Instantly visualize your select fits virtually with Aavriti's cutting-edge AI Try-On technology.
+                </p>
+                <div className="flex justify-center lg:justify-end">
+                  <Link 
+                    to="/collections"
+                    className="inline-flex items-center gap-1.5 text-[9px] font-black text-[#D81B60] hover:text-[#A30D45] uppercase tracking-widest border-b-2 border-[#D81B60]/30 pb-0.5 transition-colors cursor-pointer"
+                  >
+                    <span>Shop All Outfits</span>
+                    <ArrowRight className="w-3 h-3 stroke-[2.5]" />
+                  </Link>
+                </div>
+              </div>
+
+              {/* Minimal Campaign Stamp */}
+              <div className="pt-4 border-t border-pink-100/20 w-full flex flex-col items-center lg:items-end space-y-1 select-none">
+                <span className="text-[7.5px] text-[#1E1E1E]/70 font-black uppercase tracking-[0.22em] font-jakarta">Campaign Line '26</span>
+                <span className="text-[7px] text-[#1E1E1E]/40 font-bold uppercase tracking-wider">Avriti AI © All Rights Reserved</span>
               </div>
             </div>
 
