@@ -73,14 +73,9 @@ export default function Navbar() {
             
             {/* Left Brand logo & link */}
             <div className="flex items-center space-x-8">
-              <div className="flex flex-col">
-                <Link to="/" className="text-2xl font-black font-jakarta tracking-tight bg-gradient-to-r from-[#D81B60] via-[#A30D45] to-[#D81B60] bg-clip-text text-transparent leading-none hover:scale-[1.01] transition-transform">
-                  Aavriti AI
-                </Link>
-                <span className="text-[7.5px] text-[#A30D45]/80 font-black uppercase tracking-[0.18em] mt-1.5 leading-none">
-                  Indian Fashion, Reimagined for You
-                </span>
-              </div>
+              <Link to="/" className="text-2xl font-black font-jakarta tracking-tight bg-gradient-to-r from-[#D81B60] via-[#A30D45] to-[#D81B60] bg-clip-text text-transparent leading-none hover:scale-[1.01] transition-transform">
+                Aavriti AI
+              </Link>
               
               <div className="hidden lg:flex space-x-6 items-center ml-8">
                 <Link to="/collections" className="nav-link-premium font-extrabold text-[10px] uppercase tracking-widest">
@@ -107,7 +102,7 @@ export default function Navbar() {
               {/* Search Icon Trigger */}
               <button 
                 onClick={() => navigate('/collections')}
-                className="w-9.5 h-9.5 rounded-full bg-white border border-[#D81B60]/10 hover:border-[#D81B60]/35 text-[#1E1E1E] hover:text-[#D81B60] flex items-center justify-center transition-all duration-300 hover:scale-[1.05] hover:shadow-md hover:shadow-pink-100/50 cursor-pointer shadow-sm"
+                className="w-10 h-10 rounded-full bg-white border border-[#D81B60]/10 hover:border-[#D81B60]/35 text-[#1E1E1E] hover:text-[#D81B60] flex items-center justify-center transition-all duration-300 hover:scale-[1.05] hover:shadow-md hover:shadow-pink-100/50 cursor-pointer shadow-sm"
               >
                 <Search className="h-4.5 w-4.5 stroke-[2]" />
               </button>
@@ -115,7 +110,7 @@ export default function Navbar() {
               {/* Shopping Cart Trigger */}
               <button 
                 onClick={toggleCart} 
-                className="w-9.5 h-9.5 rounded-full bg-white border border-[#D81B60]/10 hover:border-[#D81B60]/35 text-[#1E1E1E] hover:text-[#D81B60] flex items-center justify-center transition-all duration-300 hover:scale-[1.05] hover:shadow-md hover:shadow-pink-100/50 cursor-pointer shadow-sm relative"
+                className="w-10 h-10 rounded-full bg-white border border-[#D81B60]/10 hover:border-[#D81B60]/35 text-[#1E1E1E] hover:text-[#D81B60] flex items-center justify-center transition-all duration-300 hover:scale-[1.05] hover:shadow-md hover:shadow-pink-100/50 cursor-pointer shadow-sm relative"
               >
                 <ShoppingCart className="h-4.5 w-4.5 stroke-[2]" />
                 {cartCount > 0 && (
@@ -133,11 +128,11 @@ export default function Navbar() {
                     className="flex items-center gap-1 focus:outline-none hover:opacity-95 transition-opacity cursor-pointer p-0.5"
                   >
                     {user.profile_picture ? (
-                      <div className="w-8.5 h-8.5 rounded-full border border-pink-200 overflow-hidden bg-white shadow-sm flex items-center justify-center shrink-0">
+                      <div className="w-9 h-9 rounded-full border border-pink-200 overflow-hidden bg-white shadow-sm flex items-center justify-center shrink-0">
                         <img src={user.profile_picture} alt={user.name} className="w-full h-full object-cover" />
                       </div>
                     ) : (
-                      <div className="w-8.5 h-8.5 rounded-full border border-[#D81B60]/20 bg-[#F8D7DA]/40 flex items-center justify-center text-[#D81B60] shadow-inner shrink-0 hover:border-[#D81B60]/40 transition-colors">
+                      <div className="w-9 h-9 rounded-full border border-[#D81B60]/20 bg-[#F8D7DA]/40 flex items-center justify-center text-[#D81B60] shadow-inner shrink-0 hover:border-[#D81B60]/40 transition-colors">
                         <User className="h-4.5 w-4.5 stroke-[2]" />
                       </div>
                     )}
@@ -192,8 +187,11 @@ export default function Navbar() {
                   )}
                 </div>
               ) : (
-                <Link to="/login" className="text-gray-500 hover:text-pink-600 transition-colors cursor-pointer p-1">
-                  <User className="h-5 w-5" />
+                <Link 
+                  to="/login" 
+                  className="w-10 h-10 rounded-full bg-white border border-[#D81B60]/10 hover:border-[#D81B60]/35 text-[#1E1E1E] hover:text-[#D81B60] flex items-center justify-center transition-all duration-300 hover:scale-[1.05] hover:shadow-md hover:shadow-pink-100/50 cursor-pointer shadow-sm"
+                >
+                  <User className="h-4.5 w-4.5 stroke-[2]" />
                 </Link>
               )}
 
