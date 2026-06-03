@@ -40,24 +40,26 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#FFF8F8] via-[#FFF8F8] to-[#FFF0F2] p-4 font-sans select-none relative overflow-hidden">
-      {/* Soft Ambient Background Glows */}
-      <div className="absolute top-[-20%] left-[-15%] w-[500px] h-[500px] bg-gradient-to-tr from-pink-300/20 to-transparent rounded-full filter blur-3xl pointer-events-none" />
-      <div className="absolute bottom-[-20%] right-[-15%] w-[500px] h-[500px] bg-gradient-to-bl from-pink-300/20 to-transparent rounded-full filter blur-3xl pointer-events-none" />
       
-      <div className="max-w-md w-full bg-white/85 backdrop-blur-xl border border-pink-100/40 p-8 sm:p-10 rounded-[32px] shadow-2xl relative overflow-hidden space-y-8 animate-fadeIn">
+      {/* Premium Ambient Background Glows */}
+      <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-gradient-to-tr from-[#F8D7DA]/40 to-transparent rounded-full filter blur-3xl pointer-events-none animate-pulse" style={{ animationDuration: '6s' }} />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-gradient-to-bl from-[#FFF0F2]/50 to-transparent rounded-full filter blur-3xl pointer-events-none animate-pulse" style={{ animationDuration: '8s' }} />
+      
+      {/* Main Glassmorphic Login Card */}
+      <div className="max-w-md w-full bg-white/60 backdrop-blur-2xl border border-white/60 p-8 sm:p-10 rounded-[32px] shadow-2xl relative overflow-hidden space-y-8 animate-fadeIn">
         
-        {/* Logo / Header Section */}
-        <div className="text-center space-y-3.5">
-          <Link to="/">
+        {/* Logo / Header Section (Logo is NOT linked to home page) */}
+        <div className="text-center space-y-4">
+          <div>
             <img 
               src="/Logo.jpg" 
               alt="Aavriti AI Logo" 
-              className="w-20 h-20 object-cover rounded-2xl mx-auto border border-pink-100 shadow-md hover:scale-105 transition-transform duration-300 select-none cursor-pointer"
+              className="w-20 h-20 object-cover rounded-3xl mx-auto border-2 border-white shadow-xl select-none"
             />
-          </Link>
-          <div className="space-y-1">
-            <h3 className="text-sm font-black text-slate-800 tracking-tight uppercase leading-none font-jakarta mt-2">Sign In</h3>
-            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+          </div>
+          <div className="space-y-1.5">
+            <h3 className="text-sm font-black text-slate-800 tracking-wider uppercase leading-none font-jakarta">Sign In</h3>
+            <p className="text-[9px] text-gray-450 font-bold uppercase tracking-widest">
               Access your luxury virtual try-on studio
             </p>
           </div>
@@ -73,7 +75,7 @@ export default function LoginPage() {
           <div className="space-y-4">
             {/* Email Field */}
             <div className="space-y-1.5 text-left">
-              <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block pl-1">Email Address</label>
+              <label className="text-[9px] font-bold text-gray-450 uppercase tracking-widest block pl-1">Email Address</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
                   <Mail className="h-4 w-4" />
@@ -87,9 +89,9 @@ export default function LoginPage() {
                     setEmail(e.target.value);
                     if (error) setError('');
                   }}
-                  className={`w-full bg-gray-50/50 border ${
-                    !isEmailValid ? 'border-rose-300 focus:ring-rose-500' : 'border-gray-200 focus:ring-pink-500'
-                  } rounded-2xl pl-10 pr-4 py-3 text-xs font-semibold text-gray-800 focus:ring-1 focus:outline-none transition-all placeholder-gray-450`}
+                  className={`w-full bg-white/80 border ${
+                    !isEmailValid ? 'border-rose-300 focus:ring-rose-500' : 'border-gray-200/80 focus:border-[#D81B60] focus:ring-[#D81B60]'
+                  } rounded-2xl pl-10 pr-4 py-3 text-xs font-semibold text-gray-850 focus:ring-1 focus:outline-none transition-all placeholder-gray-400 shadow-sm`}
                 />
               </div>
               {!isEmailValid && (
@@ -99,7 +101,7 @@ export default function LoginPage() {
 
             {/* Password Field */}
             <div className="space-y-1.5 text-left">
-              <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block pl-1">Password</label>
+              <label className="text-[9px] font-bold text-gray-450 uppercase tracking-widest block pl-1">Password</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
                   <Lock className="h-4 w-4" />
@@ -113,12 +115,12 @@ export default function LoginPage() {
                     setPassword(e.target.value);
                     if (error) setError('');
                   }}
-                  className="w-full bg-gray-50/50 border border-gray-200 rounded-2xl pl-10 pr-11 py-3 text-xs font-semibold text-gray-800 focus:ring-1 focus:ring-pink-500 focus:outline-none transition-all placeholder-gray-450"
+                  className="w-full bg-white/80 border border-gray-200/80 rounded-2xl pl-10 pr-11 py-3 text-xs font-semibold text-gray-850 focus:border-[#D81B60] focus:ring-[#D81B60] focus:ring-1 focus:outline-none transition-all placeholder-gray-400 shadow-sm"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-pink-650 cursor-pointer"
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-[#D81B60] cursor-pointer"
                 >
                   {showPassword ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
                 </button>
@@ -130,7 +132,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isSubmitting || !isEmailValid || !email || !password}
-              className="w-full bg-pink-600 hover:bg-pink-700 disabled:opacity-50 text-white text-xs font-extrabold uppercase tracking-widest py-3.5 rounded-2xl shadow-lg shadow-pink-250/20 transition-all hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full bg-gradient-to-r from-[#D81B60] via-[#C2185B] to-[#AD1457] hover:from-[#C2185B] hover:to-[#880E4F] text-white text-xs font-extrabold uppercase tracking-widest py-3.5 rounded-2xl shadow-lg shadow-pink-650/20 hover:shadow-[#D81B60]/30 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer border border-[#D81B60]/20"
             >
               {isSubmitting ? (
                 <>
@@ -150,7 +152,7 @@ export default function LoginPage() {
         <div className="text-center pt-2 border-t border-gray-100">
           <p className="text-xs font-semibold text-gray-500">
             Don't have an account?{' '}
-            <Link to="/register" className="font-extrabold text-pink-600 hover:text-pink-700 transition-colors uppercase tracking-wider text-[10px] ml-1">
+            <Link to="/register" className="font-extrabold text-[#D81B60] hover:text-[#AD1457] transition-colors uppercase tracking-wider text-[10px] ml-1">
               Register Here
             </Link>
           </p>
