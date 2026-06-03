@@ -41,6 +41,7 @@ export default function AdminPage() {
   const [declineReasonId, setDeclineReasonId] = useState(null);
   const [declineReasonText, setDeclineReasonText] = useState('');
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
   const showToast = (message, type = 'success') => {
     setToast({ show: true, message, type });
@@ -102,15 +103,21 @@ export default function AdminPage() {
     }
   };
 
-  const handleDeleteApp = async (appId) => {
-    if (!window.confirm("Are you sure you want to delete this seller application request?")) return;
+  const handleDeleteApp = (appId) => {
+    setDeleteConfirmId(appId);
+  };
+
+  const handleConfirmDeleteApp = async () => {
+    if (!deleteConfirmId) return;
     try {
-      await axios.delete(`http://127.0.0.1:8000/api/users/seller-application/${appId}`);
+      await axios.delete(`http://127.0.0.1:8000/api/users/seller-application/${deleteConfirmId}`);
       showToast("Application deleted successfully.", "success");
+      setDeleteConfirmId(null);
       fetchApplications();
     } catch (err) {
       console.error("Error deleting application", err);
       showToast("Failed to delete application.", "error");
+      setDeleteConfirmId(null);
     }
   };
 
@@ -681,6 +688,40 @@ export default function AdminPage() {
             toast.type === 'success' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500 animate-pulse'
           }`} />
           <span className="text-xs font-bold uppercase tracking-wider">{toast.message}</span>
+        </div>
+      )}
+
+      {deleteConfirmId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 animate-fadeIn">
+          <div className="max-w-sm w-full bg-white/95 backdrop-blur-xl border border-gray-150 p-6 rounded-3xl text-center shadow-2xl space-y-5 animate-scaleUp">
+            <div className="w-14 h-14 bg-rose-50 border border-rose-100 rounded-full flex items-center justify-center mx-auto text-rose-650 shadow-inner">
+              <Trash2 className="w-6 h-6 stroke-[1.5]" />
+            </div>
+            
+            <div className="space-y-1">
+              <h3 className="text-base font-black text-gray-900 uppercase tracking-tight font-jakarta">Delete Request?</h3>
+              <p className="text-[11px] text-gray-500 leading-relaxed">
+                Are you sure you want to delete this seller registration request? This action is permanent and cannot be undone.
+              </p>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmId(null)}
+                className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-500 font-extrabold text-[10px] uppercase tracking-wider rounded-xl hover:bg-gray-50 transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDeleteApp}
+                className="flex-1 px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-[10px] uppercase tracking-wider rounded-xl shadow-md shadow-rose-150 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
