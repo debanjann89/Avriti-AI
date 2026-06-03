@@ -4,13 +4,18 @@ import axios from 'axios';
 export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem('user');
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
   const [token, setToken] = useState(localStorage.getItem('token'));
   
   useEffect(() => {
     if (token) {
       const storedUser = localStorage.getItem('user');
       if (storedUser) setUser(JSON.parse(storedUser));
+    } else {
+      setUser(null);
     }
   }, [token]);
 

@@ -209,6 +209,17 @@ export default function ProfilePage() {
     }
   };
 
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#FFF8F8] font-sans">
+        <div className="flex flex-col items-center justify-center space-y-4">
+          <div className="w-10 h-10 border-4 border-pink-150 border-t-pink-600 rounded-full animate-spin"></div>
+          <span className="text-xs font-black text-pink-600 uppercase tracking-widest animate-pulse">Loading Profile...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-100/50 py-10 px-4 sm:px-6 font-sans">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 items-start animate-fadeIn">
@@ -296,7 +307,7 @@ export default function ProfilePage() {
                 </button>
 
                 {/* Tab: Become a Seller */}
-                {(user.role === 'buyer' || activeTab === 'become-seller') && (
+                {(user?.role === 'buyer' || activeTab === 'become-seller') && (
                   <button
                     onClick={() => handleTabChange('become-seller')}
                     className={`w-full text-left text-xs font-bold tracking-wide transition-colors flex items-center gap-2 ${
@@ -804,7 +815,7 @@ export default function ProfilePage() {
                     </button>
                   </div>
                 </div>
-              ) : user.role === 'seller' || appStatus === 'approved' ? (
+              ) : user?.role === 'seller' || appStatus === 'approved' ? (
                 /* Upgrade Congratulations Screen */
                 <div className="bg-white rounded-lg border border-pink-200 p-8 sm:p-12 shadow-md text-center space-y-6 relative overflow-hidden animate-fadeIn">
                   {/* Decorative Confetti Background Glow */}
