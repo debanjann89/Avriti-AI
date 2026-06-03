@@ -106,12 +106,12 @@ export default function RegisterPage() {
       <div className="max-w-md w-full bg-white/85 backdrop-blur-xl border border-pink-100/40 p-8 sm:p-10 rounded-[32px] shadow-2xl relative overflow-hidden space-y-8 animate-fadeIn">
 
         {/* Logo / Header Section */}
-        <div className="text-center space-y-2.5">
-          <div className="w-14 h-14 bg-pink-100/60 border border-pink-200/50 rounded-2xl flex items-center justify-center mx-auto text-pink-600 shadow-sm">
-            <Sparkles className="w-6 h-6 fill-pink-300" />
-          </div>
+        <div className="text-center space-y-3.5">
+          <Link to="/" className="text-3xl font-black font-jakarta tracking-tight bg-gradient-to-r from-[#D81B60] via-[#A30D45] to-[#D81B60] bg-clip-text text-transparent inline-block hover:scale-[1.01] transition-transform select-none">
+            Aavriti AI
+          </Link>
           <div className="space-y-1">
-            <h2 className="text-2xl font-black text-slate-800 tracking-tight uppercase leading-none font-jakarta">Register</h2>
+            <h3 className="text-sm font-black text-slate-800 tracking-tight uppercase leading-none font-jakarta">Register</h3>
             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
               Create your account to access Avriti AI
             </p>
