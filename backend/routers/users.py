@@ -243,6 +243,16 @@ def reject_seller_application(app_id: int, data: RejectionPayload, db: Session =
     db.refresh(app)
     return app
 
+@router.delete("/seller-application/{app_id}")
+def delete_seller_application(app_id: int, db: Session = Depends(get_db)):
+    app = db.query(models.SellerApplication).filter(models.SellerApplication.id == app_id).first()
+    if not app:
+        raise HTTPException(status_code=404, detail="Application not found")
+        
+    db.delete(app)
+    db.commit()
+    return {"message": "Application deleted successfully", "id": app_id}
+
 @router.get("/seller-application/status")
 def get_seller_application_status(user_id: int, db: Session = Depends(get_db)):
     app = db.query(models.SellerApplication).filter(

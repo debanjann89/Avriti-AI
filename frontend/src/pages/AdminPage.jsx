@@ -102,6 +102,18 @@ export default function AdminPage() {
     }
   };
 
+  const handleDeleteApp = async (appId) => {
+    if (!window.confirm("Are you sure you want to delete this seller application request?")) return;
+    try {
+      await axios.delete(`http://127.0.0.1:8000/api/users/seller-application/${appId}`);
+      showToast("Application deleted successfully.", "success");
+      fetchApplications();
+    } catch (err) {
+      console.error("Error deleting application", err);
+      showToast("Failed to delete application.", "error");
+    }
+  };
+
   useEffect(() => {
     if (isAdminAuthenticated) {
       if (activeTab === 'sellers') fetchSellers();
@@ -585,7 +597,17 @@ export default function AdminPage() {
                       </div>
 
                       <div className="pt-5 border-t border-gray-150 mt-5 flex justify-between items-center gap-3">
-                        <span className="text-[9px] font-bold text-gray-400 uppercase">Submitted: {app.submitted_at}</span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteApp(app.id)}
+                            className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-100 rounded-lg shadow-sm transition-all cursor-pointer flex items-center justify-center hover:scale-105 active:scale-95"
+                            title="Delete Request"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                          <span className="text-[9px] font-bold text-gray-400 uppercase">Submitted: {app.submitted_at}</span>
+                        </div>
                         
                         {app.status === 'pending' && (
                           declineReasonId === app.id ? (
