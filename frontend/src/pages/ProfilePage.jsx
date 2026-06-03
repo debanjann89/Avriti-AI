@@ -5,7 +5,7 @@ import axios from 'axios';
 import { 
   User, Mail, Phone, MapPin, Sliders, 
   ShoppingBag, Sparkles, Upload, LogOut, 
-  Check, Edit2, ChevronRight, ShoppingCart
+  Check, Edit2, ChevronRight, ShoppingCart, X
 } from 'lucide-react';
 
 export default function ProfilePage() {
