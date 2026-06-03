@@ -2,10 +2,13 @@ import { Link } from 'react-router-dom';
 import { useProducts } from '../hooks/useProducts';
 import ProductCard from '../components/ProductCard';
 import { Sparkles, ArrowRight, Play, ChevronRight, Star, Heart } from 'lucide-react';
+import { useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
 
 export default function HomePage() {
   const { products } = useProducts();
   const featuredProducts = products.slice(0, 4);
+  const { user } = useContext(AuthContext);
 
   return (
     <div className="min-h-screen bg-[#FFF8F8] pb-20 font-sans overflow-x-hidden relative">
@@ -213,13 +216,22 @@ export default function HomePage() {
                   <span>Shop Now</span>
                   <ArrowRight className="w-4 h-4 stroke-[2.5]" />
                 </Link>
-                <Link 
-                  to="/try-on"
-                  className="w-full sm:w-auto px-8 py-4.5 rounded-full font-extrabold text-xs uppercase tracking-widest text-[#1E1E1E] btn-3d-secondary flex items-center justify-center gap-2 transform active:scale-98 cursor-pointer"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-[#D81B60] fill-[#D81B60]" />
-                  <span>AI Virtual Try-On</span>
-                </Link>
+                {user && (user.role === 'seller' || user.role === 'admin') ? (
+                  <Link 
+                    to="/try-on"
+                    className="w-full sm:w-auto px-8 py-4.5 rounded-full font-extrabold text-xs uppercase tracking-widest text-[#1E1E1E] btn-3d-secondary flex items-center justify-center gap-2 transform active:scale-98 cursor-pointer"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-[#D81B60] fill-[#D81B60]" />
+                    <span>AI Virtual Try-On</span>
+                  </Link>
+                ) : (
+                  <Link 
+                    to="/collections"
+                    className="w-full sm:w-auto px-8 py-4.5 rounded-full font-extrabold text-xs uppercase tracking-widest text-[#1E1E1E] btn-3d-secondary flex items-center justify-center gap-2 transform active:scale-98 cursor-pointer"
+                  >
+                    <span>Shop Collections</span>
+                  </Link>
+                )}
               </div>
 
               {/* Premium Campaign Micro-Stats Tray to fill empty space under buttons */}

@@ -1,6 +1,9 @@
 import { Link } from 'react-router-dom';
+import { useContext } from 'react';
+import { AuthContext } from '../../context/AuthContext';
 
 export default function Footer() {
+  const { user } = useContext(AuthContext);
   return (
     <footer className="bg-white border-t border-pink-100 mt-12">
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
@@ -42,10 +45,14 @@ export default function Footer() {
             &copy; 2026 Aavriti.in, Inc. All rights reserved.
           </p>
           <div className="flex items-center space-x-4 text-xs font-bold uppercase tracking-wider">
-            <Link to="/try-on" className="text-gray-400 hover:text-pink-600 transition-colors">
-              Seller Portal
-            </Link>
-            <span className="text-gray-300">|</span>
+            {user && (user.role === 'seller' || user.role === 'admin') && (
+              <>
+                <Link to="/try-on" className="text-gray-400 hover:text-pink-600 transition-colors">
+                  Seller Portal
+                </Link>
+                <span className="text-gray-300">|</span>
+              </>
+            )}
             <Link to="/admin" target="_blank" className="text-gray-400 hover:text-pink-600 transition-colors">
               Admin Portal
             </Link>

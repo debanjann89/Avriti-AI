@@ -72,8 +72,19 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('user');
   };
 
+  const refreshUser = async () => {
+    if (!user) return;
+    try {
+      const res = await axios.get(`http://127.0.0.1:8000/api/users/profile-info?user_id=${user.id}`);
+      setUser(res.data);
+      localStorage.setItem('user', JSON.stringify(res.data));
+    } catch (err) {
+      console.error("Error refreshing user context", err);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, login, register, logout, updateProfile, updateProfilePicture, toggleUserRole }}>
+    <AuthContext.Provider value={{ user, token, login, register, logout, updateProfile, updateProfilePicture, toggleUserRole, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

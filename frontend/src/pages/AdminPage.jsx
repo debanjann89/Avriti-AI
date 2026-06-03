@@ -35,6 +35,20 @@ export default function AdminPage() {
   const [sellerSuccess, setSellerSuccess] = useState('');
   const [isCreatingSeller, setIsCreatingSeller] = useState(false);
 
+  // 5. Seller Applications state
+  const [applications, setApplications] = useState([]);
+  const [loadingApps, setLoadingApps] = useState(false);
+  const [declineReasonId, setDeclineReasonId] = useState(null);
+  const [declineReasonText, setDeclineReasonText] = useState('');
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast(prev => ({ ...prev, show: false }));
+    }, 4500);
+  };
+
   // Fetch Sellers List
   const fetchSellers = async () => {
     setLoadingSellers(true);
@@ -48,11 +62,58 @@ export default function AdminPage() {
     }
   };
 
-  useEffect(() => {
-    if (isAdminAuthenticated && activeTab === 'sellers') {
+  const fetchApplications = async () => {
+    setLoadingApps(true);
+    try {
+      const res = await axios.get('http://127.0.0.1:8000/api/users/seller-applications');
+      setApplications(res.data);
+    } catch (err) {
+      console.error("Error loading seller applications", err);
+    } finally {
+      setLoadingApps(false);
+    }
+  };
+
+  const handleApproveApp = async (appId) => {
+    if (!window.confirm("Are you sure you want to approve this seller application? This will immediately upgrade the user's role to Seller.")) return;
+    try {
+      await axios.put(`http://127.0.0.1:8000/api/users/seller-application/${appId}/approve`);
+      showToast("Application approved successfully!", "success");
+      fetchApplications();
       fetchSellers();
+    } catch (err) {
+      console.error("Error approving application", err);
+      showToast("Failed to approve application.", "error");
+    }
+  };
+
+  const handleConfirmRejectApp = async (appId) => {
+    try {
+      await axios.put(`http://127.0.0.1:8000/api/users/seller-application/${appId}/reject`, {
+        reason: declineReasonText
+      });
+      showToast("Application declined successfully.", "success");
+      setDeclineReasonId(null);
+      setDeclineReasonText('');
+      fetchApplications();
+    } catch (err) {
+      console.error("Error declining application", err);
+      showToast("Failed to decline application.", "error");
+    }
+  };
+
+  useEffect(() => {
+    if (isAdminAuthenticated) {
+      if (activeTab === 'sellers') fetchSellers();
+      if (activeTab === 'applications') fetchApplications();
     }
   }, [isAdminAuthenticated, activeTab]);
+
+  useEffect(() => {
+    if (isAdminAuthenticated) {
+      fetchApplications();
+    }
+  }, [isAdminAuthenticated]);
 
   // Handle Password Gate submission
   const handleGateSubmit = (e) => {
@@ -227,6 +288,22 @@ export default function AdminPage() {
             <span>Manage Sellers</span>
             {sellers.length > 0 && (
               <span className="bg-pink-100 text-pink-700 text-[9px] px-1.5 py-0.2 rounded-full font-extrabold">{sellers.length}</span>
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab('applications')}
+            className={`pb-3 px-4 font-bold text-xs uppercase tracking-widest border-b-2 transition-all flex items-center gap-1.5 ${
+              activeTab === 'applications'
+                ? 'border-pink-600 text-pink-600'
+                : 'border-transparent text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            <ShieldCheck className="w-4 h-4" />
+            <span>Applications</span>
+            {applications.filter(a => a.status === 'pending').length > 0 && (
+              <span className="bg-pink-100 text-pink-700 text-[9px] px-1.5 py-0.2 rounded-full font-extrabold">
+                {applications.filter(a => a.status === 'pending').length}
+              </span>
             )}
           </button>
         </div>
@@ -447,7 +524,143 @@ export default function AdminPage() {
           </div>
         )}
 
+        {/* --- APPLICATIONS TAB CONTENT --- */}
+        {activeTab === 'applications' && (
+          <div className="space-y-6 animate-fadeIn font-sans">
+            <div className="bg-white rounded-3xl border border-gray-105 shadow-xl overflow-hidden p-6 sm:p-8 space-y-6">
+              <h2 className="text-base font-black text-gray-900 uppercase tracking-wider flex items-center gap-2 border-b border-gray-50 pb-4">
+                <ShieldCheck className="w-5 h-5 text-pink-600" />
+                <span>Seller Registration Requests</span>
+              </h2>
+
+              {loadingApps ? (
+                <div className="flex flex-col items-center justify-center py-20 space-y-2">
+                  <div className="w-8 h-8 border-4 border-pink-150 border-t-pink-600 rounded-full animate-spin"></div>
+                  <span className="text-xs text-gray-400 font-bold uppercase tracking-widest animate-pulse">Loading requests...</span>
+                </div>
+              ) : applications.length === 0 ? (
+                <div className="text-center py-20">
+                  <ShieldCheck className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <h3 className="text-sm font-bold text-gray-700">No applications found</h3>
+                  <p className="text-xs text-gray-400 mt-1 max-w-xs mx-auto leading-normal">
+                    Pending requests submitted by buyers applying for a B2B seller role will appear here.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {applications.map((app) => (
+                    <div key={app.id} className="p-6 rounded-2xl bg-slate-50/40 border border-gray-200/80 shadow-sm relative overflow-hidden flex flex-col justify-between hover:border-pink-200/50 transition-all duration-300">
+                      
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-start gap-2">
+                          <div>
+                            <span className="block text-[8px] font-extrabold text-pink-600 uppercase tracking-widest bg-pink-50 border border-pink-100 rounded-full px-2 py-0.5 w-fit">
+                              {app.product_category}
+                            </span>
+                            <h3 className="text-sm font-black text-gray-800 tracking-tight mt-2">{app.store_name}</h3>
+                            <p className="text-[10px] text-gray-400 font-bold uppercase mt-0.5">By: {app.user_name} ({app.user_email})</p>
+                          </div>
+                          
+                          <span className={`px-2.5 py-0.5 rounded-full text-[8.5px] font-extrabold uppercase tracking-wider ${
+                            app.status === 'pending'
+                              ? 'bg-yellow-100 text-yellow-850 border border-yellow-200 animate-pulse'
+                              : app.status === 'approved'
+                              ? 'bg-emerald-100 text-emerald-800 border border-emerald-250'
+                              : 'bg-rose-100 text-rose-800 border border-rose-250'
+                          }`}>
+                            {app.status}
+                          </span>
+                        </div>
+
+                        <div className="p-4 rounded-xl bg-white border border-gray-150 text-xs space-y-2">
+                          <div>
+                            <span className="text-[9px] text-gray-400 block uppercase">Business Contact</span>
+                            <span className="font-semibold text-gray-700">{app.business_email} | {app.business_phone}</span>
+                          </div>
+                          <div>
+                            <span className="text-[9px] text-gray-450 block uppercase font-bold">Store Description</span>
+                            <p className="text-gray-650 mt-1 leading-normal">{app.store_description}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="pt-5 border-t border-gray-150 mt-5 flex justify-between items-center gap-3">
+                        <span className="text-[9px] font-bold text-gray-400 uppercase">Submitted: {app.submitted_at}</span>
+                        
+                        {app.status === 'pending' && (
+                          declineReasonId === app.id ? (
+                            <div className="flex flex-col gap-2 mt-2 w-full max-w-[240px]">
+                              <input
+                                required
+                                type="text"
+                                placeholder="Enter decline reason..."
+                                value={declineReasonText}
+                                onChange={e => setDeclineReasonText(e.target.value)}
+                                className="border border-rose-250 rounded-lg px-2.5 py-1 text-[11px] focus:outline-none bg-white text-gray-800"
+                              />
+                              <div className="flex gap-2 justify-end">
+                                <button
+                                  type="button"
+                                  onClick={() => setDeclineReasonId(null)}
+                                  className="px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-widest border border-gray-200 text-gray-500 rounded-lg hover:bg-gray-50"
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleConfirmRejectApp(app.id)}
+                                  disabled={!declineReasonText.trim()}
+                                  className="px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-widest bg-rose-600 hover:bg-rose-700 text-white rounded-lg disabled:opacity-40"
+                                >
+                                  Decline
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setDeclineReasonId(app.id);
+                                  setDeclineReasonText('');
+                                }}
+                                className="px-4 py-2 border border-rose-200 text-rose-650 hover:bg-rose-50 text-[10px] font-extrabold uppercase tracking-widest rounded-lg shadow-sm transition-all cursor-pointer"
+                              >
+                                Decline
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleApproveApp(app.id)}
+                                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-extrabold uppercase tracking-widest rounded-lg shadow-md hover:shadow-emerald-100 transition-all cursor-pointer"
+                              >
+                                Approve
+                              </button>
+                            </div>
+                          )
+                        )}
+                      </div>
+
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
       </div>
+      {toast.show && (
+        <div className={`fixed bottom-5 right-5 z-50 px-5 py-3.5 rounded-2xl shadow-xl border flex items-center gap-2.5 animate-slideIn ${
+          toast.type === 'success' 
+            ? 'bg-emerald-50 border-emerald-200 text-emerald-800' 
+            : 'bg-rose-50 border-rose-250 text-rose-800'
+        }`}>
+          <div className={`w-2 h-2 rounded-full ${
+            toast.type === 'success' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500 animate-pulse'
+          }`} />
+          <span className="text-xs font-bold uppercase tracking-wider">{toast.message}</span>
+        </div>
+      )}
     </div>
   );
 }

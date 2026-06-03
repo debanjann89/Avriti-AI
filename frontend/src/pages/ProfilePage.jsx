@@ -9,8 +9,32 @@ import {
 } from 'lucide-react';
 
 export default function ProfilePage() {
-  const { user, logout, updateProfile, updateProfilePicture } = useContext(AuthContext);
+  const { user, logout, updateProfile, updateProfilePicture, toggleUserRole, refreshUser } = useContext(AuthContext);
   const navigate = useNavigate();
+  
+  const [isUpgrading, setIsUpgrading] = useState(false);
+  const [isUpgradeSuccess, setIsUpgradeSuccess] = useState(false);
+
+  // Seller Application States
+  const [appStatus, setAppStatus] = useState("none"); // "none", "pending", "approved", "rejected"
+  const [appData, setAppData] = useState(null);
+  const [loadingApp, setLoadingApp] = useState(false);
+  const [storeForm, setStoreForm] = useState({
+    store_name: '',
+    store_description: '',
+    business_email: user?.email || '',
+    business_phone: user?.phone || '',
+    product_category: ''
+  });
+  const [isSubmittingApp, setIsSubmittingApp] = useState(false);
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast(prev => ({ ...prev, show: false }));
+    }, 4500);
+  };
   
   // 1. Sync URL query params with active tab state
   const [searchParams, setSearchParams] = useSearchParams();
@@ -124,6 +148,67 @@ export default function ProfilePage() {
     navigate('/');
   };
 
+  const handleUpgradeToSeller = async () => {
+    setIsUpgrading(true);
+    try {
+      await toggleUserRole('seller');
+      setIsUpgradeSuccess(true);
+    } catch (err) {
+      console.error("Error upgrading role", err);
+      alert("Failed to upgrade to seller account.");
+    } finally {
+      setIsUpgrading(false);
+    }
+  };
+
+  const fetchApplicationStatus = async () => {
+    if (!user?.id) return;
+    setLoadingApp(true);
+    try {
+      const res = await axios.get(`http://127.0.0.1:8000/api/users/seller-application/status?user_id=${user.id}`);
+      setAppStatus(res.data.status);
+      if (res.data.status !== "none") {
+        setAppData(res.data);
+      }
+      if (res.data.status === "approved" && user.role !== "seller") {
+        await refreshUser();
+      }
+    } catch (err) {
+      console.error("Error fetching seller application status", err);
+    } finally {
+      setLoadingApp(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'become-seller') {
+      fetchApplicationStatus();
+    }
+  }, [activeTab, user?.id]);
+
+  const handleStoreFormSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmittingApp(true);
+    try {
+      const payload = {
+        user_id: user.id,
+        store_name: storeForm.store_name,
+        store_description: storeForm.store_description,
+        business_email: storeForm.business_email,
+        business_phone: storeForm.business_phone,
+        product_category: storeForm.product_category
+      };
+      await axios.post('http://127.0.0.1:8000/api/users/seller-application', payload);
+      showToast("Application submitted successfully! Your account will be reviewed by administrators.", "success");
+      fetchApplicationStatus();
+    } catch (err) {
+      console.error("Error submitting seller application", err);
+      showToast(err.response?.data?.detail || "Failed to submit application", "error");
+    } finally {
+      setIsSubmittingApp(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100/50 py-10 px-4 sm:px-6 font-sans">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 items-start animate-fadeIn">
@@ -209,6 +294,21 @@ export default function ProfilePage() {
                   <MapPin className="w-3.5 h-3.5 shrink-0" />
                   <span>Manage Addresses</span>
                 </button>
+
+                {/* Tab: Become a Seller */}
+                {(user.role === 'buyer' || activeTab === 'become-seller') && (
+                  <button
+                    onClick={() => handleTabChange('become-seller')}
+                    className={`w-full text-left text-xs font-bold tracking-wide transition-colors flex items-center gap-2 ${
+                      activeTab === 'become-seller'
+                        ? 'text-pink-600 font-black'
+                        : 'text-gray-600 hover:text-pink-600'
+                    }`}
+                  >
+                    <Sparkles className="w-3.5 h-3.5 shrink-0 text-pink-600" />
+                    <span>Become a Seller</span>
+                  </button>
+                )}
                 
               </div>
             </div>
@@ -565,9 +665,350 @@ export default function ProfilePage() {
             </div>
           )}
 
+          {/* TAB CONTENT: BECOME A SELLER */}
+          {activeTab === 'become-seller' && (
+            <div className="space-y-6">
+              {loadingApp ? (
+                <div className="bg-white rounded-lg border border-gray-200/80 p-12 text-center shadow-sm">
+                  <div className="w-8 h-8 border-4 border-pink-100 border-t-pink-600 rounded-full animate-spin mx-auto mb-3"></div>
+                  <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Loading Application Status...</p>
+                </div>
+              ) : appStatus === "pending" ? (
+                /* Application Under Review */
+                <div className="bg-white rounded-lg border border-yellow-200 p-6 sm:p-8 shadow-sm space-y-6 relative overflow-hidden animate-fadeIn">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-yellow-500/5 to-transparent rounded-bl-[160px] pointer-events-none" />
+                  
+                  <div className="border-b border-gray-100 pb-5">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 font-extrabold text-[9px] uppercase tracking-wider mb-3 animate-pulse">
+                      <Sliders className="w-3 h-3" />
+                      <span>Pending Admin Review</span>
+                    </div>
+                    <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight font-jakarta">
+                      Your Application is Under Review
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Our system administrators are validating your boutique details. You will be upgraded automatically upon approval.
+                    </p>
+                  </div>
+
+                  {/* Submitted Profile Summary Card */}
+                  <div className="p-5 rounded-2xl bg-slate-50/70 border border-gray-100 space-y-3 text-left">
+                    <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Submitted Business Details</h4>
+                    <div className="grid grid-cols-2 gap-4 text-xs">
+                      <div>
+                        <span className="block text-[9px] text-gray-400 uppercase">Store Name</span>
+                        <strong className="text-gray-800 font-bold">{appData?.store_name}</strong>
+                      </div>
+                      <div>
+                        <span className="block text-[9px] text-gray-400 uppercase">Product Category</span>
+                        <strong className="text-gray-800 font-bold">{appData?.product_category}</strong>
+                      </div>
+                      <div>
+                        <span className="block text-[9px] text-gray-400 uppercase">Business Email</span>
+                        <span className="text-gray-700 font-medium">{appData?.business_email}</span>
+                      </div>
+                      <div>
+                        <span className="block text-[9px] text-gray-400 uppercase">Business Phone</span>
+                        <span className="text-gray-700 font-medium">{appData?.business_phone}</span>
+                      </div>
+                      <div className="col-span-2">
+                        <span className="block text-[9px] text-gray-400 uppercase">Shop Description</span>
+                        <p className="text-gray-600 leading-normal mt-0.5">{appData?.store_description}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Onboarding Steps Timeline */}
+                  <div className="flex flex-col sm:flex-row items-center gap-4 py-4 justify-center">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-[10px]">✓</div>
+                      <span className="text-xs font-bold text-gray-700">Submitted</span>
+                    </div>
+                    <div className="w-8 h-0.5 bg-emerald-200 hidden sm:block"></div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center font-bold text-[10px] animate-pulse">●</div>
+                      <span className="text-xs font-bold text-gray-700">Under Review</span>
+                    </div>
+                    <div className="w-8 h-0.5 bg-gray-200 hidden sm:block"></div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center font-bold text-[10px]">3</div>
+                      <span className="text-xs font-bold text-gray-400">Activated Workspace</span>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                    <button
+                      onClick={fetchApplicationStatus}
+                      className="bg-white hover:bg-gray-50 border border-gray-200 text-gray-600 text-xs font-extrabold uppercase tracking-widest px-6 py-3 rounded-xl shadow-sm transition-all"
+                    >
+                      Refresh Status
+                    </button>
+                  </div>
+                </div>
+              ) : appStatus === "rejected" ? (
+                /* Application Declined */
+                <div className="bg-white rounded-lg border border-red-200 p-6 sm:p-8 shadow-sm space-y-8 relative overflow-hidden animate-fadeIn">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-red-500/5 to-transparent rounded-bl-[160px] pointer-events-none" />
+                  
+                  <div className="border-b border-gray-100 pb-5">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-100 text-red-700 font-extrabold text-[9px] uppercase tracking-wider mb-3">
+                      <X className="w-3.5 h-3.5 text-red-600 animate-none" />
+                      <span>Application Declined</span>
+                    </div>
+                    <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight font-jakarta">
+                      Application Needs Revisions
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Our system administrators declined your recent seller application. Please review the feedback below.
+                    </p>
+                  </div>
+
+                  {/* Decline feedback card */}
+                  <div className="p-5 rounded-2xl bg-rose-50/20 border border-rose-100/50 text-left space-y-2">
+                    <span className="text-[9px] font-black text-rose-600 uppercase tracking-wider">Decline Reason / Feedback:</span>
+                    <p className="text-xs font-bold text-gray-705 leading-normal italic">
+                      "{appData?.rejection_reason || 'No specific reasons provided.'}"
+                    </p>
+                  </div>
+
+                  {/* Submitted Details Review for context */}
+                  <div className="p-5 rounded-2xl bg-slate-50/70 border border-gray-150 space-y-3 text-left">
+                    <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Your Submitted Details</h4>
+                    <div className="grid grid-cols-2 gap-4 text-xs">
+                      <div>
+                        <span className="block text-[9px] text-gray-400 uppercase">Store Name</span>
+                        <strong className="text-gray-800 font-bold">{appData?.store_name}</strong>
+                      </div>
+                      <div>
+                        <span className="block text-[9px] text-gray-400 uppercase">Product Category</span>
+                        <strong className="text-gray-800 font-bold">{appData?.product_category}</strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end pt-4 border-t border-gray-100">
+                    <button
+                      onClick={() => {
+                        setStoreForm({
+                          store_name: appData?.store_name || '',
+                          store_description: appData?.store_description || '',
+                          business_email: appData?.business_email || user?.email || '',
+                          business_phone: appData?.business_phone || user?.phone || '',
+                          product_category: appData?.product_category || ''
+                        });
+                        setAppStatus("none");
+                      }}
+                      className="bg-pink-600 hover:bg-pink-700 text-white text-xs font-extrabold uppercase tracking-widest px-8 py-3.5 rounded-xl shadow-lg transition-all transform hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+                    >
+                      Edit & Re-Apply
+                    </button>
+                  </div>
+                </div>
+              ) : user.role === 'seller' || appStatus === 'approved' ? (
+                /* Upgrade Congratulations Screen */
+                <div className="bg-white rounded-lg border border-pink-200 p-8 sm:p-12 shadow-md text-center space-y-6 relative overflow-hidden animate-fadeIn">
+                  {/* Decorative Confetti Background Glow */}
+                  <div className="absolute top-[-20%] left-[-10%] w-72 h-72 bg-gradient-to-tr from-pink-500/10 to-transparent rounded-full filter blur-2xl pointer-events-none" />
+                  <div className="absolute bottom-[-20%] right-[-10%] w-72 h-72 bg-gradient-to-br from-pink-500/10 to-transparent rounded-full filter blur-2xl pointer-events-none" />
+                  
+                  <div className="w-20 h-20 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center mx-auto shadow-inner border border-pink-200/50">
+                    <Check className="w-10 h-10 stroke-[3]" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <h3 className="text-2xl font-black text-gray-900 uppercase tracking-tight font-jakarta">
+                      Congratulations!
+                    </h3>
+                    <p className="text-sm font-bold text-pink-600 font-jakarta">
+                      Your Aavriti Seller Account is Now Active
+                    </p>
+                    <p className="text-xs text-gray-500 max-w-md mx-auto leading-relaxed pt-2">
+                      You have successfully upgraded your account. The AI Stylist studio, realistic fabric physics draping pipelines, and interactive canvas tools are now unlocked in your workspace.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
+                    <button
+                      onClick={() => navigate('/try-on')}
+                      className="bg-pink-600 hover:bg-pink-700 text-white text-xs font-extrabold uppercase tracking-widest px-8 py-4 rounded-xl shadow-lg shadow-pink-200 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <Sparkles className="w-4 h-4 text-white fill-white" />
+                      <span>Open AI Try-On Studio</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setAppStatus("none");
+                        handleTabChange('profile');
+                      }}
+                      className="bg-white hover:bg-gray-50 border border-gray-300 text-gray-600 text-xs font-extrabold uppercase tracking-widest px-8 py-4 rounded-xl shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                    >
+                      Go to My Profile
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* Seller Application Form Display */
+                <div className="bg-white rounded-lg border border-gray-200/80 p-6 sm:p-8 shadow-sm space-y-8 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-pink-500/5 to-transparent rounded-bl-[160px] pointer-events-none" />
+                  
+                  <div className="border-b border-gray-100 pb-5">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-100 text-pink-700 font-extrabold text-[9px] uppercase tracking-wider mb-3">
+                      <Sparkles className="w-3 h-3 fill-pink-300" />
+                      <span>Unlock B2B E-Commerce Studio</span>
+                    </div>
+                    <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight font-jakarta">
+                      Apply for Seller Account
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Partner with Aavriti. Submit store credentials to request workspace access.
+                    </p>
+                  </div>
+
+                  {/* Graphics / Illustrations Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <div className="p-5 rounded-2xl bg-gradient-to-b from-white to-pink-50/20 border border-gray-150 shadow-sm relative overflow-hidden group hover:border-pink-200 transition-all duration-300">
+                      <div className="w-10 h-10 rounded-xl bg-pink-100/40 text-pink-600 flex items-center justify-center mb-4">
+                        <Sparkles className="w-5 h-5 fill-pink-100" />
+                      </div>
+                      <h4 className="text-sm font-black text-gray-800 uppercase tracking-tight font-jakarta">AI Try-On</h4>
+                      <p className="text-[11px] leading-relaxed text-gray-500 mt-2">
+                        Let customers instantly visualize and drape your outfits on their own photos.
+                      </p>
+                    </div>
+
+                    <div className="p-5 rounded-2xl bg-gradient-to-b from-white to-pink-50/20 border border-gray-150 shadow-sm relative overflow-hidden group hover:border-pink-200 transition-all duration-300">
+                      <div className="w-10 h-10 rounded-xl bg-pink-100/40 text-pink-600 flex items-center justify-center mb-4">
+                        <Sliders className="w-5 h-5" />
+                      </div>
+                      <h4 className="text-sm font-black text-gray-800 uppercase tracking-tight font-jakarta">60% Return Drop</h4>
+                      <p className="text-[11px] leading-relaxed text-gray-500 mt-2">
+                        Realistic fabric solving ensures precise sizing fit, reducing logistics overhead.
+                      </p>
+                    </div>
+
+                    <div className="p-5 rounded-2xl bg-gradient-to-b from-white to-pink-50/20 border border-gray-150 shadow-sm relative overflow-hidden group hover:border-pink-200 transition-all duration-300">
+                      <div className="w-10 h-10 rounded-xl bg-pink-100/40 text-pink-600 flex items-center justify-center mb-4">
+                        <User className="w-5 h-5" />
+                      </div>
+                      <h4 className="text-sm font-black text-gray-800 uppercase tracking-tight font-jakarta">Global Reach</h4>
+                      <p className="text-[11px] leading-relaxed text-gray-500 mt-2">
+                        Connect traditional weaves directly to international fashion-forward shoppers.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Application Form Inputs */}
+                  <form onSubmit={handleStoreFormSubmit} className="space-y-5 pt-4 border-t border-gray-100">
+                    <h3 className="text-xs font-black text-gray-800 uppercase tracking-widest">Business Information Form</h3>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Store Name</label>
+                        <input
+                          required
+                          type="text"
+                          placeholder="e.g. Royal Silk Handlooms"
+                          value={storeForm.store_name}
+                          onChange={e => setStoreForm({...storeForm, store_name: e.target.value})}
+                          className="w-full bg-gray-50/50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none transition-all"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Product Category</label>
+                        <select
+                          required
+                          value={storeForm.product_category}
+                          onChange={e => setStoreForm({...storeForm, product_category: e.target.value})}
+                          className="w-full bg-gray-50/50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none transition-all"
+                        >
+                          <option value="">Select Primary Category</option>
+                          <option value="Sarees">Traditional Sarees</option>
+                          <option value="Lehengas">Festive Lehengas</option>
+                          <option value="Kurtas & Suits">Kurtas & Suits</option>
+                          <option value="Western Wear">Western Fashion</option>
+                          <option value="Accessories">Accessories & Jewelry</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Business Email</label>
+                        <input
+                          required
+                          type="email"
+                          placeholder="partner@business.com"
+                          value={storeForm.business_email}
+                          onChange={e => setStoreForm({...storeForm, business_email: e.target.value})}
+                          className="w-full bg-gray-50/50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none transition-all"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Business Phone</label>
+                        <input
+                          required
+                          type="text"
+                          placeholder="+91 98765 43210"
+                          value={storeForm.business_phone}
+                          onChange={e => setStoreForm({...storeForm, business_phone: e.target.value})}
+                          className="w-full bg-gray-50/50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none transition-all"
+                        />
+                      </div>
+
+                      <div className="sm:col-span-2 space-y-1.5">
+                        <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Store Description</label>
+                        <textarea
+                          required
+                          placeholder="Briefly describe your boutique, handloom roots, and products..."
+                          value={storeForm.store_description}
+                          onChange={e => setStoreForm({...storeForm, store_description: e.target.value})}
+                          rows="3"
+                          className="w-full bg-gray-50/50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none transition-all resize-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end pt-4 border-t border-gray-150">
+                      <button
+                        type="submit"
+                        disabled={isSubmittingApp}
+                        className="bg-pink-600 hover:bg-pink-700 disabled:bg-pink-400 text-white text-xs font-extrabold uppercase tracking-widest px-8 py-3.5 rounded-xl shadow-lg shadow-pink-200 transition-all hover:scale-[1.01] active:scale-[0.99] flex items-center gap-2 cursor-pointer"
+                      >
+                        {isSubmittingApp ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <span>Submitting...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-4 h-4 text-white fill-white" />
+                            <span>Submit Application</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+            </div>
+          )}
+
         </div>
 
       </div>
+
+      {toast.show && (
+        <div className={`fixed bottom-5 right-5 z-50 px-5 py-3.5 rounded-2xl shadow-xl border flex items-center gap-2.5 animate-slideIn ${
+          toast.type === 'success' 
+            ? 'bg-emerald-50 border-emerald-200 text-emerald-800' 
+            : 'bg-rose-50 border-rose-250 text-rose-800'
+        }`}>
+          <div className={`w-2 h-2 rounded-full ${
+            toast.type === 'success' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500 animate-pulse'
+          }`} />
+          <span className="text-xs font-bold uppercase tracking-wider">{toast.message}</span>
+        </div>
+      )}
     </div>
   );
 }

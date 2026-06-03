@@ -90,15 +90,17 @@ export default function Navbar() {
                 <Link to="/collections" className="nav-link-premium font-extrabold text-[10px] uppercase tracking-widest">
                   Categories
                 </Link>
-                <Link 
-                  to="/try-on" 
-                  className={location.pathname === '/try-on' 
-                    ? "px-4 py-2 rounded-full bg-[#F8D7DA]/75 border border-[#D81B60]/20 text-[#D81B60] font-black text-[10px] uppercase tracking-widest shadow-sm shadow-pink-100/30 hover:scale-[1.02] flex items-center gap-1.5 transition-all" 
-                    : "nav-link-premium font-extrabold text-[10px] uppercase tracking-widest flex items-center gap-1.5"}
-                >
-                  <span>AI Stylist</span>
-                  <Sparkles className={`w-3.5 h-3.5 ${location.pathname === '/try-on' ? 'text-orange-500 fill-orange-500 animate-pulse' : 'text-[#D81B60] fill-none'}`} />
-                </Link>
+                {user && (user.role === 'seller' || user.role === 'admin') && (
+                  <Link 
+                    to="/try-on" 
+                    className={location.pathname === '/try-on' 
+                      ? "px-4 py-2 rounded-full bg-[#F8D7DA]/75 border border-[#D81B60]/20 text-[#D81B60] font-black text-[10px] uppercase tracking-widest shadow-sm shadow-pink-100/30 hover:scale-[1.02] flex items-center gap-1.5 transition-all" 
+                      : "nav-link-premium font-extrabold text-[10px] uppercase tracking-widest flex items-center gap-1.5"}
+                  >
+                    <span>AI Stylist</span>
+                    <Sparkles className={`w-3.5 h-3.5 ${location.pathname === '/try-on' ? 'text-orange-500 fill-orange-500 animate-pulse' : 'text-[#D81B60] fill-none'}`} />
+                  </Link>
+                )}
                 <Link 
                   to="/about" 
                   className={location.pathname === '/about' 

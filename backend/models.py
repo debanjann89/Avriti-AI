@@ -65,3 +65,20 @@ class Order(Base):
 
     user = relationship("User", back_populates="orders")
 
+
+class SellerApplication(Base):
+    __tablename__ = "seller_applications"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    store_name = Column(String)
+    store_description = Column(String)
+    business_email = Column(String)
+    business_phone = Column(String)
+    product_category = Column(String)
+    status = Column(String, default="pending")  # "pending", "approved", "rejected"
+    rejection_reason = Column(String, nullable=True)
+    submitted_at = Column(String)
+
+    user = relationship("User")
+

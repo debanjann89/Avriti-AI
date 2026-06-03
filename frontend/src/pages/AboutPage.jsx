@@ -1,7 +1,10 @@
 import { Sparkles, Heart, Shield, Cpu, Code, ArrowRight, Leaf, Users, Star, Compass } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
 
 export default function AboutPage() {
+  const { user } = useContext(AuthContext);
   return (
     <div className="min-h-screen bg-[#FFF8F8] pb-32 font-sans overflow-x-hidden relative select-none">
       {/* Premium Embedded Fonts and Typography Enhancements */}
@@ -563,16 +566,28 @@ export default function AboutPage() {
             Ready to visualize your select fits?
           </h3>
           <p className="text-xs text-[#1E1E1E]/50 font-semibold tracking-wide mb-6">
-            Drape sarees, lehengas, and ethnic wear virtually in under 5 seconds with Aavriti Try-On.
+            {user && (user.role === 'seller' || user.role === 'admin') 
+              ? "Drape sarees, lehengas, and ethnic wear virtually in under 5 seconds with Aavriti Try-On."
+              : "Discover a curated collection of royal Indian sarees, lehengas, and kurtas."}
           </p>
           <div className="flex justify-center">
-            <Link 
-              to="/try-on" 
-              className="px-8 py-4.5 rounded-full font-extrabold text-xs uppercase tracking-widest text-white bg-[#D81B60] hover:bg-[#A30D45] transition-all shadow-md shadow-pink-200/50 flex items-center gap-2 transform active:scale-98 cursor-pointer"
-            >
-              <span>Explore Virtual Try-On</span>
-              <ArrowRight className="w-4 h-4 stroke-[2.5]" />
-            </Link>
+            {user && (user.role === 'seller' || user.role === 'admin') ? (
+              <Link 
+                to="/try-on" 
+                className="px-8 py-4.5 rounded-full font-extrabold text-xs uppercase tracking-widest text-white bg-[#D81B60] hover:bg-[#A30D45] transition-all shadow-md shadow-pink-200/50 flex items-center gap-2 transform active:scale-98 cursor-pointer"
+              >
+                <span>Explore Virtual Try-On</span>
+                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+              </Link>
+            ) : (
+              <Link 
+                to="/collections" 
+                className="px-8 py-4.5 rounded-full font-extrabold text-xs uppercase tracking-widest text-white bg-[#D81B60] hover:bg-[#A30D45] transition-all shadow-md shadow-pink-200/50 flex items-center gap-2 transform active:scale-98 cursor-pointer"
+              >
+                <span>Shop All Outfits</span>
+                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+              </Link>
+            )}
           </div>
         </div>
 
