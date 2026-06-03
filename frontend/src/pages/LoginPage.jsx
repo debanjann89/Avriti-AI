@@ -48,11 +48,15 @@ export default function LoginPage() {
         
         {/* Logo / Header Section */}
         <div className="text-center space-y-3.5">
-          <Link to="/" className="text-3xl font-black font-jakarta tracking-tight bg-gradient-to-r from-[#D81B60] via-[#A30D45] to-[#D81B60] bg-clip-text text-transparent inline-block hover:scale-[1.01] transition-transform select-none">
-            Aavriti AI
+          <Link to="/">
+            <img 
+              src="/Logo.jpg" 
+              alt="Aavriti AI Logo" 
+              className="w-20 h-20 object-cover rounded-2xl mx-auto border border-pink-100 shadow-md hover:scale-105 transition-transform duration-300 select-none cursor-pointer"
+            />
           </Link>
           <div className="space-y-1">
-            <h3 className="text-sm font-black text-slate-800 tracking-tight uppercase leading-none font-jakarta">Sign In</h3>
+            <h3 className="text-sm font-black text-slate-800 tracking-tight uppercase leading-none font-jakarta mt-2">Sign In</h3>
             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
               Access your luxury virtual try-on studio
             </p>
