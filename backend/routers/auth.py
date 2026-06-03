@@ -6,15 +6,25 @@ import models
 import bcrypt
 import jwt
 import datetime
+import random
+import re
+import time
 
 router = APIRouter()
 SECRET_KEY = "supersecretkey"
 ALGORITHM = "HS256"
 
+# In-memory store for generated OTPs: email -> { "code": str, "expires_at": float }
+otp_store = {}
+
+class OTPRequest(BaseModel):
+    email: str
+
 class UserCreate(BaseModel):
     email: str
     password: str
     name: str
+    otp: str
 
 class UserLogin(BaseModel):
     email: str
@@ -26,8 +36,43 @@ def create_access_token(data: dict):
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
+@router.post("/send-otp")
+def send_otp(payload: OTPRequest):
+    email_regex = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+    if not re.match(email_regex, payload.email):
+        raise HTTPException(status_code=400, detail="Invalid email address format.")
+        
+    otp_code = f"{random.randint(100000, 999999)}"
+    otp_store[payload.email] = {
+        "code": otp_code,
+        "expires_at": time.time() + 300  # 5 minutes
+    }
+    
+    print(f"\n====================================\n[EMAIL OTP] Code for {payload.email}: {otp_code}\n====================================\n")
+    return {
+        "message": "Verification code sent successfully to email.",
+        "dev_otp": otp_code
+    }
+
 @router.post("/register")
 def register(user: UserCreate, db: Session = Depends(get_db)):
+    email_regex = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+    if not re.match(email_regex, user.email):
+        raise HTTPException(status_code=400, detail="Invalid email address format.")
+        
+    stored_otp = otp_store.get(user.email)
+    if not stored_otp:
+        raise HTTPException(status_code=400, detail="No verification code was sent to this email.")
+        
+    if time.time() > stored_otp["expires_at"]:
+        otp_store.pop(user.email, None)
+        raise HTTPException(status_code=400, detail="Verification code has expired. Please send a new code.")
+        
+    if stored_otp["code"] != user.otp:
+        raise HTTPException(status_code=400, detail="Incorrect verification code. Please check and try again.")
+        
+    otp_store.pop(user.email, None)
+
     db_user = db.query(models.User).filter(models.User.email == user.email).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
