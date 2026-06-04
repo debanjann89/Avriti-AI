@@ -123,6 +123,35 @@ export default function ProfilePage() {
       });
     }
   }, [user]);
+
+  // Pincode auto location detection
+  useEffect(() => {
+    const fetchLocationFromPincode = async () => {
+      const pin = addressDetails.pincode ? addressDetails.pincode.toString().trim() : '';
+      if (pin.length === 6 && /^\d+$/.test(pin)) {
+        try {
+          const res = await axios.get(`https://api.postalpincode.in/pincode/${pin}`);
+          if (res.data && res.data[0] && res.data[0].Status === "Success") {
+            const postOffices = res.data[0].PostOffice;
+            if (postOffices && postOffices.length > 0) {
+              const info = postOffices[0];
+              const detectedCity = info.District || info.Taluk || "";
+              const detectedState = info.State || "";
+              
+              setAddressDetails(prev => ({
+                ...prev,
+                city: detectedCity,
+                state: detectedState
+              }));
+            }
+          }
+        } catch (e) {
+          console.error("Error fetching pincode details", e);
+        }
+      }
+    };
+    fetchLocationFromPincode();
+  }, [addressDetails.pincode]);
   
   const [isSaving, setIsSaving] = useState(false);
   const [orders, setOrders] = useState([]);
@@ -156,7 +185,8 @@ export default function ProfilePage() {
     craft_technique: '',
     wash_care: '',
     country_of_origin: '',
-    external_url: ''
+    external_url: '',
+    images: []
   });
   const [productImagePreview, setProductImagePreview] = useState(null);
 
@@ -403,7 +433,8 @@ export default function ProfilePage() {
       craft_technique: productForm.craft_technique || null,
       wash_care: productForm.wash_care || null,
       country_of_origin: productForm.country_of_origin || null,
-      external_url: productForm.external_url || null
+      external_url: productForm.external_url || null,
+      images: productForm.images || []
     };
     try {
       if (editingProduct) {
@@ -415,7 +446,7 @@ export default function ProfilePage() {
       }
       setIsProductModalOpen(false);
       setEditingProduct(null);
-      setProductForm({ name: '', brand: '', price: '', category: 'Sarees', description: '', tryOnCompatible: true, image_b64: '', image_url: '', fabric: '', craft_technique: '', wash_care: '', country_of_origin: '', external_url: '' });
+      setProductForm({ name: '', brand: '', price: '', category: 'Sarees', description: '', tryOnCompatible: true, image_b64: '', image_url: '', fabric: '', craft_technique: '', wash_care: '', country_of_origin: '', external_url: '', images: [] });
       setProductImagePreview(null);
       fetchSellerData();
     } catch (err) {
@@ -439,7 +470,8 @@ export default function ProfilePage() {
       craft_technique: prod.craft_technique || '',
       wash_care: prod.wash_care || '',
       country_of_origin: prod.country_of_origin || '',
-      external_url: prod.external_url || ''
+      external_url: prod.external_url || '',
+      images: prod.images ? (typeof prod.images === 'string' ? JSON.parse(prod.images) : prod.images) : []
     });
     setProductImagePreview(prod.image);
     setIsProductModalOpen(true);
@@ -1161,7 +1193,7 @@ export default function ProfilePage() {
                       <button
                         onClick={() => {
                           setEditingProduct(null);
-                          setProductForm({ name: '', brand: '', price: '', category: 'Sarees', description: '', tryOnCompatible: true, image_b64: '', image_url: '', fabric: '', craft_technique: '', wash_care: '', country_of_origin: '', external_url: '' });
+                          setProductForm({ name: '', brand: '', price: '', category: 'Sarees', description: '', tryOnCompatible: true, image_b64: '', image_url: '', fabric: '', craft_technique: '', wash_care: '', country_of_origin: '', external_url: '', images: [] });
                           setProductImagePreview(null);
                           setIsProductModalOpen(true);
                         }}
@@ -1269,7 +1301,7 @@ export default function ProfilePage() {
                             <button
                               onClick={() => {
                                 setEditingProduct(null);
-                                setProductForm({ name: '', brand: '', price: '', category: 'Sarees', description: '', tryOnCompatible: true, image_b64: '', image_url: '', fabric: '', craft_technique: '', wash_care: '', country_of_origin: '', external_url: '' });
+                                setProductForm({ name: '', brand: '', price: '', category: 'Sarees', description: '', tryOnCompatible: true, image_b64: '', image_url: '', fabric: '', craft_technique: '', wash_care: '', country_of_origin: '', external_url: '', images: [] });
                                 setProductImagePreview(null);
                                 setIsProductModalOpen(true);
                               }}
@@ -1357,6 +1389,7 @@ export default function ProfilePage() {
                                 <div>
                                   <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Customer</p>
                                   <p className="text-xs font-bold text-slate-755">{order.user_name}</p>
+                                  <p className="text-[9px] text-gray-455 leading-tight mt-0.5">{order.user_email} • {order.user_phone}</p>
                                 </div>
                                 <div>
                                   <p className="text-[9px] text-gray-450 font-bold uppercase tracking-widest block">Shipment Status</p>
@@ -1392,6 +1425,10 @@ export default function ProfilePage() {
                                       </div>
                                     </div>
                                     <div className="flex items-center gap-6 shrink-0">
+                                      <div className="text-center">
+                                        <span className="block text-[8px] text-gray-450 uppercase">Size</span>
+                                        <strong className="text-xs font-extrabold text-slate-800">{item.size || "M"}</strong>
+                                      </div>
                                       <div className="text-center">
                                         <span className="block text-[8px] text-gray-450 uppercase">Qty</span>
                                         <strong className="text-xs font-extrabold text-slate-800">{item.quantity}</strong>
@@ -1607,6 +1644,53 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
+                  {/* Extra Gallery Images slots */}
+                  <div className="space-y-2 border-t border-gray-100 pt-4">
+                    <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Extra Gallery Photos (Optional - Max 4)</label>
+                    <div className="flex flex-wrap gap-3">
+                      {productForm.images && productForm.images.map((img, idx) => (
+                        <div key={idx} className="w-16 h-16 rounded-xl border border-gray-200 overflow-hidden relative bg-gray-50 flex items-center justify-center shrink-0 shadow-sm animate-fadeIn">
+                          <img src={img.startsWith('data:') || img.startsWith('http') ? img : `http://127.0.0.1:8000${img}`} alt="Gallery Preview" className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = [...productForm.images];
+                              updated.splice(idx, 1);
+                              setProductForm({...productForm, images: updated});
+                            }}
+                            className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-rose-600 hover:bg-rose-700 text-white rounded-full flex items-center justify-center transition-colors border-0 cursor-pointer shadow-xs"
+                          >
+                            <X className="w-2.5 h-2.5" />
+                          </button>
+                        </div>
+                      ))}
+                      
+                      {(!productForm.images || productForm.images.length < 4) && (
+                        <label className="w-16 h-16 rounded-xl border border-dashed border-gray-300 hover:border-pink-500 cursor-pointer flex flex-col items-center justify-center text-gray-400 hover:text-pink-650 transition-colors bg-slate-50/50">
+                          <Plus className="w-5 h-5 stroke-[1.5]" />
+                          <span className="text-[7px] font-black uppercase mt-1">Add Image</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files[0];
+                              if (file) {
+                                const reader = new FileReader();
+                                reader.onloadend = () => {
+                                  const updated = productForm.images ? [...productForm.images] : [];
+                                  updated.push(reader.result);
+                                  setProductForm({...productForm, images: updated});
+                                };
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                          />
+                        </label>
+                      )}
+                    </div>
+                  </div>
+
                   {/* Modal Footer */}
                   <div className="flex justify-end gap-3 pt-6 border-t border-gray-150">
                     <button
@@ -1696,6 +1780,10 @@ export default function ProfilePage() {
                               </div>
                             </div>
                             <div className="flex items-center gap-6 shrink-0">
+                              <div className="text-center">
+                                <p className="text-[9px] text-gray-400 font-bold">Size</p>
+                                <p className="text-xs font-extrabold text-slate-700">{item.size || "M"}</p>
+                              </div>
                               <div className="text-center">
                                 <p className="text-[9px] text-gray-400 font-bold">Qty</p>
                                 <p className="text-xs font-extrabold text-slate-700">{item.quantity}</p>

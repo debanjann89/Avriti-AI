@@ -9,6 +9,7 @@ router = APIRouter()
 class CartAdd(BaseModel):
     user_id: int
     product_id: str
+    size: str | None = "M"
 
 @router.get("/{user_id}")
 def get_cart(user_id: int, db: Session = Depends(get_db)):
@@ -21,6 +22,7 @@ def get_cart(user_id: int, db: Session = Depends(get_db)):
             result.append({
                 "id": item.id,
                 "quantity": item.quantity,
+                "size": item.size or "M",
                 "product": {
                     "id": prod.id,
                     "name": prod.name,
@@ -33,16 +35,17 @@ def get_cart(user_id: int, db: Session = Depends(get_db)):
 
 @router.post("/")
 def add_to_cart(item: CartAdd, db: Session = Depends(get_db)):
-    # Check if exists
+    # Check if exists with same product and size
     db_item = db.query(models.CartItem).filter(
         models.CartItem.user_id == item.user_id,
-        models.CartItem.product_id == item.product_id
+        models.CartItem.product_id == item.product_id,
+        models.CartItem.size == item.size
     ).first()
     
     if db_item:
         db_item.quantity += 1
     else:
-        db_item = models.CartItem(user_id=item.user_id, product_id=item.product_id, quantity=1)
+        db_item = models.CartItem(user_id=item.user_id, product_id=item.product_id, size=item.size, quantity=1)
         db.add(db_item)
     
     db.commit()

@@ -48,6 +48,40 @@ export default function CartSidebar() {
     }
   }, [user, checkoutStep]);
 
+  // Pincode auto location detection for checkout
+  useEffect(() => {
+    const fetchCheckoutLocation = async () => {
+      const pin = shippingForm.pincode ? shippingForm.pincode.toString().trim() : '';
+      if (pin.length === 6 && /^\d+$/.test(pin)) {
+        try {
+          const res = await axios.get(`https://api.postalpincode.in/pincode/${pin}`);
+          if (res.data && res.data[0] && res.data[0].Status === "Success") {
+            const postOffices = res.data[0].PostOffice;
+            if (postOffices && postOffices.length > 0) {
+              const info = postOffices[0];
+              const detectedCity = info.District || "";
+              const detectedState = info.State || "";
+              
+              setShippingForm(prev => {
+                const cityStateStr = `${detectedCity}, ${detectedState}`;
+                if (prev.address.includes(detectedCity)) {
+                  return prev;
+                }
+                const newAddress = prev.address 
+                  ? `${prev.address.trim()}, ${cityStateStr}` 
+                  : cityStateStr;
+                return { ...prev, address: newAddress };
+              });
+            }
+          }
+        } catch (e) {
+          console.error("Error fetching pincode in checkout", e);
+        }
+      }
+    };
+    fetchCheckoutLocation();
+  }, [shippingForm.pincode]);
+
   if (!isCartOpen) return null;
 
   const total = cartItems.reduce((acc, item) => acc + (item.product.price * item.quantity), 0);
@@ -199,7 +233,10 @@ export default function CartSidebar() {
                                 <p className="mt-1 text-xs text-gray-500">{item.product.brand}</p>
                               </div>
                               <div className="flex-1 flex items-end justify-between text-xs">
-                                <span className="bg-pink-50 text-pink-700 px-2 py-0.5 rounded-full font-medium">Qty {item.quantity}</span>
+                                <div className="flex gap-1.5">
+                                  <span className="bg-pink-50 text-pink-700 px-2 py-0.5 rounded-full font-medium">Size: {item.size || "M"}</span>
+                                  <span className="bg-pink-50 text-pink-700 px-2 py-0.5 rounded-full font-medium">Qty {item.quantity}</span>
+                                </div>
                                 <button
                                   type="button"
                                   onClick={() => removeFromCart(item.id)}

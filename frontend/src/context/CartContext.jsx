@@ -26,12 +26,12 @@ export function CartProvider({ children }) {
     fetchCart();
   }, [user]);
 
-  const addToCart = async (product_id) => {
+  const addToCart = async (product_id, size = "M") => {
     if (!user) {
       alert("Please login to add to cart");
       return;
     }
-    await axios.post('http://127.0.0.1:8000/api/cart/', { user_id: user.id, product_id });
+    await axios.post('http://127.0.0.1:8000/api/cart/', { user_id: user.id, product_id, size });
     fetchCart();
     setIsCartOpen(true);
   };

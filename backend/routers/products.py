@@ -22,6 +22,7 @@ class ProductCreate(BaseModel):
     wash_care: str | None = None
     country_of_origin: str | None = None
     external_url: str | None = None
+    images: list[str] | None = None
 
 def save_base64_image(image_str: str) -> str:
     if image_str.startswith("data:image"):
@@ -54,7 +55,15 @@ def get_products(db: Session = Depends(get_db)):
 
 @router.post("/")
 def create_product(product: ProductCreate, db: Session = Depends(get_db)):
+    import json
     saved_image_url = save_base64_image(product.image)
+    
+    # Save base64 for extra images if they are passed as base64
+    saved_extra_images = []
+    if product.images:
+        for img in product.images:
+            saved_extra_images.append(save_base64_image(img))
+            
     db_product = models.Product(
         id=str(uuid.uuid4()),
         name=product.name,
@@ -68,7 +77,8 @@ def create_product(product: ProductCreate, db: Session = Depends(get_db)):
         craft_technique=product.craft_technique,
         wash_care=product.wash_care,
         country_of_origin=product.country_of_origin,
-        external_url=product.external_url
+        external_url=product.external_url,
+        images=json.dumps(saved_extra_images) if saved_extra_images else None
     )
     db.add(db_product)
     db.commit()
@@ -120,6 +130,22 @@ async def extract_url_details(payload: URLImportRequest):
             extracted_data["name"] = "Imported Outfit"
         if not extracted_data.get("price"):
             extracted_data["price"] = 0.0
+            
+        # Determine platform name
+        platform = "External Website"
+        url_lower = payload.url.lower()
+        if "amazon" in url_lower:
+            platform = "Amazon"
+        elif "flipkart" in url_lower:
+            platform = "Flipkart"
+        elif "meesho" in url_lower:
+            platform = "Meesho"
+        elif "myntra" in url_lower:
+            platform = "Myntra"
+            
+        # Prepend platform information to the brand field
+        brand = extracted_data.get("brand") or "Boutique Brand"
+        extracted_data["brand"] = f"{brand} (Imported from {platform})"
         
         # Inject URL reference
         extracted_data["external_url"] = payload.url
@@ -130,9 +156,17 @@ async def extract_url_details(payload: URLImportRequest):
 
 @router.put("/{product_id}")
 def update_product(product_id: str, product: ProductCreate, db: Session = Depends(get_db)):
+    import json
     db_product = db.query(models.Product).filter(models.Product.id == product_id).first()
     if db_product:
         saved_image_url = save_base64_image(product.image)
+        
+        # Save base64 for extra images if they are passed as base64
+        saved_extra_images = []
+        if product.images:
+            for img in product.images:
+                saved_extra_images.append(save_base64_image(img))
+                
         db_product.name = product.name
         db_product.brand = product.brand
         db_product.price = product.price
@@ -145,6 +179,7 @@ def update_product(product_id: str, product: ProductCreate, db: Session = Depend
         db_product.wash_care = product.wash_care
         db_product.country_of_origin = product.country_of_origin
         db_product.external_url = product.external_url
+        db_product.images = json.dumps(saved_extra_images) if saved_extra_images else None
         db.commit()
         db.refresh(db_product)
     return db_product

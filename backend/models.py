@@ -44,6 +44,7 @@ class Product(Base):
     wash_care = Column(String, nullable=True)
     country_of_origin = Column(String, nullable=True)
     external_url = Column(String, nullable=True)
+    images = Column(String, nullable=True) # JSON array of image URLs
 
     cart_items = relationship("CartItem", back_populates="product")
 
@@ -55,6 +56,7 @@ class CartItem(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     product_id = Column(String, ForeignKey("products.id"))
     quantity = Column(Integer, default=1)
+    size = Column(String, nullable=True, default="M")
 
     user = relationship("User", back_populates="cart_items")
     product = relationship("Product", back_populates="cart_items")

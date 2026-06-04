@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useProducts } from '../hooks/useProducts';
-import { ShoppingBag, Heart, ChevronLeft, ChevronDown, Star, MessageSquare, Sparkles, X, Download } from 'lucide-react';
+import { ShoppingBag, Heart, ChevronLeft, ChevronDown, Star, MessageSquare, Sparkles, X, Download, Link2 } from 'lucide-react';
 import { CartContext } from '../context/CartContext';
 import { AuthContext } from '../context/AuthContext';
 import axios from 'axios';
@@ -26,6 +26,9 @@ export default function ProductPage() {
   const [selectedTryOnUrl, setSelectedTryOnUrl] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [zoomedImage, setZoomedImage] = useState(null);
+  const [activeImage, setActiveImage] = useState("");
+  const [cartToast, setCartToast] = useState(null);
+  const [selectedSize, setSelectedSize] = useState("M");
 
   const fetchReviews = async () => {
     try {
@@ -53,9 +56,21 @@ export default function ProductPage() {
     if (products.length > 0) {
       const found = products.find(p => p.id === id);
       setProduct(found);
+      if (found) {
+        setActiveImage(found.image);
+      }
     }
     window.scrollTo(0, 0);
   }, [id, products]);
+
+  useEffect(() => {
+    if (cartToast && cartToast.show) {
+      const timer = setTimeout(() => {
+        setCartToast(null);
+      }, 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [cartToast]);
 
   useEffect(() => {
     if (id) {
@@ -123,6 +138,21 @@ export default function ProductPage() {
     return <div className="min-h-screen flex items-center justify-center text-gray-500 font-medium">Loading...</div>;
   }
 
+  const extraImages = product.images 
+    ? (typeof product.images === 'string' ? JSON.parse(product.images) : product.images)
+    : [];
+  const allImages = [product.image, ...extraImages].filter(Boolean);
+
+  const getPlatformInfo = (url) => {
+    if (!url) return null;
+    const urlLower = url.toLowerCase();
+    if (urlLower.includes('amazon')) return { name: 'Amazon', color: 'bg-amber-55/10 text-amber-900 border-amber-500/20' };
+    if (urlLower.includes('flipkart')) return { name: 'Flipkart', color: 'bg-blue-55/10 text-blue-900 border-blue-500/20' };
+    if (urlLower.includes('meesho')) return { name: 'Meesho', color: 'bg-fuchsia-55/10 text-fuchsia-900 border-fuchsia-500/20' };
+    if (urlLower.includes('myntra')) return { name: 'Myntra', color: 'bg-rose-55/10 text-rose-900 border-rose-500/20' };
+    return { name: 'External Platform', color: 'bg-slate-55/10 text-slate-900 border-slate-500/20' };
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 font-sans select-none">
       <Link to="/home" className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-900 mb-8 transition-colors">
@@ -134,15 +164,44 @@ export default function ProductPage() {
         <div className="mb-10 lg:mb-0">
           <div className="aspect-[4/5] rounded-3xl overflow-hidden bg-gray-100 shadow-lg relative border border-pink-50">
             <img
-              src={product.image.startsWith('http') ? product.image : `http://127.0.0.1:8000${product.image}`}
+              src={activeImage ? (activeImage.startsWith('http') ? activeImage : `http://127.0.0.1:8000${activeImage}`) : (product.image.startsWith('http') ? product.image : `http://127.0.0.1:8000${product.image}`)}
               alt={product.name}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover transition-all duration-300"
             />
           </div>
+
+          {/* Thumbnail Gallery */}
+          {allImages.length > 1 && (
+            <div className="flex gap-3 mt-4 overflow-x-auto pb-2 scrollbar-none justify-start">
+              {allImages.map((img, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setActiveImage(img)}
+                  className={`w-16 h-20 rounded-xl overflow-hidden border-2 transition-all duration-200 shrink-0 p-0 bg-transparent cursor-pointer ${
+                    (activeImage || product.image) === img ? 'border-pink-600 shadow-md scale-[1.02]' : 'border-gray-200 hover:border-pink-300'
+                  }`}
+                >
+                  <img
+                    src={img.startsWith('http') ? img : `http://127.0.0.1:8000${img}`}
+                    alt={`${product.name} gallery ${idx + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Product Details */}
         <div className="flex flex-col text-left">
+          {product.external_url && (
+            <div className="flex mb-3.5">
+              <span className={`inline-flex items-center gap-1.5 font-extrabold text-[9px] uppercase tracking-widest px-3 py-1 rounded-full border ${getPlatformInfo(product.external_url)?.color || 'bg-slate-50 text-slate-800 border-slate-200'} shadow-sm animate-fadeIn`}>
+                <Link2 className="w-3 h-3 text-current" />
+                <span>Imported from {getPlatformInfo(product.external_url)?.name}</span>
+              </span>
+            </div>
+          )}
           <h2 className="text-lg font-medium text-gray-500 mb-2">{product.brand}</h2>
           <h1 className="text-4xl font-extrabold text-gray-900 mb-4 tracking-tight uppercase font-jakarta">{product.name}</h1>
           <p className="text-3xl font-bold text-pink-600 mb-8">₹{Number(product.price).toLocaleString('en-IN')}</p>
@@ -184,13 +243,49 @@ export default function ProductPage() {
             </div>
           )}
           
+          {/* Size Selection */}
+          <div className="mb-6 mt-4 text-left">
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Select Size</span>
+            <div className="flex gap-2">
+              {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map((sz) => (
+                <button
+                  key={sz}
+                  type="button"
+                  onClick={() => setSelectedSize(sz)}
+                  className={`w-10 h-10 rounded-xl font-bold text-xs uppercase transition-all flex items-center justify-center border cursor-pointer ${
+                    selectedSize === sz
+                      ? 'bg-black text-white border-black shadow-md scale-[1.02] font-extrabold'
+                      : 'bg-white text-gray-700 border-gray-250 hover:border-black'
+                  }`}
+                >
+                  {sz}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Actions */}
           <div className="mt-auto space-y-4">
             <div className="flex space-x-4">
               <button 
                 onClick={() => {
-                  addToCart(product.id);
-                  alert(`${product.name} added to cart!`);
+                  if (!user) {
+                    setCartToast({
+                      show: true,
+                      message: "Please login to add items to your cart.",
+                      type: "error"
+                    });
+                    return;
+                  }
+                  addToCart(product.id, selectedSize);
+                  setCartToast({
+                    show: true,
+                    productName: product.name,
+                    productImage: product.image,
+                    price: product.price,
+                    size: selectedSize,
+                    type: "success"
+                  });
                 }}
                 className="flex-1 bg-black text-white px-6 py-4 rounded-xl font-bold text-lg hover:bg-gray-800 transition-colors shadow-md flex items-center justify-center border-0 cursor-pointer"
               >
@@ -498,6 +593,38 @@ export default function ProductPage() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+      {/* Toast Notification for Add to Cart */}
+      {cartToast && cartToast.show && (
+        <div className="fixed bottom-6 right-6 z-55 max-w-sm w-full bg-white/95 backdrop-blur-xl border border-pink-100 p-4 rounded-2xl shadow-2xl flex items-center gap-4 animate-slideIn">
+          {cartToast.type === 'error' ? (
+            <div className="flex-1 text-left py-1">
+              <span className="text-[9px] font-black text-rose-700 uppercase tracking-widest block mb-0.5">Authentication Alert</span>
+              <p className="text-xs font-bold text-gray-800 leading-normal">{cartToast.message}</p>
+            </div>
+          ) : (
+            <>
+              <div className="w-12 h-16 rounded-lg overflow-hidden border border-pink-200/50 shadow-sm shrink-0 bg-white">
+                <img 
+                  src={cartToast.productImage.startsWith('http') ? cartToast.productImage : `http://127.0.0.1:8000${cartToast.productImage}`} 
+                  alt={cartToast.productName} 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="flex-1 text-left min-w-0">
+                <span className="text-[9px] font-black text-pink-700 uppercase tracking-widest block mb-0.5">Added to Cart</span>
+                <h4 className="text-xs font-bold text-gray-900 truncate uppercase tracking-tight">{cartToast.productName}</h4>
+                <span className="text-[10px] font-medium text-gray-500">Size: {cartToast.size} • Qty: 1 • ₹{Number(cartToast.price).toLocaleString('en-IN')}</span>
+              </div>
+            </>
+          )}
+          <button 
+            onClick={() => setCartToast(null)}
+            className="p-1.5 hover:bg-pink-105 rounded-full border border-pink-100 text-pink-650 transition-colors border-0 cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
     </div>

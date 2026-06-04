@@ -245,6 +245,7 @@ class ExtractedProduct(BaseModel):
     brand: Optional[str] = None
     price: float
     image: Optional[str] = None
+    images: Optional[list[str]] = None
     category: Optional[str] = None
     description: Optional[str] = None
     fabric: Optional[str] = None
@@ -280,6 +281,7 @@ def extract_product_from_html(html_text: str) -> dict:
     - brand: The brand name of the product.
     - price: The current numeric price (as float, remove currency symbols like ₹, $, etc. e.g. 2999).
     - image: The primary product image URL. First look in metadata tags (e.g. og:image, twitter:image, image_src), zoom image srcs, or main gallery image containers. Ensure you return a direct valid URL link, not a relative path or placeholder.
+    - images: A list of up to 5 alternative product images (e.g. carousel images, detail views, different angles). Search for image list grids or arrays.
     - category: Choose the single best category from: "Sarees", "Lehengas", "Kurtas & Suits", "Western Wear", "Accessories".
     - description: A detailed summary of the product's design, style, prints, and look.
     - fabric: The main fabric type (e.g. Silk, Georgette, Organza, Cotton, Linen, Polyester).

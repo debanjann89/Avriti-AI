@@ -41,6 +41,7 @@ def checkout_cart(data: OrderCheckout, db: Session = Depends(get_db)):
                 "brand": prod.brand,
                 "price": prod.price,
                 "quantity": item.quantity,
+                "size": item.size or "M",
                 "image": prod.image
             })
             
@@ -73,6 +74,47 @@ def checkout_cart(data: OrderCheckout, db: Session = Depends(get_db)):
         "shipping_address": new_order.shipping_address,
         "items": purchased_items
     }
+
+class OrderStatusUpdateAdmin(BaseModel):
+    status: str
+
+@router.get("/")
+def get_all_orders(db: Session = Depends(get_db)):
+    orders = db.query(models.Order).order_by(models.Order.id.desc()).all()
+    
+    result = []
+    for order in orders:
+        try:
+            items_list = json.loads(order.items)
+        except:
+            items_list = []
+            
+        user = db.query(models.User).filter(models.User.id == order.user_id).first()
+        
+        result.append({
+            "id": order.id,
+            "user_id": order.user_id,
+            "user_name": user.name if user else "Anonymous",
+            "user_email": user.email if user else "N/A",
+            "user_phone": user.phone if user else "N/A",
+            "order_date": order.order_date,
+            "total_amount": order.total_amount,
+            "status": order.status,
+            "shipping_address": order.shipping_address,
+            "items": items_list
+        })
+        
+    return result
+
+@router.put("/{order_id}/status")
+def update_order_status(order_id: int, payload: OrderStatusUpdateAdmin, db: Session = Depends(get_db)):
+    order = db.query(models.Order).filter(models.Order.id == order_id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    order.status = payload.status
+    db.commit()
+    db.refresh(order)
+    return order
 
 @router.get("/{user_id}")
 def get_order_history(user_id: int, db: Session = Depends(get_db)):

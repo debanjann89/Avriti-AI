@@ -25,6 +25,7 @@ class ProductCreate(BaseModel):
     wash_care: str | None = None
     country_of_origin: str | None = None
     external_url: str | None = None
+    images: list[str] | None = None
 
 class ProductUpdate(BaseModel):
     user_id: int
@@ -41,6 +42,7 @@ class ProductUpdate(BaseModel):
     wash_care: str | None = None
     country_of_origin: str | None = None
     external_url: str | None = None
+    images: list[str] | None = None
 
 class OrderStatusUpdate(BaseModel):
     user_id: int
@@ -77,6 +79,18 @@ def create_seller_product(payload: ProductCreate, db: Session = Depends(get_db))
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to save product image: {str(e)}")
 
+    # Process extra images
+    saved_extra_images = []
+    if payload.images:
+        for img in payload.images:
+            if img.startswith("data:image") or len(img) > 1000:
+                try:
+                    saved_extra_images.append(save_b64_image(img))
+                except Exception as e:
+                    print(f"Failed to save extra image: {e}")
+            else:
+                saved_extra_images.append(img)
+
     new_prod = models.Product(
         id=f"prod_{uuid.uuid4().hex[:8]}",
         name=payload.name,
@@ -91,7 +105,8 @@ def create_seller_product(payload: ProductCreate, db: Session = Depends(get_db))
         craft_technique=payload.craft_technique,
         wash_care=payload.wash_care,
         country_of_origin=payload.country_of_origin,
-        external_url=payload.external_url
+        external_url=payload.external_url,
+        images=json.dumps(saved_extra_images) if saved_extra_images else None
     )
     db.add(new_prod)
     db.commit()
@@ -114,6 +129,18 @@ def update_seller_product(product_id: str, payload: ProductUpdate, db: Session =
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to update product image: {str(e)}")
 
+    # Process extra images for update
+    saved_extra_images = []
+    if payload.images:
+        for img in payload.images:
+            if img.startswith("data:image") or len(img) > 1000:
+                try:
+                    saved_extra_images.append(save_b64_image(img))
+                except Exception as e:
+                    print(f"Failed to save extra image: {e}")
+            else:
+                saved_extra_images.append(img)
+
     prod.name = payload.name
     prod.brand = payload.brand
     prod.price = payload.price
@@ -126,6 +153,7 @@ def update_seller_product(product_id: str, payload: ProductUpdate, db: Session =
     prod.wash_care = payload.wash_care
     prod.country_of_origin = payload.country_of_origin
     prod.external_url = payload.external_url
+    prod.images = json.dumps(saved_extra_images) if saved_extra_images else None
 
     db.commit()
     db.refresh(prod)
@@ -177,6 +205,8 @@ def get_seller_orders(user_id: int, db: Session = Depends(get_db)):
                 "id": order.id,
                 "user_id": order.user_id,
                 "user_name": order.user.name if order.user else "Anonymous",
+                "user_email": order.user.email if order.user else "N/A",
+                "user_phone": order.user.phone if order.user else "N/A",
                 "order_date": order.order_date,
                 "shipping_address": order.shipping_address,
                 "status": order.status,
