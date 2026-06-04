@@ -12,6 +12,8 @@ export default function ProductPage() {
   const [product, setProduct] = useState(null);
   const { addToCart } = useContext(CartContext);
   const { user } = useContext(AuthContext);
+  const [sellerInfo, setSellerInfo] = useState(null);
+  const [loadingSeller, setLoadingSeller] = useState(false);
 
   // Reviews and Wardrobe state
   const [reviews, setReviews] = useState([]);
@@ -66,6 +68,25 @@ export default function ProductPage() {
       fetchWardrobe();
     }
   }, [user]);
+
+  useEffect(() => {
+    const fetchSellerInfo = async () => {
+      if (product?.seller_id) {
+        setLoadingSeller(true);
+        try {
+          const res = await axios.get(`http://127.0.0.1:8000/api/users/profile-info?user_id=${product.seller_id}`);
+          setSellerInfo(res.data);
+        } catch (e) {
+          console.error("Error loading seller profile info", e);
+        } finally {
+          setLoadingSeller(false);
+        }
+      } else {
+        setSellerInfo(null);
+      }
+    };
+    fetchSellerInfo();
+  }, [product]);
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
@@ -126,9 +147,42 @@ export default function ProductPage() {
           <h1 className="text-4xl font-extrabold text-gray-900 mb-4 tracking-tight uppercase font-jakarta">{product.name}</h1>
           <p className="text-3xl font-bold text-pink-600 mb-8">₹{Number(product.price).toLocaleString('en-IN')}</p>
           
-          <div className="prose prose-sm text-gray-650 leading-relaxed mb-8">
+          <div className="prose prose-sm text-gray-650 leading-relaxed mb-6">
             <p className="whitespace-pre-wrap">{product.description}</p>
           </div>
+
+          {/* Artisan & Heritage Specifications Grid */}
+          {(product.fabric || product.craft_technique || product.wash_care || product.country_of_origin) && (
+            <div className="border-t border-b border-gray-150 py-6 mb-8 space-y-3.5">
+              <h3 className="text-[10px] font-black text-pink-650 uppercase tracking-widest block">Heritage & Craft Specs</h3>
+              <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                {product.fabric && (
+                  <div className="flex flex-col text-left">
+                    <span className="text-[8px] text-gray-400 font-bold uppercase tracking-wider">Fabric Type</span>
+                    <span className="text-xs font-bold text-slate-800 uppercase mt-0.5">{product.fabric}</span>
+                  </div>
+                )}
+                {product.craft_technique && (
+                  <div className="flex flex-col text-left">
+                    <span className="text-[8px] text-gray-400 font-bold uppercase tracking-wider">Craft Technique</span>
+                    <span className="text-xs font-bold text-slate-800 uppercase mt-0.5">{product.craft_technique}</span>
+                  </div>
+                )}
+                {product.wash_care && (
+                  <div className="flex flex-col text-left">
+                    <span className="text-[8px] text-gray-400 font-bold uppercase tracking-wider">Wash Care Guide</span>
+                    <span className="text-xs font-bold text-slate-800 uppercase mt-0.5">{product.wash_care}</span>
+                  </div>
+                )}
+                {product.country_of_origin && (
+                  <div className="flex flex-col text-left">
+                    <span className="text-[8px] text-gray-400 font-bold uppercase tracking-wider">Country of Origin</span>
+                    <span className="text-xs font-bold text-slate-800 uppercase mt-0.5">{product.country_of_origin}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
           
           {/* Actions */}
           <div className="mt-auto space-y-4">
@@ -149,6 +203,55 @@ export default function ProductPage() {
           </div>
         </div>
       </div>
+
+      {/* Artisan Boutique Profile */}
+      {sellerInfo && (
+        <div className="mt-12 bg-gradient-to-r from-pink-50/40 via-white to-pink-50/10 border border-pink-100/70 p-6 sm:p-8 rounded-3xl text-left shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-6 animate-fadeIn">
+          <div className="flex items-center gap-4.5 min-w-0">
+            <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-pink-200/50 shadow-sm shrink-0 flex items-center justify-center bg-white">
+              <img 
+                src={sellerInfo.profile_picture || "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=120&q=80"} 
+                alt={sellerInfo.store_name || sellerInfo.name} 
+                className="w-full h-full object-cover" 
+              />
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-black text-gray-900 uppercase tracking-tight font-jakarta">
+                  {sellerInfo.store_name || `${sellerInfo.name}'s Boutique`}
+                </h3>
+                <span className="inline-flex items-center gap-1 bg-pink-50 text-pink-700 font-extrabold text-[8px] uppercase tracking-widest px-2.5 py-0.5 rounded-full border border-pink-200/20">
+                  <Sparkles className="w-2.5 h-2.5 fill-pink-100 text-pink-655" />
+                  <span>Verified Boutique Partner</span>
+                </span>
+              </div>
+              <p className="text-[11px] text-gray-500 leading-relaxed max-w-xl">
+                {sellerInfo.store_description || "An artisan boutique dedicated to preserving handloom heritage, using certified natural fibers, and creating custom heritage collections."}
+              </p>
+            </div>
+          </div>
+
+          <div className="w-full md:w-auto flex flex-col sm:flex-row gap-3 md:gap-4 shrink-0 border-t border-gray-100 md:border-t-0 pt-4 md:pt-0">
+            <div className="text-left sm:text-right">
+              <span className="block text-[8px] text-gray-400 font-bold uppercase tracking-wider font-sans">Boutique Contact</span>
+              <strong className="block text-xs font-bold text-gray-800 mt-0.5 font-sans">{sellerInfo.email}</strong>
+              {sellerInfo.phone && (
+                <span className="block text-[10px] text-gray-400 font-medium mt-0.5 font-sans">{sellerInfo.phone}</span>
+              )}
+            </div>
+            {product.external_url && (
+              <a 
+                href={product.external_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-[10px] uppercase tracking-widest px-5 py-3 rounded-xl shadow-md transition-all self-center text-center no-underline border-0 cursor-pointer"
+              >
+                View Original Reference
+              </a>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ================= PRODUCT REVIEWS & COMMUNITY SHOWCASE ================= */}
       <section className="mt-20 pt-12 border-t border-gray-200 text-left">

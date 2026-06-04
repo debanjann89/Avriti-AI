@@ -277,6 +277,18 @@ def get_profile_info(user_id: int, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+        
+    store_name = None
+    store_description = None
+    if user.role == "seller":
+        app = db.query(models.SellerApplication).filter(
+            models.SellerApplication.user_id == user.id,
+            models.SellerApplication.status == "approved"
+        ).first()
+        if app:
+            store_name = app.store_name
+            store_description = app.store_description
+            
     return {
         "id": user.id,
         "email": user.email,
@@ -289,6 +301,8 @@ def get_profile_info(user_id: int, db: Session = Depends(get_db)):
         "weight": user.weight,
         "body_type": user.body_type,
         "shoulder_width": user.shoulder_width,
-        "waist_size": user.waist_size
+        "waist_size": user.waist_size,
+        "store_name": store_name,
+        "store_description": store_description
     }
 

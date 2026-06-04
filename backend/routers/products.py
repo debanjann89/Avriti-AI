@@ -15,6 +15,13 @@ class ProductCreate(BaseModel):
     category: str
     description: str
     tryOnCompatible: bool = False
+    
+    # Extended metadata
+    fabric: str | None = None
+    craft_technique: str | None = None
+    wash_care: str | None = None
+    country_of_origin: str | None = None
+    external_url: str | None = None
 
 def save_base64_image(image_str: str) -> str:
     if image_str.startswith("data:image"):
@@ -56,12 +63,53 @@ def create_product(product: ProductCreate, db: Session = Depends(get_db)):
         image=saved_image_url,
         category=product.category,
         description=product.description,
-        tryOnCompatible=product.tryOnCompatible
+        tryOnCompatible=product.tryOnCompatible,
+        fabric=product.fabric,
+        craft_technique=product.craft_technique,
+        wash_care=product.wash_care,
+        country_of_origin=product.country_of_origin,
+        external_url=product.external_url
     )
     db.add(db_product)
     db.commit()
     db.refresh(db_product)
     return db_product
+
+class URLImportRequest(BaseModel):
+    url: str
+
+@router.post("/extract-url")
+async def extract_url_details(payload: URLImportRequest):
+    import httpx
+    try:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+        }
+        async with httpx.AsyncClient(timeout=20.0, follow_redirects=True) as client:
+            response = await client.get(payload.url, headers=headers)
+            if response.status_code != 200:
+                return {"error": f"Failed to load webpage, server returned status: {response.status_code}"}
+            
+            html_text = response.text
+            
+            # Call our Gemini HTML extractor service
+            from services.gemini_service import extract_product_from_html
+            extracted_data = extract_product_from_html(html_text)
+            
+            # Map default fields in case Gemini misses them
+            if not extracted_data.get("name"):
+                extracted_data["name"] = "Imported Outfit"
+            if not extracted_data.get("price"):
+                extracted_data["price"] = 0.0
+            
+            # Inject URL reference
+            extracted_data["external_url"] = payload.url
+            return extracted_data
+            
+    except Exception as e:
+        return {"error": f"Scraping/AI extraction failed: {str(e)}"}
 
 @router.put("/{product_id}")
 def update_product(product_id: str, product: ProductCreate, db: Session = Depends(get_db)):
@@ -75,6 +123,11 @@ def update_product(product_id: str, product: ProductCreate, db: Session = Depend
         db_product.category = product.category
         db_product.description = product.description
         db_product.tryOnCompatible = product.tryOnCompatible
+        db_product.fabric = product.fabric
+        db_product.craft_technique = product.craft_technique
+        db_product.wash_care = product.wash_care
+        db_product.country_of_origin = product.country_of_origin
+        db_product.external_url = product.external_url
         db.commit()
         db.refresh(db_product)
     return db_product

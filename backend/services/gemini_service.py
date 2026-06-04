@@ -235,3 +235,53 @@ def build_tryon_prompt(garment: dict, persona: dict, camera_angle: str = "Front 
     )
 
     return positive, negative
+
+# Schema for Structured URL Product Extractor
+from pydantic import BaseModel
+from typing import Optional
+
+class ExtractedProduct(BaseModel):
+    name: str
+    brand: Optional[str] = None
+    price: float
+    image: Optional[str] = None
+    category: Optional[str] = None
+    description: Optional[str] = None
+    fabric: Optional[str] = None
+    craft_technique: Optional[str] = None
+    wash_care: Optional[str] = None
+    country_of_origin: Optional[str] = None
+
+def extract_product_from_html(html_text: str) -> dict:
+    """Uses Gemini structured generation to parse e-commerce HTML details."""
+    prompt = """
+    Analyze this e-commerce webpage HTML and extract all available details about the product.
+    
+    Fields to extract:
+    - name: The full descriptive title of the product.
+    - brand: The brand name of the product.
+    - price: The current numeric price (as float, remove currency symbols like ₹, $, etc. e.g. 2999).
+    - image: The primary product image URL. Look for high-resolution images, large data-old-hires, zoom image srcs, or main gallery images.
+    - category: Choose the single best category from: "Sarees", "Lehengas", "Kurtas & Suits", "Western Wear", "Accessories".
+    - description: A detailed summary of the product's design, style, prints, and look.
+    - fabric: The main fabric type (e.g. Silk, Georgette, Organza, Cotton, Linen, Polyester).
+    - craft_technique: The weaving or crafting technique (e.g. Handloom, Banarasi Brocade, Zari Weave, Hand Block Print, None if not applicable).
+    - wash_care: The wash care instructions (e.g. Dry Clean Only, Hand Wash Cold, Machine Wash).
+    - country_of_origin: The country of origin (e.g. India).
+    
+    Return ONLY a valid JSON object matching the requested schema. If a field is not found in the HTML, set it to null.
+    """
+
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=[
+            f"{prompt}\n\nWebpage HTML:\n\n{html_text[:120000]}"
+        ],
+        config=types.GenerateContentConfig(
+            response_mime_type="application/json",
+            response_schema=ExtractedProduct,
+        )
+    )
+    
+    raw = response.text.strip()
+    return json.loads(raw)

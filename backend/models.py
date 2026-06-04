@@ -37,6 +37,13 @@ class Product(Base):
     description = Column(String)
     tryOnCompatible = Column(Boolean, default=False)
     seller_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    
+    # Extended product details
+    fabric = Column(String, nullable=True)
+    craft_technique = Column(String, nullable=True)
+    wash_care = Column(String, nullable=True)
+    country_of_origin = Column(String, nullable=True)
+    external_url = Column(String, nullable=True)
 
     cart_items = relationship("CartItem", back_populates="product")
 

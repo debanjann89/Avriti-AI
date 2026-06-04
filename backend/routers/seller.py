@@ -20,6 +20,11 @@ class ProductCreate(BaseModel):
     category: str
     description: str
     tryOnCompatible: bool = True
+    fabric: str | None = None
+    craft_technique: str | None = None
+    wash_care: str | None = None
+    country_of_origin: str | None = None
+    external_url: str | None = None
 
 class ProductUpdate(BaseModel):
     user_id: int
@@ -31,6 +36,11 @@ class ProductUpdate(BaseModel):
     category: str
     description: str
     tryOnCompatible: bool = True
+    fabric: str | None = None
+    craft_technique: str | None = None
+    wash_care: str | None = None
+    country_of_origin: str | None = None
+    external_url: str | None = None
 
 class OrderStatusUpdate(BaseModel):
     user_id: int
@@ -76,7 +86,12 @@ def create_seller_product(payload: ProductCreate, db: Session = Depends(get_db))
         category=payload.category,
         description=payload.description,
         tryOnCompatible=payload.tryOnCompatible,
-        seller_id=payload.user_id
+        seller_id=payload.user_id,
+        fabric=payload.fabric,
+        craft_technique=payload.craft_technique,
+        wash_care=payload.wash_care,
+        country_of_origin=payload.country_of_origin,
+        external_url=payload.external_url
     )
     db.add(new_prod)
     db.commit()
@@ -106,6 +121,11 @@ def update_seller_product(product_id: str, payload: ProductUpdate, db: Session =
     prod.category = payload.category
     prod.description = payload.description
     prod.tryOnCompatible = payload.tryOnCompatible
+    prod.fabric = payload.fabric
+    prod.craft_technique = payload.craft_technique
+    prod.wash_care = payload.wash_care
+    prod.country_of_origin = payload.country_of_origin
+    prod.external_url = payload.external_url
 
     db.commit()
     db.refresh(prod)

@@ -3,7 +3,7 @@ import { useProducts } from '../hooks/useProducts';
 import { 
   Trash2, Edit2, Plus, X, Save, Lock, 
   Users, ShoppingBag, PlusCircle, ShieldCheck, Key,
-  BookOpen, ChevronDown
+  BookOpen, ChevronDown, Link2, Globe, Sparkles, Loader2
 } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import axios from 'axios';
@@ -25,8 +25,15 @@ export default function AdminPage() {
   const { products, addProduct, updateProduct, deleteProduct } = useProducts();
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
-    name: '', brand: '', price: '', image: '', category: '', description: ''
+    name: '', brand: '', price: '', image: '', category: '', description: '',
+    fabric: '', craft_technique: '', wash_care: '', country_of_origin: '', external_url: ''
   });
+
+  // URL Import states
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importUrl, setImportUrl] = useState('');
+  const [isImportLoading, setIsImportLoading] = useState(false);
+  const [importError, setImportError] = useState('');
 
   // 4. Seller state
   const [sellers, setSellers] = useState([]);
@@ -281,6 +288,43 @@ export default function AdminPage() {
     }
   };
 
+  const handleUrlImport = async (e) => {
+    e.preventDefault();
+    if (!importUrl) return;
+    setIsImportLoading(true);
+    setImportError('');
+    try {
+      const response = await axios.post('http://127.0.0.1:8000/api/products/extract-url', {
+        url: importUrl
+      });
+      if (response.data.error) {
+        setImportError(response.data.error);
+      } else {
+        const ext = response.data;
+        setFormData({
+          name: ext.name || '',
+          brand: ext.brand || '',
+          price: ext.price ? ext.price.toString() : '0',
+          image: ext.image || '',
+          category: ext.category || 'Sarees',
+          description: ext.description || '',
+          fabric: ext.fabric || '',
+          craft_technique: ext.craft_technique || '',
+          wash_care: ext.wash_care || '',
+          country_of_origin: ext.country_of_origin || '',
+          external_url: ext.external_url || importUrl
+        });
+        setEditingId('NEW');
+        setIsImportModalOpen(false);
+      }
+    } catch (err) {
+      console.error("URL Import Error:", err);
+      setImportError(err.response?.data?.detail || "Failed to extract product details from URL. Please ensure it's a valid e-commerce webpage.");
+    } finally {
+      setIsImportLoading(false);
+    }
+  };
+
   // Product Actions
   const handleEdit = (product) => {
     setEditingId(product.id);
@@ -291,13 +335,19 @@ export default function AdminPage() {
       image: product.image,
       category: product.category,
       description: product.description,
+      fabric: product.fabric || '',
+      craft_technique: product.craft_technique || '',
+      wash_care: product.wash_care || '',
+      country_of_origin: product.country_of_origin || '',
+      external_url: product.external_url || '',
     });
   };
 
   const handleCancel = () => {
     setEditingId(null);
     setFormData({
-      name: '', brand: '', price: '', image: '', category: '', description: ''
+      name: '', brand: '', price: '', image: '', category: '', description: '',
+      fabric: '', craft_technique: '', wash_care: '', country_of_origin: '', external_url: ''
     });
   };
 
@@ -389,12 +439,25 @@ export default function AdminPage() {
           </div>
           
           {activeTab === 'products' && (
-            <button 
-              onClick={() => { setEditingId('NEW'); setFormData({ name: '', brand: '', price: '', image: '', category: '', description: '' }); }}
-              className="flex items-center bg-pink-600 text-white px-5 py-3 rounded-2xl font-extrabold text-xs uppercase tracking-wider shadow-md hover:bg-pink-700 transition-all flex items-center justify-center gap-2 transform hover:scale-[1.01]"
-            >
-              <Plus className="w-4 h-4 stroke-[3]" /> Add Catalog Product
-            </button>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => {
+                  setIsImportModalOpen(true);
+                  setImportUrl('');
+                  setImportError('');
+                  setIsImportLoading(false);
+                }}
+                className="flex items-center bg-slate-800 text-white px-5 py-3 rounded-2xl font-extrabold text-xs uppercase tracking-wider shadow-md hover:bg-slate-900 transition-all flex items-center justify-center gap-2 transform hover:scale-[1.01] cursor-pointer border-0"
+              >
+                <Link2 className="w-4 h-4" /> Import from Link
+              </button>
+              <button 
+                onClick={() => { setEditingId('NEW'); setFormData({ name: '', brand: '', price: '', image: '', category: '', description: '', fabric: '', craft_technique: '', wash_care: '', country_of_origin: '', external_url: '' }); }}
+                className="flex items-center bg-pink-600 text-white px-5 py-3 rounded-2xl font-extrabold text-xs uppercase tracking-wider shadow-md hover:bg-pink-700 transition-all flex items-center justify-center gap-2 transform hover:scale-[1.01] cursor-pointer border-0"
+              >
+                <Plus className="w-4 h-4 stroke-[3]" /> Add Catalog Product
+              </button>
+            </div>
           )}
         </div>
 
@@ -494,6 +557,33 @@ export default function AdminPage() {
                     <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Description</label>
                     <textarea required name="description" value={formData.description} onChange={handleChange} className="w-full border border-gray-200 rounded-xl p-2.5 text-xs focus:ring-1 focus:ring-pink-500 focus:outline-none transition-all resize-none" rows="3"></textarea>
                   </div>
+                  
+                  {/* Artisan Specifications */}
+                  <div className="md:col-span-2 border-t border-gray-100 pt-4 mt-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Fabric Type</label>
+                      <input type="text" name="fabric" value={formData.fabric || ''} onChange={handleChange} className="w-full border border-gray-200 rounded-xl p-2.5 text-xs focus:ring-1 focus:ring-pink-500 focus:outline-none transition-all" placeholder="e.g. Silk, Cotton" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Craft / Technique</label>
+                      <input type="text" name="craft_technique" value={formData.craft_technique || ''} onChange={handleChange} className="w-full border border-gray-200 rounded-xl p-2.5 text-xs focus:ring-1 focus:ring-pink-500 focus:outline-none transition-all" placeholder="e.g. Handloom Weaving" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Wash Care Instructions</label>
+                      <input type="text" name="wash_care" value={formData.wash_care || ''} onChange={handleChange} className="w-full border border-gray-200 rounded-xl p-2.5 text-xs focus:ring-1 focus:ring-pink-500 focus:outline-none transition-all" placeholder="e.g. Dry Clean Only" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Country of Origin</label>
+                      <input type="text" name="country_of_origin" value={formData.country_of_origin || ''} onChange={handleChange} className="w-full border border-gray-200 rounded-xl p-2.5 text-xs focus:ring-1 focus:ring-pink-500 focus:outline-none transition-all" placeholder="e.g. India" />
+                    </div>
+                  </div>
+
+                  {formData.external_url && (
+                    <div className="md:col-span-2 space-y-1.5">
+                      <label className="text-[10px] font-bold text-pink-650 uppercase tracking-widest block">Import Source URL</label>
+                      <input type="url" name="external_url" value={formData.external_url} onChange={handleChange} className="w-full border border-pink-100 bg-pink-55/20 text-pink-700 rounded-xl p-2.5 text-xs focus:ring-1 focus:ring-pink-500 focus:outline-none transition-all" readOnly />
+                    </div>
+                  )}
                   <div className="md:col-span-2 flex justify-end gap-2 border-t border-gray-50 pt-4">
                     <button type="button" onClick={handleCancel} className="px-4 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 rounded-xl border border-gray-200 transition-colors">Cancel</button>
                     <button type="submit" className="bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold px-6 py-2.5 rounded-xl shadow-md transition-colors flex items-center gap-1">
@@ -1185,6 +1275,91 @@ export default function AdminPage() {
                 Delete
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* --- IMPORT FROM LINK MODAL --- */}
+      {isImportModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 animate-fadeIn font-sans">
+          <div className="max-w-md w-full bg-white/95 backdrop-blur-xl border border-gray-150 p-6 rounded-3xl text-left shadow-2xl space-y-5 animate-scaleUp">
+            <div className="flex justify-between items-center border-b border-gray-55 pb-3">
+              <h3 className="text-base font-black text-gray-900 uppercase tracking-tight font-jakarta flex items-center gap-2">
+                <Globe className="w-5 h-5 text-pink-650" />
+                <span>AI E-commerce Link Importer</span>
+              </h3>
+              <button 
+                onClick={() => setIsImportModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 w-8 h-8 bg-slate-50 hover:bg-slate-100 rounded-full flex items-center justify-center transition-colors border-0 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-[11px] text-gray-500 leading-normal">
+              Paste a product detail page link from Amazon, Flipkart, or any luxury boutique website. Gemini AI will crawl the page and extract rich structured metadata to populate the catalog form automatically.
+            </p>
+
+            <form onSubmit={handleUrlImport} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Product Webpage URL</label>
+                <div className="relative">
+                  <input
+                    required
+                    type="url"
+                    placeholder="https://www.amazon.in/dp/... or https://www.flipkart.com/..."
+                    value={importUrl}
+                    onChange={(e) => setImportUrl(e.target.value)}
+                    disabled={isImportLoading}
+                    className="w-full border border-gray-200 rounded-xl pl-3 pr-10 py-2.5 text-xs focus:ring-1 focus:ring-pink-500 focus:outline-none transition-all placeholder-gray-400"
+                  />
+                  <div className="absolute right-3 top-3">
+                    {isImportLoading ? (
+                      <span className="animate-spin inline-block w-4.5 h-4.5 border-2 border-pink-600 border-t-transparent rounded-full" />
+                    ) : (
+                      <Link2 className="w-4.5 h-4.5 text-gray-400" />
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {importError && (
+                <div className="p-3 bg-red-50 border border-red-100 text-red-650 rounded-xl text-[10px] font-bold leading-normal">
+                  {importError}
+                </div>
+              )}
+
+              {isImportLoading && (
+                <div className="flex flex-col items-center justify-center p-4 py-8 space-y-3 bg-pink-55/10 border border-pink-100/50 rounded-2xl">
+                  <span className="relative flex h-5 w-5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-5 w-5 bg-pink-500"></span>
+                  </span>
+                  <div className="text-center">
+                    <p className="text-xs font-black text-pink-650 uppercase tracking-wider">AI Crawler Active</p>
+                    <p className="text-[9px] text-gray-400 mt-1 leading-normal">Downloading page HTML and parsing structured tags using Gemini...</p>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsImportModalOpen(false)}
+                  disabled={isImportLoading}
+                  className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-500 font-extrabold text-[10px] uppercase tracking-wider rounded-xl hover:bg-gray-50 transition-all cursor-pointer bg-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isImportLoading}
+                  className="flex-1 px-4 py-2.5 bg-pink-600 hover:bg-pink-700 text-white font-extrabold text-[10px] uppercase tracking-wider rounded-xl shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer border-0 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>{isImportLoading ? "Extracting..." : "Fetch Details"}</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

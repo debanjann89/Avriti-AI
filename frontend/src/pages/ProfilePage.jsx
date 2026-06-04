@@ -151,7 +151,12 @@ export default function ProfilePage() {
     description: '',
     tryOnCompatible: true,
     image_b64: '',
-    image_url: ''
+    image_url: '',
+    fabric: '',
+    craft_technique: '',
+    wash_care: '',
+    country_of_origin: '',
+    external_url: ''
   });
   const [productImagePreview, setProductImagePreview] = useState(null);
 
@@ -393,7 +398,12 @@ export default function ProfilePage() {
       description: productForm.description,
       tryOnCompatible: productForm.tryOnCompatible,
       image_b64: productForm.image_b64 || null,
-      image_url: productForm.image_url || null
+      image_url: productForm.image_url || null,
+      fabric: productForm.fabric || null,
+      craft_technique: productForm.craft_technique || null,
+      wash_care: productForm.wash_care || null,
+      country_of_origin: productForm.country_of_origin || null,
+      external_url: productForm.external_url || null
     };
     try {
       if (editingProduct) {
@@ -405,7 +415,7 @@ export default function ProfilePage() {
       }
       setIsProductModalOpen(false);
       setEditingProduct(null);
-      setProductForm({ name: '', brand: '', price: '', category: 'Sarees', description: '', tryOnCompatible: true, image_b64: '', image_url: '' });
+      setProductForm({ name: '', brand: '', price: '', category: 'Sarees', description: '', tryOnCompatible: true, image_b64: '', image_url: '', fabric: '', craft_technique: '', wash_care: '', country_of_origin: '', external_url: '' });
       setProductImagePreview(null);
       fetchSellerData();
     } catch (err) {
@@ -424,7 +434,12 @@ export default function ProfilePage() {
       description: prod.description,
       tryOnCompatible: prod.tryOnCompatible,
       image_b64: '',
-      image_url: prod.image
+      image_url: prod.image,
+      fabric: prod.fabric || '',
+      craft_technique: prod.craft_technique || '',
+      wash_care: prod.wash_care || '',
+      country_of_origin: prod.country_of_origin || '',
+      external_url: prod.external_url || ''
     });
     setProductImagePreview(prod.image);
     setIsProductModalOpen(true);
@@ -1146,7 +1161,7 @@ export default function ProfilePage() {
                       <button
                         onClick={() => {
                           setEditingProduct(null);
-                          setProductForm({ name: '', brand: '', price: '', category: 'Sarees', description: '', tryOnCompatible: true, image_b64: '', image_url: '' });
+                          setProductForm({ name: '', brand: '', price: '', category: 'Sarees', description: '', tryOnCompatible: true, image_b64: '', image_url: '', fabric: '', craft_technique: '', wash_care: '', country_of_origin: '', external_url: '' });
                           setProductImagePreview(null);
                           setIsProductModalOpen(true);
                         }}
@@ -1254,7 +1269,7 @@ export default function ProfilePage() {
                             <button
                               onClick={() => {
                                 setEditingProduct(null);
-                                setProductForm({ name: '', brand: '', price: '', category: 'Sarees', description: '', tryOnCompatible: true, image_b64: '', image_url: '' });
+                                setProductForm({ name: '', brand: '', price: '', category: 'Sarees', description: '', tryOnCompatible: true, image_b64: '', image_url: '', fabric: '', craft_technique: '', wash_care: '', country_of_origin: '', external_url: '' });
                                 setProductImagePreview(null);
                                 setIsProductModalOpen(true);
                               }}
@@ -1497,6 +1512,56 @@ export default function ProfilePage() {
                       rows="3"
                       className="w-full bg-slate-50 border border-gray-205 rounded-xl px-3 py-2 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none resize-none"
                     />
+                  </div>
+
+                  {/* Artisan Specifications */}
+                  <div className="border-t border-gray-100 pt-4">
+                    <h4 className="text-[10px] font-black text-pink-650 uppercase tracking-wider mb-3">Artisan Specifications</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Fabric Type</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Pure Silk, Khadi Cotton"
+                          value={productForm.fabric}
+                          onChange={(e) => setProductForm({...productForm, fabric: e.target.value})}
+                          className="w-full bg-slate-50 border border-gray-205 rounded-xl px-3 py-2 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none"
+                        />
+                      </div>
+                      
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Craft / Technique</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Handloom weaving, Jamdani"
+                          value={productForm.craft_technique}
+                          onChange={(e) => setProductForm({...productForm, craft_technique: e.target.value})}
+                          className="w-full bg-slate-50 border border-gray-205 rounded-xl px-3 py-2 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Wash Care Instructions</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Dry Clean Only"
+                          value={productForm.wash_care}
+                          onChange={(e) => setProductForm({...productForm, wash_care: e.target.value})}
+                          className="w-full bg-slate-50 border border-gray-205 rounded-xl px-3 py-2 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Country of Origin</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. India"
+                          value={productForm.country_of_origin}
+                          onChange={(e) => setProductForm({...productForm, country_of_origin: e.target.value})}
+                          className="w-full bg-slate-50 border border-gray-205 rounded-xl px-3 py-2 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none"
+                        />
+                      </div>
+                    </div>
                   </div>
 
                   {/* Toggle Try-On compatibility */}
