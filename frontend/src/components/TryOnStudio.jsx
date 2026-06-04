@@ -6,6 +6,7 @@ import { useProducts } from "../hooks/useProducts";
 import { useNavigate } from "react-router-dom";
 import { TRY_ON_PRESETS } from "../data/tryOnPresets";
 import { AuthContext } from "../context/AuthContext";
+import axios from "axios";
 import { 
   User, Check, Lock, Upload, Camera, Sparkles, 
   Download, Image as ImageIcon, Shirt, Sliders, 
@@ -18,7 +19,7 @@ const DEFAULT_PERSONA = {
   gender: "Woman",
   ageGroup: "Young Adult",
   ethnicity: "South Asian",
-  bodyType: "Average",
+  bodyType: "M",
   angles: ["Front View"], // 🚨 UPDATED: Now an array to support multiple selections!
   backdrop: "Minimalist Studio",
 };
@@ -139,7 +140,7 @@ function FittingModeBadge({ mode }) {
   );
 }
 
-function ResultPanel({ images, onDownload, onPublish }) {
+function ResultPanel({ images, onDownload, onPublish, onSaveToWardrobe, isSavingToWardrobe }) {
   const [selected, setSelected] = useState(0);
   const [publishName, setPublishName] = useState("");
   const [publishPrice, setPublishPrice] = useState("");
@@ -159,12 +160,21 @@ function ResultPanel({ images, onDownload, onPublish }) {
           className="w-full object-contain"
           style={{ maxHeight: "520px" }}
         />
-        <button
-          onClick={() => onDownload(images[selected], selected)}
-          className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-gray-700 text-xs font-medium px-3 py-1.5 rounded-full shadow hover:bg-white transition-colors"
-        >
-          ↓ Download
-        </button>
+        <div className="absolute top-3 right-3 flex gap-2">
+          <button
+            onClick={() => onDownload(images[selected], selected)}
+            className="bg-white/90 backdrop-blur-sm text-gray-700 text-xs font-medium px-3 py-1.5 rounded-full shadow hover:bg-white transition-colors"
+          >
+            ↓ Download
+          </button>
+          <button
+            onClick={() => onSaveToWardrobe(images[selected])}
+            disabled={isSavingToWardrobe}
+            className="bg-pink-600/90 backdrop-blur-sm text-white text-xs font-medium px-3 py-1.5 rounded-full shadow hover:bg-pink-700 transition-colors disabled:opacity-50"
+          >
+            {isSavingToWardrobe ? "Saving..." : "❤ Save to Wardrobe"}
+          </button>
+        </div>
       </div>
 
       {images.length > 1 && (
@@ -369,6 +379,28 @@ export default function TryOnStudio() {
     link.href = `data:image/png;base64,${b64}`;
     link.download = `aavriti-tryon-${Date.now()}-${index + 1}.png`;
     link.click();
+  };
+
+  const [savingWardrobe, setSavingWardrobe] = useState(false);
+  const handleSaveToWardrobe = async (b64) => {
+    if (!user) {
+      alert("Please log in to save to your virtual wardrobe.");
+      return;
+    }
+    setSavingWardrobe(true);
+    try {
+      const response = await axios.post("http://127.0.0.1:8000/api/wardrobe/save", {
+        user_id: user.id,
+        image_b64: b64,
+        product_id: null
+      });
+      alert(response.data.message || "Saved to your Virtual Wardrobe successfully!");
+    } catch (e) {
+      console.error(e);
+      alert(e.response?.data?.detail || "Failed to save to virtual wardrobe.");
+    } finally {
+      setSavingWardrobe(false);
+    }
   };
 
   const handlePublish = async (b64, name, price) => {
@@ -876,6 +908,31 @@ export default function TryOnStudio() {
                   </div>
                 </div>
 
+                {/* Sizing confirmation panel */}
+                <div className="bg-pink-50/50 border border-pink-100 rounded-2xl p-4 text-left space-y-2.5 shadow-sm">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block">Target Fit Size Selection</span>
+                    <span className="text-[9px] font-extrabold bg-pink-100 text-pink-700 px-2 py-0.5 rounded-full border border-pink-200/50">Required Fit Size</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {["XS", "S", "M", "L", "XL", "XXL"].map((sz) => (
+                      <button
+                        key={sz}
+                        type="button"
+                        onClick={() => setPersona(prev => ({ ...prev, bodyType: sz }))}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+                          persona.bodyType === sz
+                            ? "bg-pink-600 text-white border-pink-600 shadow-sm"
+                            : "bg-white text-gray-600 border-gray-205 hover:border-pink-400 hover:text-pink-600"
+                        }`}
+                      >
+                        {sz}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-[9px] text-gray-400 leading-normal">Confirm the model size above. The generative AI will drape the garment to match this body shape.</p>
+                </div>
+
                 {/* Generate Button */}
                 <button
                   type="button"
@@ -890,7 +947,7 @@ export default function TryOnStudio() {
                   `}
                 >
                   <Sparkles className="w-4 h-4 stroke-[2] animate-pulse" />
-                  <span>{loading ? stepLabel : "Generate Virtual Try-On"}</span>
+                  <span>{loading ? stepLabel : `Generate Try-On (Size ${persona.bodyType})`}</span>
                 </button>
               </div>
             )}
@@ -1014,7 +1071,13 @@ export default function TryOnStudio() {
               <>
                 <GarmentBadge analysis={result.garment_analysis} />
                 <FittingModeBadge mode={result.fitting_mode} />
-                <ResultPanel images={result.images} onDownload={handleDownload} onPublish={handlePublish} />
+                <ResultPanel 
+                  images={result.images} 
+                  onDownload={handleDownload} 
+                  onPublish={handlePublish} 
+                  onSaveToWardrobe={handleSaveToWardrobe}
+                  isSavingToWardrobe={savingWardrobe}
+                />
                 <details className="group">
                   <summary className="text-xs text-gray-400 cursor-pointer hover:text-gray-600 flex items-center gap-1.5">
                     <Eye className="w-3.5 h-3.5 font-bold" />

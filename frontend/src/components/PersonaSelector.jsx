@@ -5,14 +5,14 @@ const PERSONA_OPTIONS = {
     "South Asian", "East Asian", "African",
     "Caucasian", "Hispanic", "Middle Eastern",
   ],
-  bodyType: ["Slim", "Athletic", "Average", "Plus Size"],
+  bodyType: ["XS", "S", "M", "L", "XL", "XXL"],
 };
 
 const LABELS = {
   gender: "Gender",
   ageGroup: "Age Group",
   ethnicity: "Ethnicity",
-  bodyType: "Body Type",
+  bodyType: "Model Size",
 };
 
 function ChipGroup({ label, options, value, onChange }) {

@@ -9,6 +9,16 @@ import datetime
 import random
 import re
 import time
+import os
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from dotenv import load_dotenv
+from pathlib import Path
+
+# Explicitly load .env with absolute path and override enabled
+env_path = Path(__file__).resolve().parent.parent / '.env'
+load_dotenv(dotenv_path=env_path, override=True)
 
 router = APIRouter()
 SECRET_KEY = "supersecretkey"
@@ -36,6 +46,50 @@ def create_access_token(data: dict):
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
+def send_email_otp(target_email: str, otp_code: str):
+    smtp_user = os.getenv("SMTP_USER")
+    smtp_password = os.getenv("SMTP_PASSWORD")
+    
+    if not smtp_user or not smtp_password:
+        print("\n[WARNING] SMTP_USER or SMTP_PASSWORD environment variables are not set in .env")
+        return False
+        
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = smtp_user
+        msg['To'] = target_email
+        msg['Subject'] = "Aavriti AI - Email Verification Code"
+        
+        body = f"""
+        <html>
+            <body style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px; color: #333;">
+                <div style="max-width: 500px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 12px; padding: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                    <h2 style="color: #D81B60; text-align: center; margin-bottom: 20px;">Aavriti AI Verification</h2>
+                    <p style="font-size: 14px; line-height: 1.5; color: #555;">Hello,</p>
+                    <p style="font-size: 14px; line-height: 1.5; color: #555;">Thank you for registering with Aavriti AI. To complete your account sign-up, please enter the following 6-digit One-Time Password (OTP) in your registration window:</p>
+                    
+                    <div style="background-color: #FFF0F2; border: 1px solid #F8D7DA; border-radius: 8px; font-size: 24px; font-weight: bold; color: #D81B60; text-align: center; padding: 15px; margin: 25px 0; letter-spacing: 4px;">
+                        {otp_code}
+                    </div>
+                    
+                    <p style="font-size: 11px; color: #888; text-align: center;">This code will expire in 5 minutes. If you did not request this, please ignore this email.</p>
+                </div>
+            </body>
+        </html>
+        """
+        msg.attach(MIMEText(body, 'html'))
+        
+        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.starttls()
+        server.login(smtp_user, smtp_password)
+        server.sendmail(smtp_user, target_email, msg.as_string())
+        server.quit()
+        print(f"[SMTP EMAIL] Successfully sent OTP email to {target_email}")
+        return True
+    except Exception as e:
+        print(f"[SMTP EMAIL ERROR] Failed to send email to {target_email}: {str(e)}")
+        return False
+
 @router.post("/send-otp")
 def send_otp(payload: OTPRequest):
     email_regex = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
@@ -43,6 +97,15 @@ def send_otp(payload: OTPRequest):
         raise HTTPException(status_code=400, detail="Invalid email address format.")
         
     otp_code = f"{random.randint(100000, 999999)}"
+    
+    # Send actual email via SMTP
+    sent = send_email_otp(payload.email, otp_code)
+    if not sent:
+        raise HTTPException(
+            status_code=400, 
+            detail="Failed to send verification code. SMTP_USER and SMTP_PASSWORD must be configured in backend/.env with a valid Google App Password."
+        )
+        
     otp_store[payload.email] = {
         "code": otp_code,
         "expires_at": time.time() + 300  # 5 minutes
@@ -50,8 +113,7 @@ def send_otp(payload: OTPRequest):
     
     print(f"\n====================================\n[EMAIL OTP] Code for {payload.email}: {otp_code}\n====================================\n")
     return {
-        "message": "Verification code sent successfully to email.",
-        "dev_otp": otp_code
+        "message": "Verification code sent successfully to email."
     }
 
 @router.post("/register")

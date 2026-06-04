@@ -2,7 +2,8 @@ import { useState, useContext, useEffect } from 'react';
 import { useProducts } from '../hooks/useProducts';
 import { 
   Trash2, Edit2, Plus, X, Save, Lock, 
-  Users, ShoppingBag, PlusCircle, ShieldCheck, Key
+  Users, ShoppingBag, PlusCircle, ShieldCheck, Key,
+  BookOpen
 } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import axios from 'axios';
@@ -42,6 +43,120 @@ export default function AdminPage() {
   const [declineReasonText, setDeclineReasonText] = useState('');
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+
+  // 6. Blog states & configuration
+  const [blogs, setBlogs] = useState([]);
+  const [loadingBlogs, setLoadingBlogs] = useState(false);
+  const [blogEnabled, setBlogEnabled] = useState(true);
+  const [isBlogModalOpen, setIsBlogModalOpen] = useState(false);
+  const [blogForm, setBlogForm] = useState({
+    title: '', excerpt: '', content: '', category: 'AI Studio', 
+    read_time: '5 min read', date: '', author: 'Administrator', image: '', 
+    interactive_text: '', interactive_link: ''
+  });
+  const [editingBlogId, setEditingBlogId] = useState(null);
+  const [blogDeleteConfirmId, setBlogDeleteConfirmId] = useState(null);
+
+  const fetchBlogs = async () => {
+    setLoadingBlogs(true);
+    try {
+      const postsRes = await axios.get("http://127.0.0.1:8000/api/blog/posts");
+      setBlogs(postsRes.data);
+      
+      const settingsRes = await axios.get("http://127.0.0.1:8000/api/blog/settings");
+      setBlogEnabled(settingsRes.data.blog_enabled);
+    } catch (err) {
+      console.error("Error loading blog data in admin", err);
+    } finally {
+      setLoadingBlogs(false);
+    }
+  };
+
+  const handleToggleBlogStatus = async () => {
+    try {
+      const nextStatus = !blogEnabled;
+      await axios.post("http://127.0.0.1:8000/api/blog/settings", {
+        blog_enabled: nextStatus
+      });
+      setBlogEnabled(nextStatus);
+      showToast(`Blog Page successfully ${nextStatus ? 'enabled (Online)' : 'disabled (Offline)'}.`, "success");
+    } catch (err) {
+      console.error("Error toggling blog status", err);
+      showToast("Failed to toggle blog page status.", "error");
+    }
+  };
+
+  const handleBlogFormSubmit = async (e) => {
+    e.preventDefault();
+    const payload = {
+      title: blogForm.title,
+      excerpt: blogForm.excerpt,
+      content: blogForm.content,
+      category: blogForm.category,
+      read_time: blogForm.read_time || "5 min read",
+      date: blogForm.date || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+      author: blogForm.author || "Administrator",
+      image: blogForm.image || "https://images.unsplash.com/photo-1558271821-3ad046a38cf0?auto=format&fit=crop&w=800&q=80",
+      interactive_text: blogForm.interactive_text || null,
+      interactive_link: blogForm.interactive_link || null
+    };
+
+    try {
+      if (editingBlogId) {
+        await axios.put(`http://127.0.0.1:8000/api/blog/post/${editingBlogId}`, payload);
+        showToast("Blog post updated successfully!", "success");
+      } else {
+        await axios.post("http://127.0.0.1:8000/api/blog/post", payload);
+        showToast("New blog post published successfully!", "success");
+      }
+      setIsBlogModalOpen(false);
+      setEditingBlogId(null);
+      setBlogForm({
+        title: '', excerpt: '', content: '', category: 'AI Studio', 
+        read_time: '5 min read', date: '', author: 'Administrator', image: '', 
+        interactive_text: '', interactive_link: ''
+      });
+      fetchBlogs();
+    } catch (err) {
+      console.error("Error saving blog post", err);
+      showToast(err.response?.data?.detail || "Failed to save blog post.", "error");
+    }
+  };
+
+  const handleEditBlogClick = (post) => {
+    setEditingBlogId(post.id);
+    setBlogForm({
+      title: post.title,
+      excerpt: post.excerpt,
+      content: post.content,
+      category: post.category,
+      read_time: post.read_time,
+      date: post.date,
+      author: post.author,
+      image: post.image,
+      interactive_text: post.interactive_text || '',
+      interactive_link: post.interactive_link || ''
+    });
+    setIsBlogModalOpen(true);
+  };
+
+  const handleDeleteBlogClick = (postId) => {
+    setBlogDeleteConfirmId(postId);
+  };
+
+  const handleConfirmDeleteBlog = async () => {
+    if (!blogDeleteConfirmId) return;
+    try {
+      await axios.delete(`http://127.0.0.1:8000/api/blog/post/${blogDeleteConfirmId}`);
+      showToast("Blog post deleted successfully.", "success");
+      setBlogDeleteConfirmId(null);
+      fetchBlogs();
+    } catch (err) {
+      console.error("Error deleting blog post", err);
+      showToast("Failed to delete blog post.", "error");
+      setBlogDeleteConfirmId(null);
+    }
+  };
 
   const showToast = (message, type = 'success') => {
     setToast({ show: true, message, type });
@@ -125,6 +240,7 @@ export default function AdminPage() {
     if (isAdminAuthenticated) {
       if (activeTab === 'sellers') fetchSellers();
       if (activeTab === 'applications') fetchApplications();
+      if (activeTab === 'blogs') fetchBlogs();
     }
   }, [isAdminAuthenticated, activeTab]);
 
@@ -324,6 +440,17 @@ export default function AdminPage() {
                 {applications.filter(a => a.status === 'pending').length}
               </span>
             )}
+          </button>
+          <button
+            onClick={() => setActiveTab('blogs')}
+            className={`pb-3 px-4 font-bold text-xs uppercase tracking-widest border-b-2 transition-all flex items-center gap-1.5 ${
+              activeTab === 'blogs'
+                ? 'border-pink-600 text-pink-600'
+                : 'border-transparent text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            <BookOpen className="w-4 h-4" />
+            <span>Manage Blogs</span>
           </button>
         </div>
 
@@ -677,6 +804,131 @@ export default function AdminPage() {
           </div>
         )}
 
+        {/* --- BLOGS TAB CONTENT --- */}
+        {activeTab === 'blogs' && (
+          <div className="space-y-6 animate-fadeIn font-sans">
+            <div className="bg-white rounded-3xl border border-gray-105 shadow-xl overflow-hidden p-6 sm:p-8 space-y-6">
+              
+              {/* Status configuration card */}
+              <div className="flex flex-wrap justify-between items-center gap-4 border-b border-gray-150 pb-5 text-left">
+                <div>
+                  <h2 className="text-base font-black text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                    <BookOpen className="w-5 h-5 text-pink-600" />
+                    <span>Blog Page Configuration</span>
+                  </h2>
+                  <p className="text-xs text-gray-405 font-medium mt-1">Control active visibility status and manage editorial articles catalog.</p>
+                </div>
+
+                <button
+                  onClick={() => {
+                    setEditingBlogId(null);
+                    setBlogForm({
+                      title: '', excerpt: '', content: '', category: 'AI Studio', 
+                      read_time: '5 min read', date: '', author: 'Administrator', image: '', 
+                      interactive_text: '', interactive_link: ''
+                    });
+                    setIsBlogModalOpen(true);
+                  }}
+                  className="bg-[#D81B60] hover:bg-[#A30D45] text-white text-[10px] font-extrabold uppercase tracking-widest px-5 py-3 rounded-xl shadow-md flex items-center gap-1.5 transition-all border-0 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Create Blog Post</span>
+                </button>
+              </div>
+
+              {/* Toggle Panel */}
+              <div className="flex items-center justify-between p-4 bg-pink-50/50 border border-pink-100 rounded-2xl shadow-xs text-left">
+                <div className="space-y-1">
+                  <strong className="text-xs font-black text-gray-800 uppercase tracking-wider block">Blog Page Visibility Status</strong>
+                  <p className="text-[10px] text-gray-405 max-w-lg leading-normal">
+                    Turn the blog page online or offline. When disabled, the navigation link is hidden and direct accesses route to a curation message.
+                  </p>
+                </div>
+                <button
+                  onClick={handleToggleBlogStatus}
+                  className={`px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-sm border-0 cursor-pointer ${
+                    blogEnabled
+                      ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                      : "bg-gray-100 text-gray-505 hover:bg-gray-200"
+                  }`}
+                >
+                  {blogEnabled ? "● Online (Enabled)" : "○ Offline (Disabled)"}
+                </button>
+              </div>
+
+              {/* Blog Lists Table */}
+              {loadingBlogs ? (
+                <div className="flex flex-col items-center justify-center py-20 space-y-2">
+                  <div className="w-8 h-8 border-4 border-pink-150 border-t-pink-600 rounded-full animate-spin"></div>
+                  <span className="text-xs text-gray-400 font-bold uppercase tracking-widest animate-pulse">Loading articles database...</span>
+                </div>
+              ) : blogs.length === 0 ? (
+                <div className="text-center py-16 border border-dashed border-gray-200 rounded-2xl bg-gray-50/20">
+                  <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <h3 className="text-xs font-bold text-gray-700">No blog posts listed</h3>
+                  <p className="text-[11px] text-gray-450 mt-1">Publish your first artisan or tech article to seed the archive.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto border border-gray-150 rounded-2xl bg-slate-50/10 text-left">
+                  <table className="w-full text-xs text-left border-collapse">
+                    <thead>
+                      <tr className="bg-slate-50 border-b border-gray-150 font-extrabold text-gray-500 uppercase tracking-wider text-[9px]">
+                        <th className="p-4">Article Detail</th>
+                        <th className="p-4">Category</th>
+                        <th className="p-4">Author</th>
+                        <th className="p-4">Published Date</th>
+                        <th className="p-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {blogs.map((post) => (
+                        <tr key={post.id} className="hover:bg-slate-50/30 transition-colors">
+                          <td className="p-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-12 h-9 rounded-lg overflow-hidden bg-gray-50 border border-gray-150 shrink-0 shadow-xs">
+                                <img src={post.image} alt={post.title} className="w-full h-full object-cover" />
+                              </div>
+                              <div className="min-w-0">
+                                <span className="font-bold text-slate-800 line-clamp-1">{post.title}</span>
+                                <span className="text-[10px] text-gray-405 line-clamp-1 mt-0.5">{post.excerpt}</span>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <span className="px-2.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider bg-pink-100 text-pink-700 border border-pink-200/40">
+                              {post.category}
+                            </span>
+                          </td>
+                          <td className="p-4 font-medium text-slate-600">{post.author}</td>
+                          <td className="p-4 text-slate-500">{post.date}</td>
+                          <td className="p-4 text-right">
+                            <div className="inline-flex items-center gap-1.5">
+                              <button
+                                onClick={() => handleEditBlogClick(post)}
+                                className="p-2 border border-gray-200 hover:border-pink-300 text-gray-650 hover:text-pink-600 rounded-lg transition-colors cursor-pointer bg-white"
+                                title="Edit Article"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteBlogClick(post.id)}
+                                className="p-2 border border-rose-100 hover:bg-rose-50 text-rose-500 rounded-lg transition-colors cursor-pointer bg-white"
+                                title="Delete Article"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
       </div>
       {toast.show && (
         <div className={`fixed bottom-5 right-5 z-50 px-5 py-3.5 rounded-2xl shadow-xl border flex items-center gap-2.5 animate-slideIn ${
@@ -717,6 +969,215 @@ export default function AdminPage() {
                 type="button"
                 onClick={handleConfirmDeleteApp}
                 className="flex-1 px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-[10px] uppercase tracking-wider rounded-xl shadow-md shadow-rose-150 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- ADD / EDIT BLOG POST MODAL --- */}
+      {isBlogModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn font-sans">
+          <div className="bg-white rounded-3xl overflow-hidden shadow-2xl max-w-lg w-full border border-gray-100 relative flex flex-col max-h-[90vh] text-left">
+            
+            {/* Modal Header */}
+            <div className="p-6 border-b border-gray-150 flex items-center justify-between">
+              <h3 className="text-base font-black text-gray-900 uppercase tracking-tight font-jakarta">
+                {editingBlogId ? "Edit Blog Article" : "Create New Blog Post"}
+              </h3>
+              <button 
+                onClick={() => {
+                  setIsBlogModalOpen(false);
+                  setEditingBlogId(null);
+                }}
+                className="w-8 h-8 bg-slate-50 hover:bg-slate-100 text-gray-500 rounded-full flex items-center justify-center transition-colors cursor-pointer border-0"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Body Form */}
+            <form onSubmit={handleBlogFormSubmit} className="flex-1 overflow-y-auto p-6 space-y-4">
+              <div className="space-y-1">
+                <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Article Title</label>
+                <input
+                  required
+                  type="text"
+                  placeholder="e.g. Traditional Handlooms of South India"
+                  value={blogForm.title}
+                  onChange={(e) => setBlogForm({...blogForm, title: e.target.value})}
+                  className="w-full bg-slate-50 border border-gray-205 rounded-xl px-3 py-2 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Author Name</label>
+                  <input
+                    required
+                    type="text"
+                    placeholder="e.g. Aarti Iyer"
+                    value={blogForm.author}
+                    onChange={(e) => setBlogForm({...blogForm, author: e.target.value})}
+                    className="w-full bg-slate-50 border border-gray-205 rounded-xl px-3 py-2 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Category</label>
+                  <select
+                    required
+                    value={blogForm.category}
+                    onChange={(e) => setBlogForm({...blogForm, category: e.target.value})}
+                    className="w-full bg-slate-50 border border-gray-205 rounded-xl px-3 py-2 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none"
+                  >
+                    <option value="Heritage Artisans">Heritage Artisans</option>
+                    <option value="AI Studio">AI Studio</option>
+                    <option value="Styling Guides">Styling Guides</option>
+                    <option value="Digital Runway">Digital Runway</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Reading Time</label>
+                  <input
+                    required
+                    type="text"
+                    placeholder="e.g. 5 min read"
+                    value={blogForm.read_time}
+                    onChange={(e) => setBlogForm({...blogForm, read_time: e.target.value})}
+                    className="w-full bg-slate-50 border border-gray-205 rounded-xl px-3 py-2 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Publication Date</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. June 04, 2026"
+                    value={blogForm.date}
+                    onChange={(e) => setBlogForm({...blogForm, date: e.target.value})}
+                    className="w-full bg-slate-50 border border-gray-205 rounded-xl px-3 py-2 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Excerpt / Hook</label>
+                <input
+                  required
+                  type="text"
+                  placeholder="Provide a short sentence summarizing the publication hook..."
+                  value={blogForm.excerpt}
+                  onChange={(e) => setBlogForm({...blogForm, excerpt: e.target.value})}
+                  className="w-full bg-slate-50 border border-gray-250 rounded-xl px-3 py-2 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Article Main Content</label>
+                <textarea
+                  required
+                  placeholder="Write the full body text of the article..."
+                  value={blogForm.content}
+                  onChange={(e) => setBlogForm({...blogForm, content: e.target.value})}
+                  rows="5"
+                  className="w-full bg-slate-50 border border-gray-250 rounded-xl px-3 py-2 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none resize-none"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Header Photo Image URL</label>
+                <input
+                  required
+                  type="text"
+                  placeholder="https://images.unsplash.com/photo-..."
+                  value={blogForm.image}
+                  onChange={(e) => setBlogForm({...blogForm, image: e.target.value})}
+                  className="w-full bg-slate-50 border border-gray-205 rounded-xl px-3 py-2 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Interactive Link Text (Optional)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Try draping garments in Try-On Studio"
+                    value={blogForm.interactive_text}
+                    onChange={(e) => setBlogForm({...blogForm, interactive_text: e.target.value})}
+                    className="w-full bg-slate-50 border border-gray-205 rounded-xl px-3 py-2 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Interactive Path (Optional)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. /tryon or /collections"
+                    value={blogForm.interactive_link}
+                    onChange={(e) => setBlogForm({...blogForm, interactive_link: e.target.value})}
+                    className="w-full bg-slate-50 border border-gray-205 rounded-xl px-3 py-2 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="flex justify-end gap-3 pt-6 border-t border-gray-150">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsBlogModalOpen(false);
+                    setEditingBlogId(null);
+                  }}
+                  className="px-4 py-2 border border-gray-250 text-gray-500 hover:bg-gray-55 rounded-xl text-xs font-bold transition-colors cursor-pointer bg-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="bg-pink-600 hover:bg-pink-700 text-white font-extrabold text-xs uppercase tracking-wider px-6 py-2 rounded-xl shadow-md transition-colors cursor-pointer border-0"
+                >
+                  {editingBlogId ? "Save Changes" : "Publish Post"}
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* --- DELETE BLOG POST MODAL --- */}
+      {blogDeleteConfirmId && (
+        <div className="fixed inset-0 z-55 flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 animate-fadeIn font-sans">
+          <div className="max-w-sm w-full bg-white/95 backdrop-blur-xl border border-gray-150 p-6 rounded-3xl text-center shadow-2xl space-y-5 animate-scaleUp">
+            <div className="w-14 h-14 bg-rose-50 border border-rose-100 rounded-full flex items-center justify-center mx-auto text-rose-650 shadow-inner">
+              <Trash2 className="w-6 h-6 stroke-[1.5]" />
+            </div>
+            
+            <div className="space-y-1">
+              <h3 className="text-base font-black text-gray-900 uppercase tracking-tight font-jakarta">Delete Publication?</h3>
+              <p className="text-[11px] text-gray-505 leading-relaxed">
+                Are you sure you want to delete this blog post from the platform archive? This action is permanent and cannot be undone.
+              </p>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setBlogDeleteConfirmId(null)}
+                className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-500 font-extrabold text-[10px] uppercase tracking-wider rounded-xl hover:bg-gray-50 transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDeleteBlog}
+                className="flex-1 px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-[10px] uppercase tracking-wider rounded-xl shadow-md shadow-rose-150 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer border-0"
               >
                 Delete
               </button>

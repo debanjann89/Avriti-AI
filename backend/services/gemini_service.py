@@ -78,7 +78,21 @@ def build_tryon_prompt(garment: dict, persona: dict, camera_angle: str = "Front 
     }
     age = age_map.get(persona.get("age_group", "Young Adult"), "26-year-old")
     ethnicity = persona.get("ethnicity", "South Asian")
-    body = persona.get("body_type", "Average").lower()
+    
+    body_map = {
+        "xs": "petite and slender",
+        "s": "slender",
+        "m": "average height and build",
+        "l": "athletic and well-built",
+        "xl": "plus size, full-figured",
+        "xxl": "plus size, curvier build",
+        "slim": "slender",
+        "athletic": "athletic",
+        "average": "average height and build",
+        "plus size": "plus size, full-figured"
+    }
+    raw_body = persona.get("body_type", "M").lower().strip()
+    body = body_map.get(raw_body, raw_body)
     gender = persona.get("gender", "Woman").lower()
 
     g = garment

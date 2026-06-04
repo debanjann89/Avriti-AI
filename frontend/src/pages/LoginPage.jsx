@@ -30,7 +30,7 @@ export default function LoginPage() {
     setIsSubmitting(true);
     try {
       await login(email, password);
-      navigate('/');
+      navigate('/home');
     } catch (err) {
       setError(err.response?.data?.detail || 'Invalid email or password. Please try again.');
     } finally {

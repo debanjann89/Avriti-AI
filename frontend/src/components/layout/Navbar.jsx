@@ -4,6 +4,7 @@ import { useContext, useState, useRef, useEffect } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import { CartContext } from '../../context/CartContext';
 import CartSidebar from '../CartSidebar';
+import axios from 'axios';
 
 export default function Navbar() {
   const { user, logout } = useContext(AuthContext);
@@ -12,6 +13,7 @@ export default function Navbar() {
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const [blogEnabled, setBlogEnabled] = useState(true);
 
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -27,6 +29,15 @@ export default function Navbar() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  // Fetch blog configuration on load/nav change to support live disable updates
+  useEffect(() => {
+    axios.get("http://127.0.0.1:8000/api/blog/settings")
+      .then(res => {
+        setBlogEnabled(res.data.blog_enabled);
+      })
+      .catch(e => console.error("Error fetching navbar blog settings", e));
+  }, [location.pathname]);
 
   const handleLogout = () => {
     logout();
@@ -74,11 +85,19 @@ export default function Navbar() {
             
             {/* Left Brand logo & link */}
             <div className="flex items-center space-x-8">
-              <Link to="/" className="text-2xl font-black font-jakarta tracking-tight bg-gradient-to-r from-[#D81B60] via-[#A30D45] to-[#D81B60] bg-clip-text text-transparent leading-none hover:scale-[1.01] transition-transform">
+              <Link to={user ? "/home" : "/"} className="text-2xl font-black font-jakarta tracking-tight bg-gradient-to-r from-[#D81B60] via-[#A30D45] to-[#D81B60] bg-clip-text text-transparent leading-none hover:scale-[1.01] transition-transform">
                 Aavriti AI
               </Link>
               
               <div className="hidden lg:flex space-x-6 items-center ml-8">
+                <Link 
+                  to="/home" 
+                  className={location.pathname === '/home' 
+                    ? "px-4 py-2 rounded-full bg-[#F8D7DA]/75 border border-[#D81B60]/20 text-[#D81B60] font-black text-[10px] uppercase tracking-widest shadow-sm shadow-pink-100/30 hover:scale-[1.02] transition-all" 
+                    : "nav-link-premium font-extrabold text-[10px] uppercase tracking-widest"}
+                >
+                  Home
+                </Link>
                 <Link 
                   to="/collections" 
                   className={location.pathname === '/collections' 
@@ -109,14 +128,16 @@ export default function Navbar() {
                 >
                   About Us
                 </Link>
-                <a 
-                  href="#" 
-                  className={location.pathname === '/blog' 
-                    ? "px-4 py-2 rounded-full bg-[#F8D7DA]/75 border border-[#D81B60]/20 text-[#D81B60] font-black text-[10px] uppercase tracking-widest shadow-sm shadow-pink-100/30 hover:scale-[1.02] transition-all" 
-                    : "nav-link-premium font-extrabold text-[10px] uppercase tracking-widest"}
-                >
-                  Blog
-                </a>
+                {blogEnabled && (
+                  <Link 
+                    to="/blog" 
+                    className={location.pathname === '/blog' 
+                      ? "px-4 py-2 rounded-full bg-[#F8D7DA]/75 border border-[#D81B60]/20 text-[#D81B60] font-black text-[10px] uppercase tracking-widest shadow-sm shadow-pink-100/30 hover:scale-[1.02] transition-all" 
+                      : "nav-link-premium font-extrabold text-[10px] uppercase tracking-widest"}
+                  >
+                    Blog
+                  </Link>
+                )}
               </div>
             </div>
             
@@ -196,7 +217,7 @@ export default function Navbar() {
                         <ShoppingBag className="w-4 h-4 stroke-[2]" />
                         <span>Order History</span>
                       </Link>
-                      
+
                       <hr className="border-gray-100 my-1.5" />
                       
                       <button

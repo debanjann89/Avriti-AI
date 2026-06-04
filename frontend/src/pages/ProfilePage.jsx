@@ -5,7 +5,8 @@ import axios from 'axios';
 import { 
   User, Mail, Phone, MapPin, Sliders, 
   ShoppingBag, Sparkles, Upload, LogOut, 
-  Check, Edit2, ChevronRight, ShoppingCart, X
+  Check, Edit2, ChevronRight, ShoppingCart, X,
+  Trash2, Plus, Heart, BarChart2, PlusCircle, ArrowLeft, Download, Camera
 } from 'lucide-react';
 
 export default function ProfilePage() {
@@ -70,6 +71,33 @@ export default function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [orders, setOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
+
+  // Virtual Wardrobe States
+  const [wardrobeImages, setWardrobeImages] = useState([]);
+  const [loadingWardrobe, setLoadingWardrobe] = useState(false);
+  const [selectedWardrobeImage, setSelectedWardrobeImage] = useState(null);
+
+  // Seller Dashboard States
+  const [sellerStats, setSellerStats] = useState(null);
+  const [sellerProducts, setSellerProducts] = useState([]);
+  const [sellerOrders, setSellerOrders] = useState([]);
+  const [loadingSeller, setLoadingSeller] = useState(false);
+  const [sellerSubTab, setSellerSubTab] = useState('products'); // 'products' or 'orders'
+  
+  // Product Modals and Forms
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [productForm, setProductForm] = useState({
+    name: '',
+    brand: '',
+    price: '',
+    category: 'Sarees',
+    description: '',
+    tryOnCompatible: true,
+    image_b64: '',
+    image_url: ''
+  });
+  const [productImagePreview, setProductImagePreview] = useState(null);
 
   // Redirect to login if user not authenticated
   useEffect(() => {
@@ -209,6 +237,162 @@ export default function ProfilePage() {
     }
   };
 
+  // Fetch Virtual Wardrobe images
+  const fetchWardrobe = async () => {
+    if (!user?.id) return;
+    setLoadingWardrobe(true);
+    try {
+      const res = await axios.get(`http://127.0.0.1:8000/api/wardrobe/gallery?user_id=${user.id}`);
+      setWardrobeImages(res.data);
+    } catch (err) {
+      console.error("Error fetching wardrobe gallery", err);
+    } finally {
+      setLoadingWardrobe(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'wardrobe') {
+      fetchWardrobe();
+    }
+  }, [activeTab, user?.id]);
+
+  const handleDeleteWardrobeImage = async (image_id) => {
+    if (!window.confirm("Are you sure you want to delete this try-on result from your wardrobe?")) return;
+    try {
+      await axios.delete(`http://127.0.0.1:8000/api/wardrobe/${image_id}`);
+      showToast("Try-on deleted from your wardrobe.", "success");
+      fetchWardrobe();
+      if (selectedWardrobeImage && selectedWardrobeImage.id === image_id) {
+        setSelectedWardrobeImage(null);
+      }
+    } catch (err) {
+      console.error("Error deleting wardrobe image", err);
+      showToast("Failed to delete wardrobe image.", "error");
+    }
+  };
+
+  // Fetch Seller Dashboard stats, products, and orders
+  const fetchSellerData = async () => {
+    if (!user?.id) return;
+    setLoadingSeller(true);
+    try {
+      const [statsRes, productsRes, ordersRes] = await Promise.all([
+        axios.get(`http://127.0.0.1:8000/api/seller/stats?user_id=${user.id}`),
+        axios.get(`http://127.0.0.1:8000/api/seller/products?user_id=${user.id}`),
+        axios.get(`http://127.0.0.1:8000/api/seller/orders?user_id=${user.id}`)
+      ]);
+      setSellerStats(statsRes.data);
+      setSellerProducts(productsRes.data);
+      setSellerOrders(ordersRes.data);
+    } catch (err) {
+      console.error("Error fetching seller dashboard data", err);
+    } finally {
+      setLoadingSeller(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'seller-dashboard' && (user.role === 'seller' || user.role === 'admin')) {
+      fetchSellerData();
+    }
+  }, [activeTab, user?.id, user?.role]);
+
+  const handleProductFormSubmit = async (e) => {
+    e.preventDefault();
+    const priceVal = parseFloat(productForm.price);
+    if (isNaN(priceVal) || priceVal <= 0) {
+      alert("Please enter a valid positive price.");
+      return;
+    }
+    const payload = {
+      user_id: user.id,
+      name: productForm.name,
+      brand: productForm.brand || "Boutique Brand",
+      price: priceVal,
+      category: productForm.category,
+      description: productForm.description,
+      tryOnCompatible: productForm.tryOnCompatible,
+      image_b64: productForm.image_b64 || null,
+      image_url: productForm.image_url || null
+    };
+    try {
+      if (editingProduct) {
+        await axios.put(`http://127.0.0.1:8000/api/seller/product/${editingProduct}`, payload);
+        showToast("Product updated successfully!", "success");
+      } else {
+        await axios.post(`http://127.0.0.1:8000/api/seller/product`, payload);
+        showToast("Product created and listed successfully!", "success");
+      }
+      setIsProductModalOpen(false);
+      setEditingProduct(null);
+      setProductForm({ name: '', brand: '', price: '', category: 'Sarees', description: '', tryOnCompatible: true, image_b64: '', image_url: '' });
+      setProductImagePreview(null);
+      fetchSellerData();
+    } catch (err) {
+      console.error("Error saving product catalog listing", err);
+      showToast(err.response?.data?.detail || "Failed to save product", "error");
+    }
+  };
+
+  const handleEditProductClick = (prod) => {
+    setEditingProduct(prod.id);
+    setProductForm({
+      name: prod.name,
+      brand: prod.brand,
+      price: prod.price.toString(),
+      category: prod.category,
+      description: prod.description,
+      tryOnCompatible: prod.tryOnCompatible,
+      image_b64: '',
+      image_url: prod.image
+    });
+    setProductImagePreview(prod.image);
+    setIsProductModalOpen(true);
+  };
+
+  const handleDeleteProduct = async (product_id) => {
+    if (!window.confirm("Are you sure you want to delete this product listing from the catalog?")) return;
+    try {
+      await axios.delete(`http://127.0.0.1:8000/api/seller/product/${product_id}?user_id=${user.id}`);
+      showToast("Product deleted successfully.", "success");
+      fetchSellerData();
+    } catch (err) {
+      console.error("Error deleting product", err);
+      showToast("Failed to delete product.", "error");
+    }
+  };
+
+  const handleUpdateOrderStatus = async (order_id, status) => {
+    try {
+      await axios.put(`http://127.0.0.1:8000/api/seller/order/${order_id}/status`, {
+        user_id: user.id,
+        status: status
+      });
+      showToast("Order shipping status updated.", "success");
+      fetchSellerData();
+    } catch (err) {
+      console.error("Error updating order shipping status", err);
+      showToast("Failed to update status.", "error");
+    }
+  };
+
+  const handleProductImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProductImagePreview(reader.result);
+        setProductForm(prev => ({
+          ...prev,
+          image_b64: reader.result,
+          image_url: null
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FFF8F8] font-sans">
@@ -274,6 +458,40 @@ export default function ProfilePage() {
               </div>
               <ChevronRight className="w-4 h-4 text-gray-400" />
             </button>
+
+            {/* Tab: Virtual Wardrobe */}
+            <button
+              onClick={() => handleTabChange('wardrobe')}
+              className={`w-full py-4 px-4 text-xs font-bold uppercase tracking-wider text-left transition-all flex items-center justify-between group ${
+                activeTab === 'wardrobe'
+                  ? 'bg-pink-50/20 text-pink-600 border-l-4 border-pink-600 pl-3'
+                  : 'text-gray-600 hover:bg-slate-50/50 hover:text-pink-600'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <Heart className={`w-4.5 h-4.5 ${activeTab === 'wardrobe' ? 'text-pink-600' : 'text-gray-450'}`} />
+                <span>Virtual Wardrobe</span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-gray-400" />
+            </button>
+
+            {/* Tab: Seller Dashboard */}
+            {(user.role === 'seller' || user.role === 'admin') && (
+              <button
+                onClick={() => handleTabChange('seller-dashboard')}
+                className={`w-full py-4 px-4 text-xs font-bold uppercase tracking-wider text-left transition-all flex items-center justify-between group ${
+                  activeTab === 'seller-dashboard'
+                    ? 'bg-pink-50/20 text-pink-600 border-l-4 border-pink-600 pl-3'
+                    : 'text-gray-600 hover:bg-slate-50/50 hover:text-pink-600'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <BarChart2 className={`w-4.5 h-4.5 ${activeTab === 'seller-dashboard' ? 'text-pink-600' : 'text-gray-450'}`} />
+                  <span>Seller Dashboard</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-gray-400" />
+              </button>
+            )}
             
             {/* Heading: Settings */}
             <div className="p-4 bg-slate-50/20">
@@ -455,11 +673,13 @@ export default function ProfilePage() {
                         onChange={handleInputChange}
                         className="w-full bg-gray-50/50 disabled:bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-medium focus:outline-none transition-all"
                       >
-                        <option value="">Select Body Shape</option>
-                        <option value="Average">Average / Medium</option>
-                        <option value="Slim">Slim / Athletic</option>
-                        <option value="Muscular">Muscular / Chiseled</option>
-                        <option value="Plus Size">Plus Size / Full</option>
+                        <option value="">Select Size / Fit</option>
+                        <option value="XS">Extra Small (XS)</option>
+                        <option value="S">Small (S)</option>
+                        <option value="M">Medium (M)</option>
+                        <option value="L">Large (L)</option>
+                        <option value="XL">Extra Large (XL)</option>
+                        <option value="XXL">Double Extra Large (XXL)</option>
                       </select>
                     </div>
 
@@ -581,6 +801,565 @@ export default function ProfilePage() {
                   </div>
                 )}
               </form>
+            </div>
+          )}
+
+          {/* TAB CONTENT: VIRTUAL WARDROBE */}
+          {activeTab === 'wardrobe' && (
+            <div className="bg-white rounded-lg border border-gray-200/80 p-6 shadow-sm space-y-6">
+              <h2 className="text-sm font-black text-gray-900 uppercase tracking-wider flex items-center gap-2 border-b border-gray-100 pb-4">
+                <Heart className="w-4.5 h-4.5 text-pink-600 fill-pink-600/10" />
+                <span>Virtual Wardrobe & Try-On Gallery</span>
+              </h2>
+
+              {loadingWardrobe ? (
+                <div className="flex flex-col items-center justify-center py-12 space-y-2">
+                  <div className="w-8 h-8 border-4 border-pink-100 border-t-pink-600 rounded-full animate-spin"></div>
+                  <span className="text-xs text-gray-400 font-bold uppercase tracking-widest animate-pulse">Loading wardrobe history...</span>
+                </div>
+              ) : wardrobeImages.length === 0 ? (
+                <div className="text-center py-16 border border-dashed border-gray-200 rounded-2xl bg-gray-50/20">
+                  <Heart className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <h3 className="text-xs font-bold text-gray-700">Virtual Wardrobe Empty</h3>
+                  <p className="text-[11px] text-gray-400 mt-1 max-w-sm mx-auto leading-normal">
+                    You haven't saved any try-on generated results yet. Try on clothes in the Studio or consult our AI Stylist to generate custom outfits and save them here!
+                  </p>
+                  <div className="mt-5">
+                    <a href="/tryon" className="inline-block bg-pink-600 hover:bg-pink-700 text-white font-extrabold text-[9px] uppercase tracking-wider px-5 py-2.5 rounded-full shadow-md transition-all">
+                      Go to Try-On Studio
+                    </a>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
+                  {wardrobeImages.map((img) => (
+                    <div key={img.id} className="relative group border border-gray-150 rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:border-pink-300 transition-all duration-300 bg-gray-50 aspect-[3/4]">
+                      <img 
+                        src={img.image_url.startsWith('http') ? img.image_url : `http://127.0.0.1:8000${img.image_url}`} 
+                        alt="Try-on Outfit" 
+                        className="w-full h-full object-cover cursor-pointer animate-fadeIn"
+                        onClick={() => setSelectedWardrobeImage(img)}
+                      />
+                      <button
+                        onClick={() => handleDeleteWardrobeImage(img.id)}
+                        className="absolute bottom-3 right-3 w-8 h-8 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600 rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                        title="Delete Outfit"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                      <div className="absolute top-3 left-3 bg-black/40 backdrop-blur-xs text-white text-[8px] font-bold px-2 py-0.5 rounded-full">
+                        {new Date(img.created_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ZOOM MODAL FOR WARDROBE IMAGE */}
+          {selectedWardrobeImage && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
+              <div className="relative bg-white rounded-3xl overflow-hidden shadow-2xl max-w-4xl w-full border border-gray-100 flex flex-col md:flex-row h-[85vh] md:h-[650px]">
+                {/* Close Button */}
+                <button 
+                  onClick={() => setSelectedWardrobeImage(null)}
+                  className="absolute top-4 right-4 z-10 w-9 h-9 bg-white/90 hover:bg-white text-gray-700 rounded-full flex items-center justify-center shadow hover:scale-105 transition-all"
+                >
+                  <X className="w-4.5 h-4.5" />
+                </button>
+
+                {/* Left side: Image */}
+                <div className="flex-1 bg-gray-100 flex items-center justify-center p-4 h-1/2 md:h-full overflow-hidden">
+                  <img 
+                    src={selectedWardrobeImage.image_url.startsWith('http') ? selectedWardrobeImage.image_url : `http://127.0.0.1:8000${selectedWardrobeImage.image_url}`} 
+                    alt="Zoomed Try-on result" 
+                    className="max-w-full max-h-full object-contain rounded-xl"
+                  />
+                </div>
+
+                {/* Right side: Meta / Actions */}
+                <div className="w-full md:w-[320px] p-6 flex flex-col justify-between bg-white border-t md:border-t-0 md:border-l border-gray-100 h-1/2 md:h-full">
+                  <div className="space-y-6">
+                    <div>
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pink-50 text-pink-700 font-extrabold text-[9px] uppercase tracking-wider mb-2">
+                        <Sparkles className="w-3 h-3 text-pink-600 fill-pink-600/10" />
+                        <span>AI Generative Fit</span>
+                      </span>
+                      <h3 className="text-base font-black text-gray-800 uppercase tracking-tight font-jakarta">Wardrobe Creation</h3>
+                      <p className="text-[10px] text-gray-400 font-medium mt-1">Saved on {selectedWardrobeImage.created_at}</p>
+                    </div>
+
+                    <div className="bg-slate-50 border border-gray-150 rounded-2xl p-4 text-xs text-gray-600 leading-normal text-left">
+                      This clothing outfit was custom generated using the Aavriti Neural Solver. It has been saved to your personal virtual wardrobe gallery.
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 pt-6 border-t border-gray-100">
+                    <button
+                      onClick={() => {
+                        const link = document.createElement("a");
+                        link.href = selectedWardrobeImage.image_url.startsWith('http') ? selectedWardrobeImage.image_url : `http://127.0.0.1:8000${selectedWardrobeImage.image_url}`;
+                        link.download = `aavriti-wardrobe-${selectedWardrobeImage.id}.png`;
+                        link.click();
+                      }}
+                      className="w-full bg-pink-600 hover:bg-pink-700 text-white font-extrabold text-[10px] uppercase tracking-widest py-3.5 rounded-xl shadow-lg shadow-pink-200 transition-all flex items-center justify-center gap-2 cursor-pointer border-0"
+                    >
+                      <Download className="w-4 h-4" />
+                      <span>Download HD Image</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => {
+                        handleDeleteWardrobeImage(selectedWardrobeImage.id);
+                      }}
+                      className="w-full bg-rose-50 hover:bg-rose-100 border border-rose-250 text-rose-600 font-bold text-[10px] uppercase tracking-wider py-3 rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Remove from Wardrobe</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB CONTENT: SELLER DASHBOARD */}
+          {activeTab === 'seller-dashboard' && (user.role === 'seller' || user.role === 'admin') && (
+            <div className="space-y-6">
+              {/* Stat metrics */}
+              {loadingSeller && !sellerStats ? (
+                <div className="bg-white rounded-lg border border-gray-200/80 p-12 text-center shadow-sm">
+                  <div className="w-8 h-8 border-4 border-pink-100 border-t-pink-600 rounded-full animate-spin mx-auto mb-3"></div>
+                  <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Loading Seller Dashboard Analytics...</p>
+                </div>
+              ) : (
+                <>
+                  {/* Dashboard header & quick stats */}
+                  <div className="bg-white rounded-xl border border-gray-200/80 p-6 shadow-sm space-y-6 text-left">
+                    <div className="flex flex-wrap justify-between items-center gap-4 border-b border-gray-150 pb-4">
+                      <div>
+                        <h2 className="text-base font-black text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                          <BarChart2 className="w-5 h-5 text-pink-600" />
+                          <span>Seller Business Dashboard</span>
+                        </h2>
+                        <p className="text-xs text-gray-400 font-medium mt-1">Real-time metrics, product management, and boutique shipment tracking.</p>
+                      </div>
+                      
+                      <button
+                        onClick={() => {
+                          setEditingProduct(null);
+                          setProductForm({ name: '', brand: '', price: '', category: 'Sarees', description: '', tryOnCompatible: true, image_b64: '', image_url: '' });
+                          setProductImagePreview(null);
+                          setIsProductModalOpen(true);
+                        }}
+                        className="bg-pink-600 hover:bg-pink-700 text-white text-[10px] font-extrabold uppercase tracking-widest px-4 py-2.5 rounded-xl shadow-md flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer border-0"
+                      >
+                        <PlusCircle className="w-4 h-4" />
+                        <span>Add New Listing</span>
+                      </button>
+                    </div>
+
+                    {/* Quick Stats Grid */}
+                    {sellerStats && (
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-500/5 to-emerald-500/10 border border-emerald-200/40 shadow-xs text-left">
+                          <span className="block text-[9px] font-bold text-emerald-800 uppercase tracking-wider">Total Revenue</span>
+                          <strong className="text-xl font-black text-emerald-700 tracking-tight block mt-1">₹{sellerStats.revenue.toLocaleString('en-IN')}</strong>
+                          <span className="text-[8px] text-emerald-600 font-bold block mt-0.5">Mock Sales Ledger</span>
+                        </div>
+                        <div className="p-4 rounded-2xl bg-gradient-to-br from-pink-500/5 to-pink-500/10 border border-pink-200/40 shadow-xs text-left">
+                          <span className="block text-[9px] font-bold text-pink-800 uppercase tracking-wider">Items Sold</span>
+                          <strong className="text-xl font-black text-pink-700 tracking-tight block mt-1">{sellerStats.items_sold} units</strong>
+                          <span className="text-[8px] text-pink-600 font-bold block mt-0.5">Boutique Checkouts</span>
+                        </div>
+                        <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-500/5 to-blue-500/10 border border-blue-200/40 shadow-xs text-left">
+                          <span className="block text-[9px] font-bold text-blue-800 uppercase tracking-wider">Orders Received</span>
+                          <strong className="text-xl font-black text-blue-700 tracking-tight block mt-1">{sellerStats.orders_count} orders</strong>
+                          <span className="text-[8px] text-blue-600 font-bold block mt-0.5">Total Transactions</span>
+                        </div>
+                        <div className="p-4 rounded-2xl bg-gradient-to-br from-violet-500/5 to-violet-500/10 border border-violet-200/40 shadow-xs text-left">
+                          <span className="block text-[9px] font-bold text-violet-800 uppercase tracking-wider">Active Listings</span>
+                          <strong className="text-xl font-black text-violet-700 tracking-tight block mt-1">{sellerStats.active_listings} items</strong>
+                          <span className="text-[8px] text-violet-600 font-bold block mt-0.5">Catalog Grid</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Sales Trend Visual Mock Chart */}
+                    {sellerStats?.sales_trend && (
+                      <div className="mt-4 border border-gray-150 rounded-2xl p-5 bg-slate-50/50 space-y-4">
+                        <div className="flex justify-between items-center">
+                          <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Revenue Sales Trend (6 Months)</h4>
+                          <span className="text-[9px] text-pink-600 font-extrabold uppercase">Analytics Trend Matrix</span>
+                        </div>
+                        
+                        <div className="h-40 w-full flex items-end justify-between gap-2 pt-6 px-4">
+                          {sellerStats.sales_trend.map((point, index) => {
+                            const maxVal = Math.max(...sellerStats.sales_trend.map(p => p.sales), 100);
+                            const percentHeight = Math.min((point.sales / maxVal) * 85 + 15, 100);
+                            
+                            return (
+                              <div key={index} className="flex-1 flex flex-col items-center gap-2 group h-full justify-end">
+                                <div className="text-[9px] font-bold text-slate-700 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                  ₹{point.sales}
+                                </div>
+                                <div 
+                                  className="w-full max-w-[40px] bg-gradient-to-t from-pink-500/40 to-pink-600 rounded-t-lg transition-all duration-500 shadow-xs group-hover:scale-y-[1.03]"
+                                  style={{ height: `${percentHeight}%` }}
+                                />
+                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{point.month}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* SUBTAB BAR */}
+                  <div className="flex border-b border-gray-200 bg-white px-2 rounded-t-xl">
+                    <button
+                      onClick={() => setSellerSubTab('products')}
+                      className={`px-6 py-3.5 text-xs font-extrabold uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 cursor-pointer border-x-0 border-t-0 ${
+                        sellerSubTab === 'products'
+                          ? 'border-pink-600 text-pink-600 font-black bg-pink-50/5'
+                          : 'border-transparent text-gray-500 hover:text-pink-600'
+                      }`}
+                    >
+                      <ShoppingBag className="w-4 h-4" />
+                      <span>Product Listings ({sellerProducts.length})</span>
+                    </button>
+                    <button
+                      onClick={() => setSellerSubTab('orders')}
+                      className={`px-6 py-3.5 text-xs font-extrabold uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 cursor-pointer border-x-0 border-t-0 ${
+                        sellerSubTab === 'orders'
+                          ? 'border-pink-600 text-pink-600 font-black bg-pink-50/5'
+                          : 'border-transparent text-gray-500 hover:text-pink-600'
+                      }`}
+                    >
+                      <ShoppingCart className="w-4 h-4" />
+                      <span>Boutique Orders ({sellerOrders.length})</span>
+                    </button>
+                  </div>
+
+                  {/* PRODUCTS CATALOG LIST */}
+                  {sellerSubTab === 'products' && (
+                    <div className="bg-white rounded-b-xl border border-t-0 border-gray-200/80 p-6 shadow-sm space-y-6">
+                      {sellerProducts.length === 0 ? (
+                        <div className="text-center py-16 border border-dashed border-gray-200 rounded-2xl bg-gray-50/20">
+                          <ShoppingBag className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                          <h3 className="text-xs font-bold text-gray-700">No products listed</h3>
+                          <p className="text-[11px] text-gray-400 mt-1 max-w-xs mx-auto leading-normal">
+                            Get started by creating your first boutique clothing item to display in the Aavriti storefront.
+                          </p>
+                          <div className="mt-5">
+                            <button
+                              onClick={() => {
+                                setEditingProduct(null);
+                                setProductForm({ name: '', brand: '', price: '', category: 'Sarees', description: '', tryOnCompatible: true, image_b64: '', image_url: '' });
+                                setProductImagePreview(null);
+                                setIsProductModalOpen(true);
+                              }}
+                              className="bg-pink-600 hover:bg-pink-700 text-white font-extrabold text-[9px] uppercase tracking-wider px-5 py-2.5 rounded-full shadow-md transition-colors border-0"
+                            >
+                              Add Product
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                          {sellerProducts.map((prod) => (
+                            <div key={prod.id} className="border border-gray-150 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-all duration-200 bg-white flex flex-col justify-between text-left">
+                              <div className="relative aspect-[3/4] w-full bg-slate-50 border-b border-gray-100 flex items-center justify-center overflow-hidden">
+                                <img 
+                                  src={prod.image.startsWith('http') ? prod.image : `http://127.0.0.1:8000${prod.image}`} 
+                                  alt={prod.name} 
+                                  className="w-full h-full object-cover" 
+                                />
+                                {prod.tryOnCompatible && (
+                                  <span className="absolute top-3 left-3 bg-pink-100/90 backdrop-blur-xs text-pink-700 border border-pink-200 text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full">
+                                    ★ Try-On Ready
+                                  </span>
+                                )}
+                              </div>
+                              
+                              <div className="p-4 space-y-3">
+                                <div>
+                                  <span className="block text-[8px] font-extrabold text-gray-400 uppercase tracking-wider">{prod.category}</span>
+                                  <h4 className="text-xs font-black text-gray-800 leading-tight uppercase truncate mt-0.5">{prod.name}</h4>
+                                  <p className="text-[9px] text-gray-400 font-bold mt-0.5">{prod.brand}</p>
+                                </div>
+                                <div className="flex justify-between items-center border-t border-slate-100 pt-3">
+                                  <span className="text-xs font-black text-pink-600">₹{prod.price.toLocaleString('en-IN')}</span>
+                                  <div className="flex items-center gap-1.5">
+                                    <button
+                                      onClick={() => handleEditProductClick(prod)}
+                                      className="p-2 border border-gray-250 hover:border-pink-300 text-gray-650 hover:text-pink-600 rounded-lg transition-colors cursor-pointer bg-white"
+                                      title="Edit Product"
+                                    >
+                                      <Edit2 className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteProduct(prod.id)}
+                                      className="p-2 border border-rose-100 hover:bg-rose-50 hover:border-rose-300 text-rose-500 rounded-lg transition-colors cursor-pointer bg-white"
+                                      title="Delete Listing"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* BOUTIQUE ORDERS LIST */}
+                  {sellerSubTab === 'orders' && (
+                    <div className="bg-white rounded-b-xl border border-t-0 border-gray-200/80 p-6 shadow-sm space-y-6">
+                      {sellerOrders.length === 0 ? (
+                        <div className="text-center py-16 border border-dashed border-gray-200 rounded-2xl bg-gray-50/20">
+                          <ShoppingCart className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                          <h3 className="text-xs font-bold text-gray-700">No boutique orders</h3>
+                          <p className="text-[11px] text-gray-400 mt-1 max-w-xs mx-auto leading-normal">
+                            Orders containing your boutique listings will show up here along with shipping controls.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-6">
+                          {sellerOrders.map((order) => (
+                            <div key={order.id} className="border border-gray-200/80 rounded-xl bg-slate-50/20 overflow-hidden shadow-xs hover:border-pink-200/40 transition-all duration-200 text-left">
+                              {/* Order Header */}
+                              <div className="bg-white/95 p-4 border-b border-gray-150 flex flex-wrap justify-between items-center gap-3">
+                                <div>
+                                  <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Order ID</p>
+                                  <p className="text-xs font-black text-slate-800">#AVR-00{order.id}</p>
+                                </div>
+                                <div>
+                                  <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Order Date</p>
+                                  <p className="text-xs font-medium text-slate-650">{order.order_date}</p>
+                                </div>
+                                <div>
+                                  <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Customer</p>
+                                  <p className="text-xs font-bold text-slate-755">{order.user_name}</p>
+                                </div>
+                                <div>
+                                  <p className="text-[9px] text-gray-450 font-bold uppercase tracking-widest block">Shipment Status</p>
+                                  <select
+                                    value={order.status}
+                                    onChange={(e) => handleUpdateOrderStatus(order.id, e.target.value)}
+                                    className="mt-0.5 bg-pink-50 border border-pink-100 rounded-lg px-2 py-1 text-[10px] font-extrabold uppercase tracking-wider text-pink-700 focus:outline-none cursor-pointer"
+                                  >
+                                    <option value="pending">Pending</option>
+                                    <option value="processing">Processing</option>
+                                    <option value="shipped">Shipped</option>
+                                    <option value="delivered">Delivered</option>
+                                    <option value="cancelled">Cancelled</option>
+                                  </select>
+                                </div>
+                              </div>
+
+                              {/* Items belonging to this Seller */}
+                              <div className="p-4 bg-white divide-y divide-gray-100">
+                                <p className="text-[9px] font-black text-pink-600 uppercase tracking-widest mb-3">Your Boutique Items In This Order</p>
+                                {order.seller_items.map((item, idx) => (
+                                  <div key={idx} className="py-3 flex items-center justify-between first:pt-0 last:pb-0">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                      <div className="w-10 h-10 rounded-lg overflow-hidden border border-gray-100 shadow-sm shrink-0 flex items-center justify-center bg-gray-50">
+                                        <img src={item.image.startsWith('http') ? item.image : `http://127.0.0.1:8000${item.image}`} alt={item.name} className="w-full h-full object-cover" />
+                                      </div>
+                                      <div className="min-w-0">
+                                        <h5 className="text-xs font-extrabold text-gray-850 leading-tight truncate uppercase max-w-[200px]">{item.name}</h5>
+                                        <span className="text-[9px] text-gray-400 font-bold block">{item.brand}</span>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-6 shrink-0">
+                                      <div className="text-center">
+                                        <span className="block text-[8px] text-gray-450 uppercase">Qty</span>
+                                        <strong className="text-xs font-extrabold text-slate-800">{item.quantity}</strong>
+                                      </div>
+                                      <div className="text-right min-w-[70px]">
+                                        <span className="block text-[8px] text-gray-450 uppercase">Price</span>
+                                        <strong className="text-xs font-extrabold text-slate-900">₹{(item.price * item.quantity).toLocaleString('en-IN')}</strong>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+
+                              {/* Shipping address details */}
+                              <div className="bg-slate-50/70 p-3 border-t border-gray-100 flex items-start gap-2">
+                                <MapPin className="w-3.5 h-3.5 text-gray-450 shrink-0 mt-0.5" />
+                                <div className="text-[9px] leading-relaxed text-gray-500">
+                                  <strong className="text-gray-700 uppercase tracking-wide">Shipping Address:</strong> {order.shipping_address}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+
+          {/* ADD / EDIT PRODUCT MODAL */}
+          {isProductModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
+              <div className="bg-white rounded-3xl overflow-hidden shadow-2xl max-w-lg w-full border border-gray-100 relative flex flex-col max-h-[90vh] text-left">
+                {/* Modal Header */}
+                <div className="p-6 border-b border-gray-150 flex items-center justify-between">
+                  <h3 className="text-base font-black text-gray-900 uppercase tracking-tight font-jakarta">
+                    {editingProduct ? "Edit Boutique Product" : "List New Product"}
+                  </h3>
+                  <button 
+                    onClick={() => {
+                      setIsProductModalOpen(false);
+                      setEditingProduct(null);
+                    }}
+                    className="w-8 h-8 bg-slate-50 hover:bg-slate-100 text-gray-500 rounded-full flex items-center justify-center transition-colors cursor-pointer border-0"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Modal Body */}
+                <form onSubmit={handleProductFormSubmit} className="flex-1 overflow-y-auto p-6 space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Product Name</label>
+                      <input
+                        required
+                        type="text"
+                        placeholder="e.g. Kanjeevaram Silk Saree"
+                        value={productForm.name}
+                        onChange={(e) => setProductForm({...productForm, name: e.target.value})}
+                        className="w-full bg-slate-50 border border-gray-205 rounded-xl px-3 py-2 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Brand / Boutique</label>
+                      <input
+                        required
+                        type="text"
+                        placeholder="e.g. Royal Silks"
+                        value={productForm.brand}
+                        onChange={(e) => setProductForm({...productForm, brand: e.target.value})}
+                        className="w-full bg-slate-50 border border-gray-205 rounded-xl px-3 py-2 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Price (₹)</label>
+                      <input
+                        required
+                        type="number"
+                        placeholder="e.g. 4500"
+                        value={productForm.price}
+                        onChange={(e) => setProductForm({...productForm, price: e.target.value})}
+                        className="w-full bg-slate-50 border border-gray-205 rounded-xl px-3 py-2 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Category</label>
+                      <select
+                        required
+                        value={productForm.category}
+                        onChange={(e) => setProductForm({...productForm, category: e.target.value})}
+                        className="w-full bg-slate-50 border border-gray-205 rounded-xl px-3 py-2 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none"
+                      >
+                        <option value="Sarees">Traditional Sarees</option>
+                        <option value="Lehengas">Lehengas</option>
+                        <option value="Kurtas & Suits">Kurtas & Suits</option>
+                        <option value="Western Wear">Western Wear</option>
+                        <option value="Accessories">Accessories</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Description</label>
+                    <textarea
+                      required
+                      placeholder="Detail fabric weave type, design prints, stitching options..."
+                      value={productForm.description}
+                      onChange={(e) => setProductForm({...productForm, description: e.target.value})}
+                      rows="3"
+                      className="w-full bg-slate-50 border border-gray-205 rounded-xl px-3 py-2 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none resize-none"
+                    />
+                  </div>
+
+                  {/* Toggle Try-On compatibility */}
+                  <div className="flex items-center gap-3 p-3.5 bg-pink-50/50 border border-pink-100 rounded-xl">
+                    <input
+                      type="checkbox"
+                      id="tryOnCompatible"
+                      checked={productForm.tryOnCompatible}
+                      onChange={(e) => setProductForm({...productForm, tryOnCompatible: e.target.checked})}
+                      className="w-4.5 h-4.5 rounded text-pink-600 focus:ring-pink-500"
+                    />
+                    <div>
+                      <label htmlFor="tryOnCompatible" className="text-xs font-extrabold text-gray-800 uppercase tracking-wider block cursor-pointer">Compatible with Try-On Studio</label>
+                      <span className="text-[9px] text-gray-400 leading-normal block">Enable customers to virtually try this outfit using generative AI models.</span>
+                    </div>
+                  </div>
+
+                  {/* Image uploading */}
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Product Photo</label>
+                    
+                    <div className="flex gap-4 items-center">
+                      <div className="w-20 h-20 rounded-xl border border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center shrink-0">
+                        {productImagePreview ? (
+                          <img src={productImagePreview.startsWith('http') ? productImagePreview : (productImagePreview.startsWith('data:') ? productImagePreview : `http://127.0.0.1:8000${productImagePreview}`)} alt="Product Preview" className="w-full h-full object-cover" />
+                        ) : (
+                          <Camera className="w-6 h-6 text-gray-300" />
+                        )}
+                      </div>
+                      
+                      <div className="space-y-1.5">
+                        <label className="inline-block bg-white hover:bg-slate-50 border border-gray-200 hover:border-pink-300 text-gray-650 hover:text-pink-600 font-extrabold text-[9px] uppercase tracking-wider px-4 py-2 rounded-lg cursor-pointer transition-colors shadow-xs">
+                          <span>Choose File</span>
+                          <input 
+                            type="file" 
+                            accept="image/jpeg,image/png,image/webp" 
+                            className="hidden" 
+                            onChange={handleProductImageChange} 
+                          />
+                        </label>
+                        <p className="text-[9px] text-gray-455">Supported files: JPEG, PNG, WEBP (Max 5MB)</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Modal Footer */}
+                  <div className="flex justify-end gap-3 pt-6 border-t border-gray-150">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsProductModalOpen(false);
+                        setEditingProduct(null);
+                      }}
+                      className="px-4 py-2 border border-gray-200 text-gray-500 hover:bg-gray-50 rounded-xl text-xs font-bold transition-colors cursor-pointer bg-white"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="bg-pink-600 hover:bg-pink-700 text-white font-extrabold text-xs uppercase tracking-wider px-6 py-2 rounded-xl shadow-md transition-colors cursor-pointer border-0"
+                    >
+                      {editingProduct ? "Save Changes" : "List Product"}
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
           )}
 

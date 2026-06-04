@@ -3,10 +3,13 @@ Virtual Try-On Router
 Exposes the end-to-end try-on pipeline as REST endpoints.
 """
 
-from fastapi import APIRouter, UploadFile, File, HTTPException, Form
+from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, Form
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Literal, Optional
+from sqlalchemy.orm import Session
+from database import get_db
+import models
 
 from services.gemini_service import analyze_garment, build_tryon_prompt
 from services.hf_service import generate_tryon_image, generate_tryon_variants
@@ -106,3 +109,73 @@ async def analyze_only(garment_image: UploadFile = File(...)):
     image_bytes = await garment_image.read()
     garment_data = await analyze_garment(image_bytes, garment_image.content_type)
     return {"garment_analysis": garment_data}
+
+
+class ChatTurn(BaseModel):
+    role: str # "user" or "model"
+    text: str
+
+class StylistChatRequest(BaseModel):
+    user_id: Optional[int] = None
+    message: str
+    chat_history: list[ChatTurn] = []
+
+@router.post("/stylist-chat")
+async def stylist_chat(payload: StylistChatRequest, db: Session = Depends(get_db)):
+    # 1. Fetch user sizing profile
+    user_height = "Not Specified"
+    user_weight = "Not Specified"
+    user_body = "Average"
+    user_name = "Guest"
+    
+    if payload.user_id:
+        user = db.query(models.User).filter(models.User.id == payload.user_id).first()
+        if user:
+            user_name = user.name or "Customer"
+            user_height = f"{user.height} cm" if user.height else "Not Specified"
+            user_weight = f"{user.weight} kg" if user.weight else "Not Specified"
+            user_body = user.body_type or "Average"
+
+    # 2. Fetch catalog products
+    active_products = db.query(models.Product).all()
+    products_text = ""
+    for p in active_products:
+        products_text += f"- [{p.name} by {p.brand}] (Product ID: {p.id}) Price: ${p.price}. Category: {p.category}. Description: {p.description}\n"
+
+    # 3. Build GenAI system context
+    system_instruction = f"""
+You are the Aavriti AI Personal Fashion Stylist, a premium fashion advisor helping {user_name} find outfits.
+Customer Dimensions & Body Profile:
+- Height: {user_height}
+- Weight: {user_weight}
+- Body Type: {user_body}
+
+Here is our active boutique catalog:
+{products_text}
+
+Rules:
+1. Recommend actual clothes from our boutique catalog. To link a product, format it exactly like this: [Product Name](/product/<product_id>). This is crucial so the UI renders clickable links.
+2. Give personalized fashion styling advice based on their height/weight.
+3. Be warm, premium, and professional. Use clean formatting with list bullets and bold text. Keep response concise but informative.
+"""
+
+    # 4. Compile prompt history
+    prompt_parts = []
+    for turn in payload.chat_history:
+        role = "Customer" if turn.role == "user" else "Stylist"
+        prompt_parts.append(f"{role}: {turn.text}")
+
+    prompt_parts.append(f"Customer: {payload.message}")
+    prompt_parts.append("Stylist:")
+    
+    full_prompt = system_instruction + "\n\nConversation:\n" + "\n".join(prompt_parts)
+
+    from services.gemini_service import client
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=full_prompt
+        )
+        return {"response": response.text}
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"AI Chatbot failed: {str(e)}")

@@ -123,9 +123,7 @@ export default function RegisterPage() {
       setOtpSent(true);
       setResendTimer(60);
       
-      // Sandbox UI enhancement: pop up a toast containing the OTP for easier developer sandbox test flows
-      const code = res.data.dev_otp;
-      showToast(`Verification code sent! [Sandbox Mode] Your OTP is: ${code}`, "success");
+      showToast("Verification code sent! Please check your email inbox.", "success");
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.detail || "Failed to send verification code. Please check your network.");
@@ -146,7 +144,7 @@ export default function RegisterPage() {
     setIsSubmitting(true);
     try {
       await register(name, email, password, otp);
-      navigate('/');
+      navigate('/home');
     } catch (err) {
       setError(err.response?.data?.detail || 'Incorrect or expired verification code. Please try again.');
     } finally {
@@ -430,13 +428,15 @@ export default function RegisterPage() {
 
       </div>
 
-      {/* Floating Sandbox Notification widget for OTP Code */}
+      {/* Floating Branded Notification Toast */}
       {toast.show && (
-        <div className="fixed bottom-5 right-5 z-50 px-5 py-4 bg-white/95 backdrop-blur border border-emerald-250 shadow-2xl rounded-2xl flex items-center gap-3 animate-slideIn max-w-sm">
-          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+        <div className="fixed bottom-5 right-5 z-50 px-5 py-4 bg-white/90 backdrop-blur-xl border border-white/60 shadow-2xl rounded-2xl flex items-center gap-3 animate-slideIn max-w-sm">
+          <div className={`w-2.5 h-2.5 rounded-full animate-pulse shrink-0 ${toast.type === 'error' ? 'bg-rose-500' : 'bg-emerald-500'}`} />
           <div className="text-left font-sans">
-            <span className="block text-[8px] font-black text-emerald-700 uppercase tracking-wider leading-none">Sandbox Mode</span>
-            <span className="block text-xs font-bold text-gray-800 mt-1 leading-normal">{toast.message}</span>
+            <span className="block text-[8px] font-black text-slate-500 uppercase tracking-wider leading-none">
+              {toast.type === 'error' ? 'Error' : 'Notification'}
+            </span>
+            <span className="block text-xs font-bold text-slate-800 mt-1 leading-normal">{toast.message}</span>
           </div>
         </div>
       )}

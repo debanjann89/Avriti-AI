@@ -36,6 +36,7 @@ class Product(Base):
     category = Column(String)
     description = Column(String)
     tryOnCompatible = Column(Boolean, default=False)
+    seller_id = Column(Integer, ForeignKey("users.id"), nullable=True)
 
     cart_items = relationship("CartItem", back_populates="product")
 
@@ -81,4 +82,55 @@ class SellerApplication(Base):
     submitted_at = Column(String)
 
     user = relationship("User")
+
+
+class TryOnImage(Base):
+    __tablename__ = "tryon_images"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    image_url = Column(String)
+    product_id = Column(String, ForeignKey("products.id"), nullable=True)
+    created_at = Column(String)
+
+    user = relationship("User")
+
+
+class ProductReview(Base):
+    __tablename__ = "product_reviews"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    product_id = Column(String, ForeignKey("products.id"))
+    rating = Column(Integer)  # 1 to 5 stars
+    comment = Column(String)
+    tryon_image_url = Column(String, nullable=True)  # Optional attached wardrobe try-on photo
+    created_at = Column(String)
+
+    user = relationship("User")
+    product = relationship("Product")
+
+
+class BlogPost(Base):
+    __tablename__ = "blog_posts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String)
+    excerpt = Column(String)
+    content = Column(String)
+    category = Column(String)
+    read_time = Column(String)  # Maps readTime in JS
+    date = Column(String)
+    author = Column(String)
+    image = Column(String)
+    interactive_text = Column(String, nullable=True)  # Maps interactiveText in JS
+    interactive_link = Column(String, nullable=True)  # Maps interactiveLink in JS
+
+
+class SystemSetting(Base):
+    __tablename__ = "system_settings"
+
+    key = Column(String, primary_key=True, index=True)
+    value = Column(String)
+
 
