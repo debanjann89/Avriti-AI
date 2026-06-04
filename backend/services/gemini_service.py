@@ -252,8 +252,26 @@ class ExtractedProduct(BaseModel):
     wash_care: Optional[str] = None
     country_of_origin: Optional[str] = None
 
+def clean_html(html_text: str) -> str:
+    import re
+    # 1. Remove script and style tags
+    html_text = re.sub(r'<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>', '', html_text, flags=re.IGNORECASE)
+    html_text = re.sub(r'<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>', '', html_text, flags=re.IGNORECASE)
+    # 2. Remove SVG tags
+    html_text = re.sub(r'<svg\b[^<]*(?:(?!<\/svg>)<[^<]*)*<\/svg>', '', html_text, flags=re.IGNORECASE)
+    # 3. Remove inline class and style parameters
+    html_text = re.sub(r'\s+class="[^"]*"', '', html_text)
+    html_text = re.sub(r'\s+style="[^"]*"', '', html_text)
+    # 4. Remove HTML comments
+    html_text = re.sub(r'<!--.*?-->', '', html_text, flags=re.DOTALL)
+    # 5. Compress multiple spaces
+    html_text = re.sub(r'\s+', ' ', html_text)
+    return html_text.strip()
+
 def extract_product_from_html(html_text: str) -> dict:
     """Uses Gemini structured generation to parse e-commerce HTML details."""
+    cleaned_html = clean_html(html_text)
+    
     prompt = """
     Analyze this e-commerce webpage HTML and extract all available details about the product.
     
@@ -261,7 +279,7 @@ def extract_product_from_html(html_text: str) -> dict:
     - name: The full descriptive title of the product.
     - brand: The brand name of the product.
     - price: The current numeric price (as float, remove currency symbols like ₹, $, etc. e.g. 2999).
-    - image: The primary product image URL. Look for high-resolution images, large data-old-hires, zoom image srcs, or main gallery images.
+    - image: The primary product image URL. First look in metadata tags (e.g. og:image, twitter:image, image_src), zoom image srcs, or main gallery image containers. Ensure you return a direct valid URL link, not a relative path or placeholder.
     - category: Choose the single best category from: "Sarees", "Lehengas", "Kurtas & Suits", "Western Wear", "Accessories".
     - description: A detailed summary of the product's design, style, prints, and look.
     - fabric: The main fabric type (e.g. Silk, Georgette, Organza, Cotton, Linen, Polyester).
@@ -275,7 +293,7 @@ def extract_product_from_html(html_text: str) -> dict:
     response = client.models.generate_content(
         model="gemini-2.5-flash",
         contents=[
-            f"{prompt}\n\nWebpage HTML:\n\n{html_text[:120000]}"
+            f"{prompt}\n\nWebpage HTML:\n\n{cleaned_html[:150000]}"
         ],
         config=types.GenerateContentConfig(
             response_mime_type="application/json",

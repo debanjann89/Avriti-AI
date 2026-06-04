@@ -80,34 +80,51 @@ class URLImportRequest(BaseModel):
 
 @router.post("/extract-url")
 async def extract_url_details(payload: URLImportRequest):
-    import httpx
+    import asyncio
+    import subprocess
     try:
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-            "Accept-Language": "en-US,en;q=0.9",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-        }
-        async with httpx.AsyncClient(timeout=20.0, follow_redirects=True) as client:
-            response = await client.get(payload.url, headers=headers)
-            if response.status_code != 200:
-                return {"error": f"Failed to load webpage, server returned status: {response.status_code}"}
+        # Run curl via subprocess to bypass TLS fingerprint blocks / CAPTCHAs
+        cmd = [
+            "curl",
+            "-H", "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+            "-H", "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+            "-H", "Accept-Language: en-US,en;q=0.9",
+            "-L",
+            "--compressed",
+            payload.url
+        ]
+        
+        process = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        stdout, stderr = await process.communicate()
+        
+        if process.returncode != 0:
+            error_msg = stderr.decode('utf-8', errors='ignore')
+            return {"error": f"Failed to download webpage. Curl failed: {error_msg}"}
             
-            html_text = response.text
+        html_text = stdout.decode('utf-8', errors='ignore')
+        
+        # Check if the returned HTML is just a bot block page or CAPTCHA
+        if len(html_text) < 25000 and ("captcha" in html_text.lower() or "robot check" in html_text.lower() or "continue shopping" in html_text.lower() or "automated access" in html_text.lower()):
+            return {"error": "Amazon or Flipkart blocked the automated crawler request with a CAPTCHA screen. Please enter the product details manually."}
             
-            # Call our Gemini HTML extractor service
-            from services.gemini_service import extract_product_from_html
-            extracted_data = extract_product_from_html(html_text)
-            
-            # Map default fields in case Gemini misses them
-            if not extracted_data.get("name"):
-                extracted_data["name"] = "Imported Outfit"
-            if not extracted_data.get("price"):
-                extracted_data["price"] = 0.0
-            
-            # Inject URL reference
-            extracted_data["external_url"] = payload.url
-            return extracted_data
-            
+        # Call our Gemini HTML extractor service
+        from services.gemini_service import extract_product_from_html
+        extracted_data = extract_product_from_html(html_text)
+        
+        # Map default fields in case Gemini misses them
+        if not extracted_data.get("name"):
+            extracted_data["name"] = "Imported Outfit"
+        if not extracted_data.get("price"):
+            extracted_data["price"] = 0.0
+        
+        # Inject URL reference
+        extracted_data["external_url"] = payload.url
+        return extracted_data
+        
     except Exception as e:
         return {"error": f"Scraping/AI extraction failed: {str(e)}"}
 
