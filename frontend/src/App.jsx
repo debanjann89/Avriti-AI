@@ -11,6 +11,8 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ProfilePage from './pages/ProfilePage';
 import BlogPage from './pages/BlogPage';
+import SupportPage from './pages/SupportPage';
+import LegalPage from './pages/LegalPage';
 import StylistChat from './components/StylistChat';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
@@ -36,6 +38,8 @@ function App() {
               <Route path="register" element={<RegisterPage />} />
               <Route path="profile" element={<ProfilePage />} />
               <Route path="blog" element={<BlogPage />} />
+              <Route path="support" element={<SupportPage />} />
+              <Route path="legal" element={<LegalPage />} />
             </Route>
 
             {/* Standalone Admin route clean of website Nav and Footer */}
