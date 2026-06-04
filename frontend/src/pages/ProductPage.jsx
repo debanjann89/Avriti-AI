@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useProducts } from '../hooks/useProducts';
-import { ShoppingBag, Heart, ChevronLeft, Star, MessageSquare, Sparkles, X, Download } from 'lucide-react';
+import { ShoppingBag, Heart, ChevronLeft, ChevronDown, Star, MessageSquare, Sparkles, X, Download } from 'lucide-react';
 import { CartContext } from '../context/CartContext';
 import { AuthContext } from '../context/AuthContext';
 import axios from 'axios';
@@ -211,18 +211,21 @@ export default function ProductPage() {
                     <p className="text-[9px] text-gray-400 italic">No try-on pictures saved in your virtual wardrobe yet. Try it on first to attach outfits here!</p>
                   ) : (
                     <>
-                      <select
-                        value={selectedTryOnUrl}
-                        onChange={(e) => setSelectedTryOnUrl(e.target.value)}
-                        className="w-full bg-slate-50 border border-gray-200 rounded-xl px-3 py-2.5 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none transition-all"
-                      >
-                        <option value="">No Try-On Picture</option>
-                        {wardrobeImages.map((img) => (
-                          <option key={img.id} value={img.image_url}>
-                            Try-On saved {new Date(img.created_at).toLocaleDateString()}
-                          </option>
-                        ))}
-                      </select>
+                      <div className="relative">
+                        <select
+                          value={selectedTryOnUrl}
+                          onChange={(e) => setSelectedTryOnUrl(e.target.value)}
+                          className="w-full bg-slate-50 border border-gray-200 rounded-xl px-3.5 py-2.5 pr-10 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none appearance-none cursor-pointer transition-all"
+                        >
+                          <option value="">No Try-On Picture</option>
+                          {wardrobeImages.map((img) => (
+                            <option key={img.id} value={img.image_url}>
+                              Try-On saved {new Date(img.created_at).toLocaleDateString()}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown className="absolute right-3.5 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
+                      </div>
                       
                       {selectedTryOnUrl && (
                         <div className="mt-2.5 flex items-center gap-3 bg-pink-50/30 p-2 border border-pink-100 rounded-xl animate-fadeIn">

@@ -3,7 +3,7 @@ import { useProducts } from '../hooks/useProducts';
 import { 
   Trash2, Edit2, Plus, X, Save, Lock, 
   Users, ShoppingBag, PlusCircle, ShieldCheck, Key,
-  BookOpen
+  BookOpen, ChevronDown
 } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import axios from 'axios';
@@ -1027,17 +1027,20 @@ export default function AdminPage() {
 
                 <div className="space-y-1">
                   <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Category</label>
-                  <select
-                    required
-                    value={blogForm.category}
-                    onChange={(e) => setBlogForm({...blogForm, category: e.target.value})}
-                    className="w-full bg-slate-50 border border-gray-205 rounded-xl px-3 py-2 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none"
-                  >
-                    <option value="Heritage Artisans">Heritage Artisans</option>
-                    <option value="AI Studio">AI Studio</option>
-                    <option value="Styling Guides">Styling Guides</option>
-                    <option value="Digital Runway">Digital Runway</option>
-                  </select>
+                  <div className="relative">
+                    <select
+                      required
+                      value={blogForm.category}
+                      onChange={(e) => setBlogForm({...blogForm, category: e.target.value})}
+                      className="w-full bg-slate-50 border border-gray-205 rounded-xl px-3.5 py-2.5 pr-10 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none appearance-none cursor-pointer transition-all"
+                    >
+                      <option value="Heritage Artisans">Heritage Artisans</option>
+                      <option value="AI Studio">AI Studio</option>
+                      <option value="Styling Guides">Styling Guides</option>
+                      <option value="Digital Runway">Digital Runway</option>
+                    </select>
+                    <ChevronDown className="absolute right-3.5 top-3.5 w-4 h-4 text-gray-400 pointer-events-none" />
+                  </div>
                 </div>
               </div>
 

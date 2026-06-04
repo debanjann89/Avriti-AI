@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import { CartContext } from '../context/CartContext';
 import { AuthContext } from '../context/AuthContext';
 import { X, Trash2, CreditCard, CheckCircle, Truck, ShieldCheck, ShoppingBag, ArrowLeft, Loader2 } from 'lucide-react';
@@ -18,6 +18,35 @@ export default function CartSidebar() {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [paymentStatusMessage, setPaymentStatusMessage] = useState('');
   const [orderId, setOrderId] = useState('');
+
+  useEffect(() => {
+    if (user && checkoutStep === 'shipping') {
+      let parsedAddress = { street: '', city: '', state: '', pincode: '', landmark: '', type: '' };
+      try {
+        if (user.shipping_address && user.shipping_address.startsWith('{')) {
+          parsedAddress = JSON.parse(user.shipping_address);
+        } else if (user.shipping_address) {
+          parsedAddress.street = user.shipping_address;
+        }
+      } catch (e) {
+        parsedAddress.street = user.shipping_address || '';
+      }
+      
+      const combinedAddr = [
+        parsedAddress.street,
+        parsedAddress.landmark ? `Landmark: ${parsedAddress.landmark}` : null,
+        parsedAddress.city,
+        parsedAddress.state
+      ].filter(Boolean).join(', ');
+
+      setShippingForm({
+        name: user.name || '',
+        phone: user.phone || '',
+        address: combinedAddr,
+        pincode: parsedAddress.pincode || ''
+      });
+    }
+  }, [user, checkoutStep]);
 
   if (!isCartOpen) return null;
 

@@ -6,8 +6,17 @@ import {
   User, Mail, Phone, MapPin, Sliders, 
   ShoppingBag, Sparkles, Upload, LogOut, 
   Check, Edit2, ChevronRight, ShoppingCart, X,
-  Trash2, Plus, Heart, BarChart2, PlusCircle, ArrowLeft, Download, Camera
+  Trash2, Plus, Heart, BarChart2, PlusCircle, ArrowLeft, Download, Camera, ChevronDown
 } from 'lucide-react';
+
+const INDIAN_STATES = [
+  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", 
+  "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", 
+  "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", 
+  "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", 
+  "Uttar Pradesh", "Uttarakhand", "West Bengal", "Delhi", "Jammu & Kashmir", 
+  "Ladakh", "Puducherry"
+];
 
 export default function ProfilePage() {
   const { user, logout, updateProfile, updateProfilePicture, toggleUserRole, refreshUser } = useContext(AuthContext);
@@ -67,6 +76,53 @@ export default function ProfilePage() {
     shoulder_width: user?.shoulder_width || '',
     waist_size: user?.waist_size || ''
   });
+  const [addressDetails, setAddressDetails] = useState({
+    street: '',
+    landmark: '',
+    city: '',
+    state: '',
+    pincode: '',
+    type: 'Home'
+  });
+
+  // Sync addressDetails with user.shipping_address
+  useEffect(() => {
+    if (user?.shipping_address) {
+      try {
+        if (user.shipping_address.startsWith('{')) {
+          const parsed = JSON.parse(user.shipping_address);
+          setAddressDetails({
+            street: parsed.street || '',
+            landmark: parsed.landmark || '',
+            city: parsed.city || '',
+            state: parsed.state || '',
+            pincode: parsed.pincode || '',
+            type: parsed.type || 'Home'
+          });
+          return;
+        }
+      } catch (e) {
+        console.error("Error parsing shipping address JSON", e);
+      }
+      setAddressDetails({
+        street: user.shipping_address || '',
+        landmark: '',
+        city: '',
+        state: '',
+        pincode: '',
+        type: 'Home'
+      });
+    } else {
+      setAddressDetails({
+        street: '',
+        landmark: '',
+        city: '',
+        state: '',
+        pincode: '',
+        type: 'Home'
+      });
+    }
+  }, [user]);
   
   const [isSaving, setIsSaving] = useState(false);
   const [orders, setOrders] = useState([]);
@@ -138,6 +194,25 @@ export default function ProfilePage() {
     }
   }, [user]);
 
+  const formatAddress = (addressStr) => {
+    if (!addressStr) return 'No address provided';
+    try {
+      if (addressStr.startsWith('{')) {
+        const addr = JSON.parse(addressStr);
+        const parts = [
+          addr.street,
+          addr.landmark ? `Landmark: ${addr.landmark}` : null,
+          addr.city,
+          addr.state,
+          addr.pincode ? `PIN: ${addr.pincode}` : null,
+          addr.type ? `(${addr.type})` : null
+        ].filter(Boolean);
+        return parts.join(', ');
+      }
+    } catch (e) {}
+    return addressStr;
+  };
+
   if (!user) return null;
 
   const handleInputChange = (e) => {
@@ -149,7 +224,11 @@ export default function ProfilePage() {
     e.preventDefault();
     setIsSaving(true);
     try {
-      await updateProfile(formData);
+      const addressJsonStr = JSON.stringify(addressDetails);
+      await updateProfile({
+        ...formData,
+        shipping_address: addressJsonStr
+      });
       setIsEditing(false);
     } catch (err) {
       console.error("Error saving profile", err);
@@ -666,21 +745,24 @@ export default function ProfilePage() {
 
                     <div className="space-y-1">
                       <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Body Shape / Silhouette</label>
-                      <select
-                        name="body_type"
-                        disabled={!isEditing}
-                        value={formData.body_type}
-                        onChange={handleInputChange}
-                        className="w-full bg-gray-50/50 disabled:bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-medium focus:outline-none transition-all"
-                      >
-                        <option value="">Select Size / Fit</option>
-                        <option value="XS">Extra Small (XS)</option>
-                        <option value="S">Small (S)</option>
-                        <option value="M">Medium (M)</option>
-                        <option value="L">Large (L)</option>
-                        <option value="XL">Extra Large (XL)</option>
-                        <option value="XXL">Double Extra Large (XXL)</option>
-                      </select>
+                      <div className="relative">
+                        <select
+                          name="body_type"
+                          disabled={!isEditing}
+                          value={formData.body_type}
+                          onChange={handleInputChange}
+                          className="w-full bg-gray-50/50 disabled:bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 pr-10 text-xs font-medium focus:outline-none appearance-none cursor-pointer transition-all"
+                        >
+                          <option value="">Select Size / Fit</option>
+                          <option value="XS">Extra Small (XS)</option>
+                          <option value="S">Small (S)</option>
+                          <option value="M">Medium (M)</option>
+                          <option value="L">Large (L)</option>
+                          <option value="XL">Extra Large (XL)</option>
+                          <option value="XXL">Double Extra Large (XXL)</option>
+                        </select>
+                        <ChevronDown className="absolute right-3.5 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -739,7 +821,7 @@ export default function ProfilePage() {
           {activeTab === 'addresses' && (
             <div className="bg-white rounded-lg border border-gray-200/80 p-6 shadow-sm space-y-6">
               <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-                <h3 className="text-sm font-black text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                <h3 className="text-sm font-black text-gray-900 uppercase tracking-wider flex items-center gap-2 font-jakarta">
                   <MapPin className="w-4.5 h-4.5 text-pink-600" />
                   <span>Manage Shipping Addresses</span>
                 </h3>
@@ -755,35 +837,150 @@ export default function ProfilePage() {
                 )}
               </div>
 
-              <form onSubmit={handleSave} className="space-y-5">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Contact Mobile Number</label>
-                  <input 
-                    type="text" 
-                    name="phone"
-                    disabled={!isEditing}
-                    placeholder="Enter phone number"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    className="w-full bg-gray-50/50 disabled:bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none transition-all"
-                  />
-                </div>
+              {!isEditing ? (
+                <div className="bg-slate-50 border border-gray-150 rounded-2xl p-5 space-y-4 text-xs font-medium relative overflow-hidden text-left animate-fadeIn">
+                  <div className="flex justify-between items-center border-b border-gray-100 pb-3">
+                    <span className="bg-pink-100 text-pink-700 border border-pink-200 text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full shadow-2xs">
+                      {addressDetails.type || "Home"}
+                    </span>
+                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Primary Delivery Destination</span>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <span className="text-[9px] text-gray-450 block uppercase tracking-wider font-bold">Contact Mobile</span>
+                      <span className="text-slate-800 text-xs font-bold block">{formData.phone || "No contact number added"}</span>
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <span className="text-[9px] text-gray-450 block uppercase tracking-wider font-bold">Pincode / ZIP</span>
+                      <span className="text-slate-800 text-xs font-bold block">{addressDetails.pincode || "Not specified"}</span>
+                    </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Primary Address</label>
-                  <textarea 
-                    name="shipping_address"
-                    disabled={!isEditing}
-                    placeholder="Provide detailed home/office street address, landmark and PIN"
-                    value={formData.shipping_address}
-                    onChange={handleInputChange}
-                    rows="4"
-                    className="w-full bg-gray-50/50 disabled:bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none transition-all resize-none animate-none"
-                  />
-                </div>
+                    <div className="space-y-1 md:col-span-2">
+                      <span className="text-[9px] text-gray-450 block uppercase tracking-wider font-bold">Street Address</span>
+                      <span className="text-slate-800 text-xs font-semibold block leading-relaxed">{addressDetails.street || "No address added yet."}</span>
+                    </div>
 
-                {isEditing && (
-                  <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
+                    <div className="space-y-1">
+                      <span className="text-[9px] text-gray-450 block uppercase tracking-wider font-bold">Landmark</span>
+                      <span className="text-slate-800 text-xs font-medium block">{addressDetails.landmark || "None"}</span>
+                    </div>
+
+                    <div className="space-y-1">
+                      <span className="text-[9px] text-gray-450 block uppercase tracking-wider font-bold">City & State</span>
+                      <span className="text-slate-800 text-xs font-bold block">
+                        {addressDetails.city || "Not specified"}{addressDetails.state ? `, ${addressDetails.state}` : ""}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={handleSave} className="space-y-4 text-left animate-fadeIn">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Address Label / Type</label>
+                      <div className="flex gap-2">
+                        {['Home', 'Office', 'Other'].map((t) => (
+                          <button
+                            key={t}
+                            type="button"
+                            onClick={() => setAddressDetails(prev => ({ ...prev, type: t }))}
+                            className={`flex-1 py-2 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
+                              addressDetails.type === t
+                                ? "bg-pink-600 text-white border-pink-600 shadow-sm"
+                                : "bg-gray-50/50 text-gray-650 border-gray-200 hover:border-pink-300"
+                            }`}
+                          >
+                            {t}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Contact Mobile Number</label>
+                      <input 
+                        type="text" 
+                        name="phone"
+                        placeholder="e.g. +91 9876543210"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        className="w-full bg-gray-50/50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Street Address / House No. / Apartment</label>
+                    <textarea 
+                      required
+                      placeholder="Enter flat/house no., building, street address"
+                      value={addressDetails.street}
+                      onChange={(e) => setAddressDetails(prev => ({ ...prev, street: e.target.value }))}
+                      rows="2"
+                      className="w-full bg-gray-50/50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none transition-all resize-none animate-none"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Landmark (Optional)</label>
+                      <input 
+                        type="text" 
+                        placeholder="e.g. Near Metro Station"
+                        value={addressDetails.landmark}
+                        onChange={(e) => setAddressDetails(prev => ({ ...prev, landmark: e.target.value }))}
+                        className="w-full bg-gray-50/50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none transition-all"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Pincode / ZIP Code</label>
+                      <input 
+                        required
+                        type="text" 
+                        placeholder="e.g. 560001"
+                        value={addressDetails.pincode}
+                        onChange={(e) => setAddressDetails(prev => ({ ...prev, pincode: e.target.value }))}
+                        className="w-full bg-gray-50/50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">City</label>
+                      <input 
+                        required
+                        type="text" 
+                        placeholder="e.g. Bengaluru"
+                        value={addressDetails.city}
+                        onChange={(e) => setAddressDetails(prev => ({ ...prev, city: e.target.value }))}
+                        className="w-full bg-gray-50/50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none transition-all"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">State</label>
+                      <div className="relative">
+                        <select
+                          required
+                          value={addressDetails.state}
+                          onChange={(e) => setAddressDetails(prev => ({ ...prev, state: e.target.value }))}
+                          className="w-full bg-gray-50/50 border border-gray-200 rounded-xl px-4 py-2.5 pr-10 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none appearance-none cursor-pointer transition-all"
+                        >
+                          <option value="">Select State</option>
+                          {INDIAN_STATES.map((st) => (
+                            <option key={st} value={st}>{st}</option>
+                          ))}
+                        </select>
+                        <ChevronDown className="absolute right-3.5 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-2 pt-3 border-t border-gray-100">
                     <button
                       type="button"
                       onClick={() => setIsEditing(false)}
@@ -794,13 +991,13 @@ export default function ProfilePage() {
                     <button
                       type="submit"
                       disabled={isSaving}
-                      className="bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold px-6 py-2 rounded-xl shadow-md transition-colors flex items-center gap-1 cursor-pointer"
+                      className="bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold px-6 py-2 rounded-xl shadow-md transition-all flex items-center gap-1 cursor-pointer hover:scale-[1.01]"
                     >
                       {isSaving ? "Saving..." : "Save Address"}
                     </button>
                   </div>
-                )}
-              </form>
+                </form>
+              )}
             </div>
           )}
 
@@ -1148,17 +1345,20 @@ export default function ProfilePage() {
                                 </div>
                                 <div>
                                   <p className="text-[9px] text-gray-450 font-bold uppercase tracking-widest block">Shipment Status</p>
-                                  <select
-                                    value={order.status}
-                                    onChange={(e) => handleUpdateOrderStatus(order.id, e.target.value)}
-                                    className="mt-0.5 bg-pink-50 border border-pink-100 rounded-lg px-2 py-1 text-[10px] font-extrabold uppercase tracking-wider text-pink-700 focus:outline-none cursor-pointer"
-                                  >
-                                    <option value="pending">Pending</option>
-                                    <option value="processing">Processing</option>
-                                    <option value="shipped">Shipped</option>
-                                    <option value="delivered">Delivered</option>
-                                    <option value="cancelled">Cancelled</option>
-                                  </select>
+                                  <div className="relative inline-block mt-0.5">
+                                    <select
+                                      value={order.status}
+                                      onChange={(e) => handleUpdateOrderStatus(order.id, e.target.value)}
+                                      className="bg-pink-50 border border-pink-100 rounded-lg pl-2 pr-7 py-1 text-[10px] font-extrabold uppercase tracking-wider text-pink-700 focus:outline-none cursor-pointer appearance-none"
+                                    >
+                                      <option value="pending">Pending</option>
+                                      <option value="processing">Processing</option>
+                                      <option value="shipped">Shipped</option>
+                                      <option value="delivered">Delivered</option>
+                                      <option value="cancelled">Cancelled</option>
+                                    </select>
+                                    <ChevronDown className="absolute right-2 top-2.5 w-3.5 h-3.5 text-pink-650 pointer-events-none" />
+                                  </div>
                                 </div>
                               </div>
 
@@ -1194,7 +1394,7 @@ export default function ProfilePage() {
                               <div className="bg-slate-50/70 p-3 border-t border-gray-100 flex items-start gap-2">
                                 <MapPin className="w-3.5 h-3.5 text-gray-450 shrink-0 mt-0.5" />
                                 <div className="text-[9px] leading-relaxed text-gray-500">
-                                  <strong className="text-gray-700 uppercase tracking-wide">Shipping Address:</strong> {order.shipping_address}
+                                  <strong className="text-gray-700 uppercase tracking-wide">Shipping Address:</strong> {formatAddress(order.shipping_address)}
                                 </div>
                               </div>
                             </div>
@@ -1269,18 +1469,21 @@ export default function ProfilePage() {
 
                     <div className="space-y-1">
                       <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Category</label>
-                      <select
-                        required
-                        value={productForm.category}
-                        onChange={(e) => setProductForm({...productForm, category: e.target.value})}
-                        className="w-full bg-slate-50 border border-gray-205 rounded-xl px-3 py-2 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none"
-                      >
-                        <option value="Sarees">Traditional Sarees</option>
-                        <option value="Lehengas">Lehengas</option>
-                        <option value="Kurtas & Suits">Kurtas & Suits</option>
-                        <option value="Western Wear">Western Wear</option>
-                        <option value="Accessories">Accessories</option>
-                      </select>
+                      <div className="relative">
+                        <select
+                          required
+                          value={productForm.category}
+                          onChange={(e) => setProductForm({...productForm, category: e.target.value})}
+                          className="w-full bg-slate-50 border border-gray-205 rounded-xl px-3.5 py-2.5 pr-10 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none appearance-none cursor-pointer transition-all"
+                        >
+                          <option value="Sarees">Traditional Sarees</option>
+                          <option value="Lehengas">Lehengas</option>
+                          <option value="Kurtas & Suits">Kurtas & Suits</option>
+                          <option value="Western Wear">Western Wear</option>
+                          <option value="Accessories">Accessories</option>
+                        </select>
+                        <ChevronDown className="absolute right-3.5 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
+                      </div>
                     </div>
                   </div>
 
@@ -1445,7 +1648,7 @@ export default function ProfilePage() {
                       <div className="bg-slate-50/70 p-3 border-t border-gray-100 flex items-start gap-2">
                         <MapPin className="w-3.5 h-3.5 text-gray-400 shrink-0 mt-0.5" />
                         <div className="text-[9px] leading-relaxed text-gray-500">
-                          <strong className="text-gray-700 uppercase tracking-wide">Delivering to:</strong> {order.shipping_address}
+                          <strong className="text-gray-700 uppercase tracking-wide">Delivering to:</strong> {formatAddress(order.shipping_address)}
                         </div>
                       </div>
                     </div>
@@ -1706,19 +1909,22 @@ export default function ProfilePage() {
 
                       <div className="space-y-1.5">
                         <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Product Category</label>
-                        <select
-                          required
-                          value={storeForm.product_category}
-                          onChange={e => setStoreForm({...storeForm, product_category: e.target.value})}
-                          className="w-full bg-gray-50/50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none transition-all"
-                        >
-                          <option value="">Select Primary Category</option>
-                          <option value="Sarees">Traditional Sarees</option>
-                          <option value="Lehengas">Festive Lehengas</option>
-                          <option value="Kurtas & Suits">Kurtas & Suits</option>
-                          <option value="Western Wear">Western Fashion</option>
-                          <option value="Accessories">Accessories & Jewelry</option>
-                        </select>
+                        <div className="relative">
+                          <select
+                            required
+                            value={storeForm.product_category}
+                            onChange={e => setStoreForm({...storeForm, product_category: e.target.value})}
+                            className="w-full bg-gray-50/50 border border-gray-200 rounded-xl px-4 py-2.5 pr-10 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none appearance-none cursor-pointer transition-all"
+                          >
+                            <option value="">Select Primary Category</option>
+                            <option value="Sarees">Traditional Sarees</option>
+                            <option value="Lehengas">Festive Lehengas</option>
+                            <option value="Kurtas & Suits">Kurtas & Suits</option>
+                            <option value="Western Wear">Western Fashion</option>
+                            <option value="Accessories">Accessories & Jewelry</option>
+                          </select>
+                          <ChevronDown className="absolute right-3.5 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
+                        </div>
                       </div>
 
                       <div className="space-y-1.5">
