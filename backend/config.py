@@ -10,6 +10,7 @@ load_dotenv(dotenv_path=env_path, override=True)
 class Settings(BaseSettings):
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
     HF_TOKEN: str = os.getenv("HF_TOKEN", "")
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./aavriti.db")
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

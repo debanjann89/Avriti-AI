@@ -8,3 +8,4 @@ Pillow
 sqlalchemy
 passlib[bcrypt]
 PyJWT
+psycopg2-binary

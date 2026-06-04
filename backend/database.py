@@ -1,12 +1,17 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker
+from config import settings
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./aavriti.db"
+database_url = settings.DATABASE_URL
 
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
-)
+if database_url.startswith("sqlite"):
+    engine = create_engine(
+        database_url, connect_args={"check_same_thread": False}
+    )
+else:
+    engine = create_engine(database_url)
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
