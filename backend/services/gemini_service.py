@@ -29,6 +29,53 @@ Analyze this garment image and return ONLY a valid JSON object (no markdown, no 
 
 Be extremely specific. The output drives a photorealistic fashion image generator.
 """
+def detect_dominant_color(image_bytes: bytes) -> str:
+    from PIL import Image
+    import io
+    try:
+        img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+        width, height = img.size
+        # Crop center 40% where the garment is most likely to be
+        left = int(width * 0.3)
+        top = int(height * 0.3)
+        right = int(width * 0.7)
+        bottom = int(height * 0.7)
+        cropped = img.crop((left, top, right, bottom))
+        
+        # Resize to 1x1 to get average color
+        cropped = cropped.resize((1, 1))
+        r, g, b = cropped.getpixel((0, 0))
+        
+        # Basic colors mapping
+        colors = {
+            "white": (245, 245, 245),
+            "black": (20, 20, 20),
+            "grey": (128, 128, 128),
+            "red": (220, 30, 30),
+            "blue": (30, 80, 220),
+            "green": (30, 180, 30),
+            "yellow": (240, 220, 20),
+            "orange": (240, 120, 20),
+            "purple": (120, 30, 180),
+            "pink": (240, 100, 180),
+            "brown": (120, 60, 20),
+            "maroon": (100, 10, 30),
+            "navy": (15, 30, 100),
+            "beige": (225, 210, 180),
+            "cream": (250, 245, 220),
+        }
+        
+        closest_color = "blue"
+        min_dist = float("inf")
+        for name, rgb in colors.items():
+            dist = (r - rgb[0])**2 + (g - rgb[1])**2 + (b - rgb[2])**2
+            if dist < min_dist:
+                min_dist = dist
+                closest_color = name
+        return closest_color
+    except Exception as e:
+        print(f"Error detecting dominant color: {e}")
+        return "blue"
 
 
 async def analyze_garment(
@@ -65,34 +112,66 @@ async def analyze_garment(
                 raw = raw[4:]
 
         return json.loads(raw.strip())
+
     except Exception as e:
         print(f"WARNING: Gemini garment analysis failed: {e}. Using fallback mock analysis.")
-        # Attempt to extract some hints from user parameters to make the mock analysis realistic
+        
+        # Detect dominant color from image bytes
+        primary_color = detect_dominant_color(image_bytes)
+        
+        # Determine fallback values based on category/hints
         category = hint_category if hint_category else "garment"
         description = hint_description if hint_description else "premium styling"
         
-        # Simple color inference
-        primary_color = "red"
-        if hint_description:
-            desc_lower = hint_description.lower()
-            colors = ["red", "blue", "green", "black", "white", "yellow", "pink", "purple", "orange", "maroon", "burgundy", "emerald", "navy", "beige", "cream", "gold", "silver"]
-            for col in colors:
-                if col in desc_lower:
-                    primary_color = col
-                    break
+        # Infer garment type from category / description / preset
+        garment_type = "t-shirt"
+        desc_lower = description.lower()
+        cat_lower = category.lower()
+        if "shirt" in desc_lower or "shirt" in cat_lower:
+            if "t-shirt" in desc_lower or "t-shirt" in cat_lower or "casual" in desc_lower:
+                garment_type = "t-shirt"
+            else:
+                garment_type = "shirt"
+        elif "polo" in desc_lower:
+            garment_type = "polo shirt"
+        elif "jacket" in desc_lower or "jacket" in cat_lower:
+            garment_type = "jacket"
+        elif "blazer" in desc_lower or "blazer" in cat_lower:
+            garment_type = "blazer"
+        elif "saree" in desc_lower or "saree" in cat_lower or "sari" in desc_lower:
+            garment_type = "saree"
+        elif "lehenga" in desc_lower or "lehenga" in cat_lower:
+            garment_type = "lehenga"
+        elif "kurta" in desc_lower or "kurta" in cat_lower or "suits" in cat_lower:
+            garment_type = "kurta"
+        elif "jeans" in desc_lower or "denim" in desc_lower:
+            garment_type = "denim jeans"
+            
+        # Infer sleeve and neckline
+        neckline = "round neck"
+        if "v-neck" in desc_lower:
+            neckline = "V-neck"
+        elif "collar" in desc_lower or "polo" in desc_lower:
+            neckline = "collared neck"
+            
+        sleeve_type = "short sleeves"
+        if "long sleeve" in desc_lower or "full sleeve" in desc_lower:
+            sleeve_type = "full sleeve"
+        elif "sleeveless" in desc_lower:
+            sleeve_type = "sleeveless"
 
         return {
-            "garment_type": category,
+            "garment_type": garment_type,
             "primary_color": primary_color,
             "secondary_color": None,
-            "pattern": "embroidered" if (hint_description and "embroid" in hint_description.lower()) else "solid",
+            "pattern": "graphic print" if (desc_lower and "graphic" in desc_lower or "print" in desc_lower) else "solid",
             "fabric_texture": "premium quality cotton fabric",
-            "neckline": "round neck",
-            "sleeve_type": "three-quarter" if (hint_description and "three" in hint_description.lower()) else "regular",
+            "neckline": neckline,
+            "sleeve_type": sleeve_type,
             "silhouette": "relaxed fit",
-            "hem_length": "midi",
-            "style": "ethnic" if (category.lower() in ["kurta", "sari", "saree", "lehenga", "ethnic"]) else "casual",
-            "occasion": "festive" if (category.lower() in ["kurta", "sari", "saree", "lehenga", "ethnic"]) else "daily wear",
+            "hem_length": "standard length",
+            "style": "casual" if (garment_type in ["t-shirt", "shirt", "polo shirt", "jacket"]) else "ethnic",
+            "occasion": "daily wear",
             "key_details": description
         }
 

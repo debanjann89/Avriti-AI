@@ -138,30 +138,29 @@ async def analyze_only(garment_image: UploadFile = File(...)):
 
 @router.post("/remove-background")
 async def remove_background(image: UploadFile = File(...)):
-    """Removes background from garment image using briaai/RMBG-1.4 via HF Inference API."""
-    import httpx
+    """Removes background from garment image using local rembg library (U2Net)."""
     import base64
-    from config import settings
+    from rembg import remove
+    from PIL import Image
+    import io
     
     if image.content_type not in ALLOWED_TYPES:
         raise HTTPException(status_code=400, detail="Only JPG/PNG/WEBP images accepted.")
         
     image_bytes = await image.read()
     
-    API_URL = "https://api-inference.huggingface.co/models/briaai/RMBG-1.4"
-    headers = {"Authorization": f"Bearer {settings.HF_TOKEN}"}
-    
     try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.post(API_URL, headers=headers, content=image_bytes)
-            if response.status_code == 200:
-                b64_png = base64.b64encode(response.content).decode("utf-8")
-                return {"image": f"data:image/png;base64,{b64_png}", "fallback": False}
-            else:
-                print(f"HF background removal failed (status {response.status_code}): {response.text}")
-                raise RuntimeError("API status error")
+        # Run local U2Net background removal
+        input_image = Image.open(io.BytesIO(image_bytes))
+        output_image = remove(input_image)
+        
+        # Save output transparent PNG to bytes
+        buf = io.BytesIO()
+        output_image.save(buf, format="PNG")
+        b64_png = base64.b64encode(buf.getvalue()).decode("utf-8")
+        return {"image": f"data:image/png;base64,{b64_png}", "fallback": False}
     except Exception as e:
-        print(f"Background removal API failed or timed out: {e}. Running local PIL fallback...")
+        print(f"Local U2Net background removal failed: {e}. Running local PIL fallback...")
         try:
             from PIL import Image
             import io
@@ -172,7 +171,6 @@ async def remove_background(image: UploadFile = File(...)):
             newData = []
             # Check for light/white backgrounds and make them transparent
             for item in datas:
-                # If RGB are all above 215, make transparent
                 if item[0] > 215 and item[1] > 215 and item[2] > 215:
                     newData.append((255, 255, 255, 0))
                 else:
