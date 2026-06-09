@@ -24,6 +24,7 @@ ALLOWED_TYPES = ("image/jpeg", "image/png", "image/webp")
 @router.post("/generate")
 async def generate_tryon(
     garment_image: UploadFile = File(..., description="Garment photo (JPG/PNG/WEBP)"),
+    garment_back_image: Optional[UploadFile] = File(None, description="Optional: Back view garment photo (JPG/PNG/WEBP)"),
     person_image: Optional[UploadFile] = File(None, description="Optional: photo of the person to wear the garment"),
     age_group: str = Form("Young Adult"),
     ethnicity: str = Form("South Asian"),
@@ -37,9 +38,9 @@ async def generate_tryon(
 ):
     """
     Full try-on pipeline:
-    1. Gemini analyzes the garment image with category hints
+    1. Gemini analyzes the garment image (front/back depending on angle) with category hints
     2. Builds a hyperrealistic prompt
-    3. HF generates try-on image(s) for each selected camera angle
+    3. HF generates try-on image(s) for each selected camera angle using the corresponding garment image
     4. Returns base64 images + metadata
     """
     if garment_image.content_type not in ALLOWED_TYPES:
@@ -47,12 +48,17 @@ async def generate_tryon(
 
     garment_bytes = await garment_image.read()
 
+    # Read back garment image if provided
+    garment_back_bytes: bytes | None = None
+    if garment_back_image and garment_back_image.content_type in ALLOWED_TYPES:
+        garment_back_bytes = await garment_back_image.read()
+
     # Read person image if provided
     person_bytes: bytes | None = None
     if person_image and person_image.content_type in ALLOWED_TYPES:
         person_bytes = await person_image.read()
 
-    # Step 1: Analyze garment with Gemini Vision and category/subcategory/description hints
+    # Step 1: Analyze front garment with Gemini Vision and category/subcategory/description hints
     try:
         garment_data = await analyze_garment(
             garment_bytes, 
@@ -61,7 +67,23 @@ async def generate_tryon(
             hint_description=garment_description
         )
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Gemini analysis failed: {e}")
+        raise HTTPException(status_code=502, detail=f"Gemini front analysis failed: {e}")
+
+    # Analyze back garment if provided and a back view angle is selected
+    garment_back_data = None
+    angles_list = [a.strip() for a in camera_angles.split(",") if a.strip()]
+    has_back_angle = any("back" in a.lower() for a in angles_list)
+    if garment_back_bytes and has_back_angle:
+        try:
+            garment_back_data = await analyze_garment(
+                garment_back_bytes,
+                garment_back_image.content_type,
+                hint_category=garment_subcategory or garment_category,
+                hint_description=garment_description
+            )
+        except Exception as e:
+            print(f"Back garment analysis failed, falling back to front: {e}")
+            garment_back_data = garment_data
 
     # Step 2 & 3: Loop over selected camera angles, generate custom prompt, and call generate_tryon_image
     persona = {
@@ -72,14 +94,17 @@ async def generate_tryon(
         "backdrop": backdrop_scene,
     }
     
-    angles_list = [a.strip() for a in camera_angles.split(",") if a.strip()]
     images = []
     last_positive_prompt = ""
     
     try:
         for angle in angles_list:
+            is_back = "back" in angle.lower()
+            current_garment_data = garment_back_data if (is_back and garment_back_data) else garment_data
+            current_garment_bytes = garment_back_bytes if (is_back and garment_back_bytes) else garment_bytes
+
             # Build custom hyperrealistic prompt tailored to this specific camera angle / pose
-            positive_prompt, negative_prompt = build_tryon_prompt(garment_data, persona, camera_angle=angle)
+            positive_prompt, negative_prompt = build_tryon_prompt(current_garment_data, persona, camera_angle=angle)
             last_positive_prompt = positive_prompt # Save for returning metadata
             
             # Generate the image for this specific view
@@ -87,7 +112,7 @@ async def generate_tryon(
                 positive_prompt=positive_prompt,
                 negative_prompt=negative_prompt,
                 camera_angle=angle,
-                garment_bytes=garment_bytes,
+                garment_bytes=current_garment_bytes,
                 person_bytes=person_bytes,
             )
             images.append(img_b64)
@@ -178,4 +203,7 @@ Rules:
         )
         return {"response": response.text}
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"AI Chatbot failed: {str(e)}")
+        print(f"WARNING: AI Chatbot failed: {e}. Returning fallback response.")
+        return {
+            "response": "Hello! I am the Aavriti Stylist. I'm currently running in offline preview mode due to API quota limitations. However, I highly recommend trying on our premium sarees or kurtas from the catalog above! Let me know if you would like me to assist you with style pairings."
+        }
