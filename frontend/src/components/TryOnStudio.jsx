@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useContext } from "react";
 import ImageUpload from "./ImageUpload";
 import PersonaSelector from "./PersonaSelector";
-import { generateTryOn } from "../api/tryon";
+import { generateTryOn, removeBackground } from "../api/tryon";
 import { useProducts } from "../hooks/useProducts";
 import { useNavigate } from "react-router-dom";
 import { TRY_ON_PRESETS } from "../data/tryOnPresets";
@@ -140,41 +140,300 @@ function FittingModeBadge({ mode }) {
   );
 }
 
-function ResultPanel({ images, onDownload, onPublish, onSaveToWardrobe, isSavingToWardrobe }) {
+function ResultPanel({ 
+  images, 
+  onDownload, 
+  onPublish, 
+  onSaveToWardrobe, 
+  isSavingToWardrobe,
+  persona,
+  removedBgFront,
+  removedBgBack,
+  bgRemovingFront,
+  bgRemovingBack
+}) {
   const [selected, setSelected] = useState(0);
   const [publishName, setPublishName] = useState("");
   const [publishPrice, setPublishPrice] = useState("");
 
+  // New states for VTON overlay mode
+  const [tryonMode, setTryonMode] = useState("creative"); // "creative" or "exact"
+  const [garmentScale, setGarmentScale] = useState(0.65);
+  const [garmentY, setGarmentY] = useState(60);
+  const [garmentX, setGarmentX] = useState(0);
+  const [garmentRotate, setGarmentRotate] = useState(0);
+
   if (!images?.length) return null;
+
+  const activeAngle = persona?.angles?.[selected] || "Front View";
+  const isBackAngle = activeAngle.toLowerCase().includes("back");
+  const activeGarmentOverlay = isBackAngle ? (removedBgBack || removedBgFront) : removedBgFront;
+  const isRemovingBgActive = isBackAngle ? bgRemovingBack : bgRemovingFront;
+
+  // Combines model background image and positioned transparent garment cutout onto a canvas
+  const getCombinedImage = () => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      
+      const modelImg = new Image();
+      modelImg.onload = () => {
+        canvas.width = modelImg.naturalWidth;
+        canvas.height = modelImg.naturalHeight;
+        
+        // Draw the base model
+        ctx.drawImage(modelImg, 0, 0);
+        
+        if (tryonMode === "exact" && activeGarmentOverlay) {
+          const garmentImg = new Image();
+          garmentImg.onload = () => {
+            ctx.save();
+            
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            
+            // Map the preview offset (at 520px height) to natural image scale
+            const previewHeight = 520;
+            const scaleFactor = modelImg.naturalHeight / previewHeight;
+            
+            ctx.translate(cx + garmentX * scaleFactor, cy + garmentY * scaleFactor);
+            ctx.rotate((garmentRotate * Math.PI) / 180);
+            
+            // Draw garment scaled relative to preview dimensions
+            const previewWidth = previewHeight * (modelImg.naturalWidth / modelImg.naturalHeight);
+            const garmentTargetWidth = previewWidth * 0.6 * garmentScale * scaleFactor;
+            const garmentTargetHeight = (garmentImg.naturalHeight / garmentImg.naturalWidth) * garmentTargetWidth;
+            
+            ctx.drawImage(
+              garmentImg,
+              -garmentTargetWidth / 2,
+              -garmentTargetHeight / 2,
+              garmentTargetWidth,
+              garmentTargetHeight
+            );
+            
+            ctx.restore();
+            
+            const dataURL = canvas.toDataURL("image/png");
+            const base64 = dataURL.replace(/^data:image\/png;base64,/, "");
+            resolve(base64);
+          };
+          garmentImg.src = activeGarmentOverlay;
+        } else {
+          resolve(images[selected]);
+        }
+      };
+      modelImg.src = `data:image/png;base64,${images[selected]}`;
+    });
+  };
+
+  const handleCombinedDownload = async () => {
+    const combinedB64 = await getCombinedImage();
+    onDownload(combinedB64, selected);
+  };
+
+  const handleCombinedSaveToWardrobe = async () => {
+    const combinedB64 = await getCombinedImage();
+    onSaveToWardrobe(combinedB64);
+  };
+
+  const handleCombinedPublish = async () => {
+    const combinedB64 = await getCombinedImage();
+    onPublish(combinedB64, publishName, publishPrice);
+  };
 
   return (
     <div className="flex flex-col gap-4">
-      <label className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
-        Try-On Result
-      </label>
-
-      <div className="relative rounded-2xl overflow-hidden shadow-lg bg-gray-100">
-        <img
-          src={`data:image/png;base64,${images[selected]}`}
-          alt="Virtual try-on result"
-          className="w-full object-contain"
-          style={{ maxHeight: "520px" }}
-        />
-        <div className="absolute top-3 right-3 flex gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <label className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
+          Try-On Result
+        </label>
+        
+        {/* Try-On Mode Switcher */}
+        <div className="flex bg-pink-50/50 p-1.5 rounded-2xl border border-pink-100/50 gap-1.5 w-fit">
           <button
-            onClick={() => onDownload(images[selected], selected)}
-            className="bg-white/90 backdrop-blur-sm text-gray-700 text-xs font-medium px-3 py-1.5 rounded-full shadow hover:bg-white transition-colors"
+            type="button"
+            onClick={() => setTryonMode("creative")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              tryonMode === "creative"
+                ? "bg-pink-600 text-white shadow"
+                : "text-gray-500 hover:text-pink-600 hover:bg-pink-50/20"
+            }`}
           >
-            ↓ Download
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>AI Creative Fit</span>
           </button>
           <button
-            onClick={() => onSaveToWardrobe(images[selected])}
-            disabled={isSavingToWardrobe}
-            className="bg-pink-600/90 backdrop-blur-sm text-white text-xs font-medium px-3 py-1.5 rounded-full shadow hover:bg-pink-700 transition-colors disabled:opacity-50"
+            type="button"
+            onClick={() => setTryonMode("exact")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              tryonMode === "exact"
+                ? "bg-pink-600 text-white shadow"
+                : "text-gray-500 hover:text-pink-600 hover:bg-pink-50/20"
+            }`}
           >
-            {isSavingToWardrobe ? "Saving..." : "❤ Save to Wardrobe"}
+            <Shirt className="w-3.5 h-3.5" />
+            <span>Exact Product Fit</span>
           </button>
         </div>
+      </div>
+
+      <div className={`grid grid-cols-1 ${tryonMode === "exact" ? "md:grid-cols-3" : ""} gap-6`}>
+        {/* Column 1 & 2: Image Container */}
+        <div className={`${tryonMode === "exact" ? "md:col-span-2" : ""} relative rounded-2xl overflow-hidden shadow-lg bg-gray-100 flex items-center justify-center min-h-[400px]`}>
+          <img
+            src={`data:image/png;base64,${images[selected]}`}
+            alt="Virtual try-on result"
+            className="w-full object-contain"
+            style={{ maxHeight: "520px" }}
+          />
+
+          {/* Overlaid transparent garment cutout */}
+          {tryonMode === "exact" && (
+            <>
+              {isRemovingBgActive ? (
+                <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4">
+                  <div className="relative w-12 h-12 flex items-center justify-center">
+                    <div className="absolute inset-0 border-4 border-pink-100 border-t-pink-600 rounded-full animate-spin"></div>
+                  </div>
+                  <p className="text-white text-xs font-bold mt-3">Extracting clean garment cutout...</p>
+                  <p className="text-white/60 text-[10px] mt-1">Removing background automatically</p>
+                </div>
+              ) : activeGarmentOverlay ? (
+                <img
+                  src={activeGarmentOverlay}
+                  alt="Garment overlay"
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: `translate(-50%, -50%) translate(${garmentX}px, ${garmentY}px) scale(${garmentScale}) rotate(${garmentRotate}deg)`,
+                    pointerEvents: "none",
+                    width: "55%",
+                    height: "auto",
+                    transformOrigin: "center center",
+                    filter: "drop-shadow(0 8px 16px rgba(0,0,0,0.15))"
+                  }}
+                />
+              ) : (
+                <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4">
+                  <AlertCircle className="w-8 h-8 text-pink-500 mb-2 animate-bounce" />
+                  <p className="text-white text-xs font-bold">No transparent cutout available</p>
+                  <p className="text-white/60 text-[10px] mt-1">Make sure you have uploaded a front garment image.</p>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Action Buttons */}
+          <div className="absolute top-3 right-3 flex gap-2">
+            <button
+              onClick={handleCombinedDownload}
+              className="bg-white/90 backdrop-blur-sm text-gray-700 text-xs font-medium px-3 py-1.5 rounded-full shadow hover:bg-white transition-colors"
+            >
+              ↓ Download
+            </button>
+            <button
+              onClick={handleCombinedSaveToWardrobe}
+              disabled={isSavingToWardrobe}
+              className="bg-pink-600/90 backdrop-blur-sm text-white text-xs font-medium px-3 py-1.5 rounded-full shadow hover:bg-pink-700 transition-colors disabled:opacity-50"
+            >
+              {isSavingToWardrobe ? "Saving..." : "❤ Save to Wardrobe"}
+            </button>
+          </div>
+        </div>
+
+        {/* Column 3: Sizing & Placement Sliders (only visible in exact mode) */}
+        {tryonMode === "exact" && (
+          <div className="bg-white/90 backdrop-blur-md p-5 rounded-2xl border border-pink-100/60 shadow flex flex-col gap-4 text-left">
+            <div className="flex items-center gap-1.5 border-b border-gray-100 pb-2.5">
+              <Sliders className="w-4 h-4 text-pink-600" />
+              <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider">Alignment Controls</h3>
+            </div>
+            
+            {/* Scale Slider */}
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-[10px] font-bold text-gray-500">
+                <span>GARMENT SIZE</span>
+                <span className="text-pink-600 font-extrabold">{Math.round(garmentScale * 100)}%</span>
+              </div>
+              <input
+                type="range"
+                min="0.2"
+                max="1.5"
+                step="0.01"
+                value={garmentScale}
+                onChange={(e) => setGarmentScale(parseFloat(e.target.value))}
+                className="w-full h-1 bg-pink-100 rounded-lg appearance-none cursor-pointer accent-pink-600"
+              />
+            </div>
+
+            {/* Vertical Y-offset Slider */}
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-[10px] font-bold text-gray-500">
+                <span>HEIGHT (Y-AXIS)</span>
+                <span className="text-pink-600 font-extrabold">{garmentY}px</span>
+              </div>
+              <input
+                type="range"
+                min="-200"
+                max="250"
+                step="1"
+                value={garmentY}
+                onChange={(e) => setGarmentY(parseInt(e.target.value))}
+                className="w-full h-1 bg-pink-100 rounded-lg appearance-none cursor-pointer accent-pink-600"
+              />
+            </div>
+
+            {/* Horizontal X-offset Slider */}
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-[10px] font-bold text-gray-500">
+                <span>ALIGNMENT (X-AXIS)</span>
+                <span className="text-pink-600 font-extrabold">{garmentX}px</span>
+              </div>
+              <input
+                type="range"
+                min="-150"
+                max="150"
+                step="1"
+                value={garmentX}
+                onChange={(e) => setGarmentX(parseInt(e.target.value))}
+                className="w-full h-1 bg-pink-100 rounded-lg appearance-none cursor-pointer accent-pink-600"
+              />
+            </div>
+
+            {/* Rotation Slider */}
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-[10px] font-bold text-gray-500">
+                <span>ROTATION</span>
+                <span className="text-pink-600 font-extrabold">{garmentRotate}°</span>
+              </div>
+              <input
+                type="range"
+                min="-30"
+                max="30"
+                step="1"
+                value={garmentRotate}
+                onChange={(e) => setGarmentRotate(parseInt(e.target.value))}
+                className="w-full h-1 bg-pink-100 rounded-lg appearance-none cursor-pointer accent-pink-600"
+              />
+            </div>
+
+            {/* Quick Reset Button */}
+            <button
+              onClick={() => {
+                setGarmentScale(0.65);
+                setGarmentY(60);
+                setGarmentX(0);
+                setGarmentRotate(0);
+              }}
+              className="mt-2 w-full py-2 bg-gray-50 hover:bg-pink-50 text-gray-500 hover:text-pink-600 border border-gray-100 hover:border-pink-200 text-[10px] font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-1.5"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Reset Alignment</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {images.length > 1 && (
@@ -218,7 +477,7 @@ function ResultPanel({ images, onDownload, onPublish, onSaveToWardrobe, isSaving
             className="w-32 px-3 py-2 border border-gray-300 rounded-lg text-sm"
           />
           <button 
-            onClick={() => onPublish(images[selected], publishName, publishPrice)}
+            onClick={handleCombinedPublish}
             className="bg-pink-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-pink-700 transition-colors text-sm whitespace-nowrap"
           >
             Publish Now
@@ -276,7 +535,15 @@ export default function TryOnStudio() {
 
   const [garmentFile, setGarmentFile] = useState(null);
   const [garmentPreview, setGarmentPreview] = useState(null);
+  const [garmentBackFile, setGarmentBackFile] = useState(null);
+  const [garmentBackPreview, setGarmentBackPreview] = useState(null);
   const [personFile, setPersonFile] = useState(null);
+
+  // States for transparent cutout overlay mode
+  const [removedBgFront, setRemovedBgFront] = useState(null);
+  const [removedBgBack, setRemovedBgBack] = useState(null);
+  const [bgRemovingFront, setBgRemovingFront] = useState(false);
+  const [bgRemovingBack, setBgRemovingBack] = useState(false);
 
   const [personPreview, setPersonPreview] = useState(null);
   const [persona, setPersona] = useState(DEFAULT_PERSONA);
@@ -315,11 +582,42 @@ export default function TryOnStudio() {
     }
   }, [activeCategory]);
  
-  const handleGarmentSelect = (file) => {
+  const handleGarmentSelect = async (file) => {
     setGarmentFile(file);
     setGarmentPreview(file ? URL.createObjectURL(file) : null);
+    setRemovedBgFront(null);
     setResult(null);
     setError(null);
+    if (file) {
+      setBgRemovingFront(true);
+      try {
+        const res = await removeBackground(file);
+        setRemovedBgFront(res.image);
+      } catch (err) {
+        console.error("Failed to remove background from front garment:", err);
+      } finally {
+        setBgRemovingFront(false);
+      }
+    }
+  };
+
+  const handleGarmentBackSelect = async (file) => {
+    setGarmentBackFile(file);
+    setGarmentBackPreview(file ? URL.createObjectURL(file) : null);
+    setRemovedBgBack(null);
+    setResult(null);
+    setError(null);
+    if (file) {
+      setBgRemovingBack(true);
+      try {
+        const res = await removeBackground(file);
+        setRemovedBgBack(res.image);
+      } catch (err) {
+        console.error("Failed to remove background from back garment:", err);
+      } finally {
+        setBgRemovingBack(false);
+      }
+    }
   };
  
   const handlePersonSelect = (file) => {
@@ -361,7 +659,7 @@ export default function TryOnStudio() {
         subcategory: activeSubcategory,
         description: selectedPreset ? `${selectedPreset.name}. ${selectedPreset.description}` : ""
       };
-      const data = await generateTryOn(fileToUpload, personFile, persona, categoryHints);
+      const data = await generateTryOn(fileToUpload, personFile, persona, categoryHints, garmentBackFile);
       timers.forEach(t => clearTimeout(t));
       setResult(data);
       setStep("done");
@@ -663,12 +961,20 @@ export default function TryOnStudio() {
                   <p className="text-xs text-gray-400">Upload your product photo. Optionally select a style reference to guide the AI prompt engineering.</p>
                 </div>
 
-                {/* 1. MANDATORY PRODUCT PHOTO UPLOAD */}
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">
-                    Product Photo <span className="text-pink-500 font-extrabold">(Required)</span>
-                  </label>
-                  <ImageUpload onFileSelect={handleGarmentSelect} previewUrl={garmentPreview} />
+                {/* 1. PRODUCT PHOTO UPLOADS (FRONT & BACK VIEWS) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">
+                      Product Front View <span className="text-pink-500 font-extrabold">(Required)</span>
+                    </label>
+                    <ImageUpload label="Garment Front Image" onFileSelect={handleGarmentSelect} previewUrl={garmentPreview} />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">
+                      Product Back View <span className="text-gray-400 font-normal normal-case">(Optional)</span>
+                    </label>
+                    <ImageUpload label="Garment Back Image" onFileSelect={handleGarmentBackSelect} previewUrl={garmentBackPreview} />
+                  </div>
                 </div>
 
                 {/* 2. OPTIONAL STYLE PRESETS CATALOG (To guide prompting) */}
@@ -776,13 +1082,22 @@ export default function TryOnStudio() {
                   <div className="min-w-0 flex-1">
                     <h3 className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Step 3: Product Photo & Style Reference</h3>
                     <div className="flex items-center gap-3 mt-1 min-w-0">
-                      {garmentPreview && (
-                        <div className="w-8 h-8 rounded-full border border-pink-200 overflow-hidden shrink-0 bg-white shadow-sm flex items-center justify-center">
-                          <img src={garmentPreview} alt="garment preview" className="w-full h-full object-cover" />
-                        </div>
-                      )}
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-xs font-extrabold text-pink-600 truncate">Product photo uploaded</span>
+                      <div className="flex gap-1">
+                        {garmentPreview && (
+                          <div className="w-8 h-8 rounded-full border border-pink-200 overflow-hidden shrink-0 bg-white shadow-sm flex items-center justify-center">
+                            <img src={garmentPreview} alt="front view" className="w-full h-full object-cover" />
+                          </div>
+                        )}
+                        {garmentBackPreview && (
+                          <div className="w-8 h-8 rounded-full border border-pink-200 overflow-hidden shrink-0 bg-white shadow-sm flex items-center justify-center">
+                            <img src={garmentBackPreview} alt="back view" className="w-full h-full object-cover" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex flex-col min-w-0 text-left">
+                        <span className="text-xs font-extrabold text-pink-600 truncate">
+                          {garmentBackPreview ? "Front & Back view uploaded" : "Product photo uploaded"}
+                        </span>
                         {selectedPreset ? (
                           <span className="text-[9px] text-gray-400 font-bold truncate flex items-center gap-1.5 mt-0.5">
                             {getOptionIcon(selectedPreset.name)}
@@ -1077,6 +1392,11 @@ export default function TryOnStudio() {
                   onPublish={handlePublish} 
                   onSaveToWardrobe={handleSaveToWardrobe}
                   isSavingToWardrobe={savingWardrobe}
+                  persona={persona}
+                  removedBgFront={removedBgFront}
+                  removedBgBack={removedBgBack}
+                  bgRemovingFront={bgRemovingFront}
+                  bgRemovingBack={bgRemovingBack}
                 />
                 <details className="group">
                   <summary className="text-xs text-gray-400 cursor-pointer hover:text-gray-600 flex items-center gap-1.5">

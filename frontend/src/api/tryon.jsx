@@ -6,10 +6,13 @@ const API_BASE_URL = "http://127.0.0.1:8000/api/tryon";
 /**
  * Sends the garment, optional person image, and persona data to the FastAPI backend.
  */
-export const generateTryOn = async (garmentFile, personFile, persona, categoryHints = {}) => {
+export const generateTryOn = async (garmentFile, personFile, persona, categoryHints = {}, garmentBackFile = null) => {
   const formData = new FormData();
   
   formData.append("garment_image", garmentFile);
+  if (garmentBackFile) {
+    formData.append("garment_back_image", garmentBackFile);
+  }
   
   if (personFile) {
     formData.append("person_image", personFile);
@@ -44,5 +47,25 @@ export const generateTryOn = async (garmentFile, personFile, persona, categoryHi
   } catch (error) {
     console.error("API Error:", error.response?.data?.detail || error.message);
     throw error.response?.data?.detail || "Failed to generate try-on";
+  }
+};
+
+/**
+ * Sends a garment file to the backend to get a transparent background-removed PNG.
+ */
+export const removeBackground = async (imageFile) => {
+  const formData = new FormData();
+  formData.append("image", imageFile);
+  
+  try {
+    const response = await axios.post(`${API_BASE_URL}/remove-background`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data; // { image: "data:image/png;base64,...", fallback: boolean }
+  } catch (error) {
+    console.error("Background Removal Error:", error.response?.data?.detail || error.message);
+    throw error.response?.data?.detail || "Failed to remove background";
   }
 };
