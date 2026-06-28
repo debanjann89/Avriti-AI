@@ -12,12 +12,80 @@ from database import get_db
 import models
 
 from services.gemini_service import analyze_garment, build_tryon_prompt
-from services.hf_service import generate_tryon_image, generate_tryon_variants
+from services.hf_service import generate_tryon_image, generate_tryon_variants, generate_tryon_vton
 
 router = APIRouter()
 
 ALLOWED_TYPES = ("image/jpeg", "image/png", "image/webp")
 
+
+def remove_bg_and_normalize_safe(image_bytes: bytes) -> bytes:
+    """
+    Removes the background using rembg and resizes/centers the garment to 768x1024.
+    If rembg fails, falls back to a simple PIL resize/pad.
+    """
+    from PIL import Image
+    import io
+    
+    try:
+        from rembg import remove
+        img = Image.open(io.BytesIO(image_bytes))
+        # Remove background using rembg
+        transparent = remove(img)
+    except Exception as e:
+        print(f"rembg background removal failed: {e}. Falling back to standard transparent crop.")
+        # Fallback to standard color keying if rembg fails
+        try:
+            img = Image.open(io.BytesIO(image_bytes))
+            transparent = img.convert("RGBA")
+            # Simple color-keying (make very bright/white pixels transparent as fallback)
+            data = transparent.getdata()
+            new_data = []
+            for item in data:
+                # If pixel is close to white (common photo background)
+                if item[0] > 230 and item[1] > 230 and item[2] > 230:
+                    new_data.append((255, 255, 255, 0))
+                else:
+                    new_data.append(item)
+            transparent.putdata(new_data)
+        except Exception as e_inner:
+            print(f"Fallback keying failed: {e_inner}")
+            return image_bytes
+
+    try:
+        # Get bounding box of non-transparent areas to crop out background padding
+        bbox = transparent.getbbox()
+        if bbox:
+            cropped = transparent.crop(bbox)
+        else:
+            cropped = transparent
+            
+        # Create a transparent 768x1024 canvas
+        canvas = Image.new("RGBA", (768, 1024), (0, 0, 0, 0))
+        
+        # Resize cropped garment preserving aspect ratio to fit inside 768x1024
+        cw, ch = cropped.size
+        max_w = int(768 * 0.75) # 75% width
+        max_h = int(1024 * 0.75) # 75% height
+        
+        scale = min(max_w / cw, max_h / ch)
+        new_w = int(cw * scale)
+        new_h = int(ch * scale)
+        
+        resized_garment = cropped.resize((new_w, new_h), Image.Resampling.LANCZOS)
+        
+        # Paste resized garment in the center of the 768x1024 canvas
+        offset_x = (768 - new_w) // 2
+        offset_y = (1024 - new_h) // 2
+        canvas.paste(resized_garment, (offset_x, offset_y), resized_garment)
+        
+        # Save canvas to bytes
+        buf = io.BytesIO()
+        canvas.save(buf, format="PNG")
+        return buf.getvalue()
+    except Exception as e:
+        print(f"Garment normalization failed: {e}")
+        return image_bytes
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
@@ -103,19 +171,83 @@ async def generate_tryon(
             current_garment_data = garment_back_data if (is_back and garment_back_data) else garment_data
             current_garment_bytes = garment_back_bytes if (is_back and garment_back_bytes) else garment_bytes
 
-            # Build custom hyperrealistic prompt tailored to this specific camera angle / pose
-            positive_prompt, negative_prompt = build_tryon_prompt(current_garment_data, persona, camera_angle=angle)
-            last_positive_prompt = positive_prompt # Save for returning metadata
-            
-            # Generate the image for this specific view
-            img_b64 = await generate_tryon_image(
-                positive_prompt=positive_prompt,
-                negative_prompt=negative_prompt,
-                camera_angle=angle,
-                garment_bytes=current_garment_bytes,
-                person_bytes=person_bytes,
-            )
-            images.append(img_b64)
+            # VTON pipeline
+            vton_success = False
+            try:
+                # 1. Remove background and normalize the garment
+                normalized_garment_bytes = remove_bg_and_normalize_safe(current_garment_bytes)
+                
+                # 2. Prepare avatar bytes
+                if person_bytes:
+                    avatar_bytes = person_bytes
+                else:
+                    # Generate a neutral model avatar with FLUX
+                    gender_str = gender.lower()
+                    eth_str = ethnicity or "South Asian"
+                    
+                    if is_back:
+                        avatar_prompt = (
+                            f"A professional studio fashion photography, full body shot of a beautiful "
+                            f"{gender_str} model from behind, back view, standing straight, neutral pose, "
+                            f"wearing simple tight white crop top and blue jeans, solid neutral studio grey background, "
+                            f"sharp focus, RAW photo" if gender_str in ("female", "woman") else
+                            f"A professional studio fashion photography, full body shot of a handsome "
+                            f"{gender_str} model from behind, back view, standing straight, neutral pose, "
+                            f"wearing simple tight white t-shirt and blue jeans, solid neutral studio grey background, "
+                            f"sharp focus, RAW photo"
+                        )
+                    else:
+                        avatar_prompt = (
+                            f"A professional studio fashion photography, full body shot of a beautiful "
+                            f"{gender_str} model, {eth_str}, facing front, standing straight, neutral pose, "
+                            f"wearing simple tight white crop top and blue jeans, solid neutral studio grey background, "
+                            f"sharp focus, RAW photo" if gender_str in ("female", "woman") else
+                            f"A professional studio fashion photography, full body shot of a handsome "
+                            f"{gender_str} model, {eth_str}, facing front, standing straight, neutral pose, "
+                            f"wearing simple tight white t-shirt and blue jeans, solid neutral studio grey background, "
+                            f"sharp focus, RAW photo"
+                        )
+                    
+                    print(f"Generating neutral avatar with prompt: {avatar_prompt}")
+                    avatar_b64 = await generate_tryon_image(
+                        positive_prompt=avatar_prompt,
+                        negative_prompt="deformed, bad anatomy, disfigured, low quality",
+                        camera_angle=angle,
+                        garment_bytes=b"", # empty garment to generate base model avatar
+                        person_bytes=None
+                    )
+                    import base64
+                    avatar_bytes = base64.b64decode(avatar_b64)
+                
+                # 3. Call IDM-VTON space
+                g_desc = current_garment_data.get("description", garment_description or "clothing item")
+                print(f"Calling remote IDM-VTON Space for garment: {g_desc}...")
+                vton_img_b64 = await generate_tryon_vton(
+                    avatar_bytes=avatar_bytes,
+                    garment_bytes=normalized_garment_bytes,
+                    garment_description=g_desc
+                )
+                images.append(vton_img_b64)
+                vton_success = True
+                print("VTON try-on generation successful!")
+                
+            except Exception as e:
+                print(f"VTON pipeline failed or timed out: {e}. Falling back to FLUX generation.")
+                
+            if not vton_success:
+                # Build custom hyperrealistic prompt tailored to this specific camera angle / pose
+                positive_prompt, negative_prompt = build_tryon_prompt(current_garment_data, persona, camera_angle=angle)
+                last_positive_prompt = positive_prompt # Save for returning metadata
+                
+                # Generate the image for this specific view
+                img_b64 = await generate_tryon_image(
+                    positive_prompt=positive_prompt,
+                    negative_prompt=negative_prompt,
+                    camera_angle=angle,
+                    garment_bytes=current_garment_bytes,
+                    person_bytes=person_bytes,
+                )
+                images.append(img_b64)
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Image generation failed: {e}")
 

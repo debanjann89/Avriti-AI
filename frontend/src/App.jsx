@@ -14,6 +14,7 @@ import BlogPage from './pages/BlogPage';
 import SupportPage from './pages/SupportPage';
 import LegalPage from './pages/LegalPage';
 import StylistChat from './components/StylistChat';
+import Preloader from './components/Preloader';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import "./index.css";
@@ -21,6 +22,7 @@ import "./index.css";
 function App() {
   return (
     <AuthProvider>
+      <Preloader />
       <CartProvider>
         <BrowserRouter>
           <Routes>

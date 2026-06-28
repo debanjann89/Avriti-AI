@@ -63,10 +63,79 @@ function GarmentBadge({ analysis }) {
 
 function PersonImageUpload({ onFileSelect, previewUrl }) {
   const inputRef = useRef(null);
+  const videoRef = useRef(null);
+  const streamRef = useRef(null);
+  
+  const [showCamera, setShowCamera] = useState(false);
+  const [cameraError, setCameraError] = useState("");
 
   const handleChange = (e) => {
     const file = e.target.files?.[0];
     if (file) onFileSelect(file);
+  };
+
+  const startCamera = (e) => {
+    e.stopPropagation();
+    setCameraError("");
+    setShowCamera(true);
+  };
+
+  useEffect(() => {
+    if (showCamera) {
+      navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: "user", // front camera for self-portrait/body-fit photo!
+          width: { ideal: 768 },
+          height: { ideal: 1024 }
+        } 
+      })
+      .then(stream => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          streamRef.current = stream;
+        }
+      })
+      .catch(err => {
+        console.error("Camera access failed:", err);
+        setCameraError("Camera access denied or unavailable.");
+      });
+    } else {
+      stopCamera();
+    }
+    return () => stopCamera();
+  }, [showCamera]);
+
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+  };
+
+  const capturePhoto = (e) => {
+    e.stopPropagation();
+    if (!videoRef.current) return;
+    
+    const video = videoRef.current;
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth || 768;
+    canvas.height = video.videoHeight || 1024;
+    
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    
+    canvas.toBlob((blob) => {
+      if (blob) {
+        const file = new File([blob], `captured_user_${Date.now()}.png`, { type: "image/png" });
+        onFileSelect(file);
+        setShowCamera(false);
+      }
+    }, "image/png");
+  };
+
+  const cancelCamera = (e) => {
+    e.stopPropagation();
+    setShowCamera(false);
   };
 
   return (
@@ -75,42 +144,95 @@ function PersonImageUpload({ onFileSelect, previewUrl }) {
         <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
           Your Photo <span className="text-gray-400 font-normal normal-case">(optional — boosts fit accuracy)</span>
         </label>
-        {previewUrl && (
+        {previewUrl && !showCamera && (
           <button
+            type="button"
             onClick={() => onFileSelect(null)}
-            className="text-xs text-red-400 hover:text-red-600"
+            className="text-xs text-red-500 font-bold hover:underline"
           >
             Remove
           </button>
         )}
       </div>
 
-      {previewUrl ? (
-        <div
-          className="relative rounded-xl overflow-hidden border-2 border-pink-300 cursor-pointer"
-          style={{ height: 120 }}
-          onClick={() => inputRef.current?.click()}
-        >
-          <img
-            src={previewUrl}
-            alt="Your photo"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-            <span className="text-white text-xs font-medium">Change photo</span>
+      <div
+        className="relative rounded-2xl overflow-hidden border-2 border-dashed border-gray-200 transition-all min-h-[160px] flex items-center justify-center bg-gray-50/50 hover:bg-pink-50/20 hover:border-pink-300"
+        onClick={() => !showCamera && inputRef.current?.click()}
+      >
+        {showCamera ? (
+          <div className="absolute inset-0 bg-black flex flex-col items-center justify-between p-3 z-10 animate-fadeIn">
+            {cameraError ? (
+              <div className="flex flex-col items-center justify-center h-full gap-2 text-center animate-fadeIn">
+                <span className="text-2xl">⚠️</span>
+                <p className="text-white text-[10px]">{cameraError}</p>
+                <button
+                  type="button"
+                  onClick={cancelCamera}
+                  className="bg-white/20 text-white text-[9px] font-extrabold py-1 px-4 rounded-full uppercase"
+                >
+                  Close
+                </button>
+              </div>
+            ) : (
+              <>
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  className="w-full h-full object-cover rounded-xl"
+                  style={{ maxHeight: "calc(100% - 40px)" }}
+                />
+                <div className="flex items-center justify-between w-full mt-1.5 px-1 z-20">
+                  <button
+                    type="button"
+                    onClick={cancelCamera}
+                    className="bg-red-500/80 text-white font-extrabold text-[9px] py-1.5 px-3 rounded-full uppercase tracking-wider hover:bg-red-600 transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={capturePhoto}
+                    className="bg-pink-600 hover:bg-pink-700 text-white font-extrabold text-[9px] py-1.5 px-4 rounded-full uppercase tracking-wider shadow-lg flex items-center gap-1 transition"
+                  >
+                    Capture
+                  </button>
+                </div>
+              </>
+            )}
           </div>
-        </div>
-      ) : (
-        <div
-          className="border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-pink-400 hover:bg-pink-50 transition-all"
-          style={{ height: 100 }}
-          onClick={() => inputRef.current?.click()}
-        >
-          <span className="text-2xl">🧍</span>
-          <span className="text-xs text-gray-400">Upload your photo for body-fit mode</span>
-          <span className="text-[10px] text-emerald-600 font-medium">↑ ~99% garment fit accuracy</span>
-        </div>
-      )}
+        ) : previewUrl ? (
+          <div className="relative w-full h-[160px] cursor-pointer">
+            <img
+              src={previewUrl}
+              alt="Your photo"
+              className="w-full h-full object-cover rounded-xl"
+            />
+            <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl">
+              <span className="text-white text-xs font-medium bg-black/50 py-1.5 px-4 rounded-full">Change photo</span>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center gap-2 p-4 text-center cursor-pointer w-full">
+            <span className="text-3xl">🧍</span>
+            <div className="flex flex-col items-center gap-1.5">
+              <span className="text-xs font-bold text-gray-700">Upload your photo for body-fit mode</span>
+              <span className="text-[9px] text-gray-400">Drag/drop file or browse local storage</span>
+            </div>
+            
+            <button
+              type="button"
+              onClick={startCamera}
+              className="bg-pink-600/10 hover:bg-pink-600 text-pink-600 hover:text-white font-extrabold text-[9px] py-1.5 px-4 rounded-full border border-pink-600/30 hover:border-pink-600 uppercase tracking-widest flex items-center gap-1.5 mt-1 transition duration-200"
+            >
+              <svg className="w-3 h-3 fill-none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15a2.25 2.25 0 002.25-2.25V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+              </svg>
+              <span>Take Selfie / Photo</span>
+            </button>
+          </div>
+        )}
+      </div>
 
       <input
         ref={inputRef}

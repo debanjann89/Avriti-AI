@@ -27,6 +27,22 @@ def upgrade():
         print("images column added successfully!")
     else:
         print("images column already exists in products table.")
+
+    # Extended specifications columns
+    extra_cols = {
+        "fabric": "TEXT",
+        "craft_technique": "TEXT",
+        "wash_care": "TEXT",
+        "country_of_origin": "TEXT",
+        "external_url": "TEXT"
+    }
+    for col, col_type in extra_cols.items():
+        if col not in columns:
+            print(f"Adding {col} column to products table...")
+            cursor.execute(f"ALTER TABLE products ADD COLUMN {col} {col_type}")
+            print(f"{col} column added successfully!")
+        else:
+            print(f"{col} column already exists in products table.")
         
     # Check if cart_items table has size column
     cursor.execute("PRAGMA table_info(cart_items)")

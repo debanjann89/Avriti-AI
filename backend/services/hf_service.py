@@ -111,3 +111,63 @@ async def generate_tryon_variants(
         results.append(img_b64)
 
     return results
+
+
+async def generate_tryon_vton(
+    avatar_bytes: bytes,
+    garment_bytes: bytes,
+    garment_description: str,
+) -> str:
+    """
+    Calls yisol/IDM-VTON Gradio API via gradio_client to perform real virtual try-on.
+    """
+    import tempfile
+    import os
+    import shutil
+    import base64
+    import asyncio
+    from gradio_client import Client, handle_file
+    
+    # Write bytes to temporary files for gradio_client
+    temp_dir = tempfile.mkdtemp()
+    avatar_path = os.path.join(temp_dir, "avatar.png")
+    garment_path = os.path.join(temp_dir, "garment.png")
+    
+    try:
+        with open(avatar_path, "wb") as f:
+            f.write(avatar_bytes)
+        with open(garment_path, "wb") as f:
+            f.write(garment_bytes)
+            
+        def _run_vton():
+            # Connect to yisol/IDM-VTON Space on HF
+            client = Client("yisol/IDM-VTON")
+            result = client.predict(
+                dict={
+                    "background": handle_file(avatar_path),
+                    "layers": [],
+                    "composite": None
+                },
+                garm_img=handle_file(garment_path),
+                garment_des=garment_description or "clothing item",
+                is_checked=True,
+                is_checked_crop=False,
+                denoise_steps=30,
+                seed=42,
+                api_name="/tryon"
+            )
+            return result
+            
+        # Run synchronous predict call in an executor thread
+        result = await asyncio.to_thread(_run_vton)
+        output_image_path = result[0] # output is the first element in returned tuple
+        
+        # Read resulting image
+        with open(output_image_path, "rb") as f:
+            output_bytes = f.read()
+            
+        b64_png = base64.b64encode(output_bytes).decode("utf-8")
+        return b64_png
+    finally:
+        # Clean up temporary directory
+        shutil.rmtree(temp_dir, ignore_errors=True)
