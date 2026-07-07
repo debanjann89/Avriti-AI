@@ -250,29 +250,15 @@ async def generate_tryon(
                 g_type = current_garment_data.get("garment_type", garment_category or "")
                 strategy = get_tryon_strategy(g_type)
                 
-                if strategy in ("drape", "layered"):
-                    # Use FLUX directly to generate a photorealistic try-on image of the full outfit
-                    positive_prompt, negative_prompt = build_tryon_prompt(current_garment_data, persona, camera_angle=angle)
-                    print(f"Ethnic Wear FLUX Direct Strategy ({strategy}): positive_prompt={positive_prompt}")
-                    flux_img_b64 = await generate_tryon_image(
-                        positive_prompt=positive_prompt,
-                        negative_prompt=negative_prompt,
-                        camera_angle=angle,
-                        garment_bytes=current_garment_bytes,
-                        person_bytes=person_bytes,
-                    )
-                    images.append(flux_img_b64)
-                    vton_success = True
-                    
-                else:  # standard
-                    print("Standard Strategy: Calling IDM-VTON direct...")
-                    vton_img_b64 = await generate_tryon_vton(
-                        avatar_bytes=avatar_bytes,
-                        garment_bytes=normalized_garment_bytes,
-                        garment_description=g_desc
-                    )
-                    images.append(vton_img_b64)
-                    vton_success = True
+                # Direct VTON warping for all garments to preserve exact garment texture/look
+                print(f"Calling IDM-VTON direct for garment warp: {g_desc}...")
+                vton_img_b64 = await generate_tryon_vton(
+                    avatar_bytes=avatar_bytes,
+                    garment_bytes=normalized_garment_bytes,
+                    garment_description=g_desc
+                )
+                images.append(vton_img_b64)
+                vton_success = True
                 
                 print("VTON try-on generation successful!")
                 
