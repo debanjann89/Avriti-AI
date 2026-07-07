@@ -247,7 +247,23 @@ def build_tryon_prompt(garment: dict, persona: dict, camera_angle: str = "Front 
         scene_desc = "Solid professional neutral studio grey background, soft three-point fashion studio lighting, diffused key light, soft fill, subtle rim highlight. "
 
     pose_desc = ""
-    outfit_desc = "Wearing clean dark blue denim jeans and white fashion sneakers. "
+    # Dynamic outfit description to prevent conflicts with ethnic garments or dresses
+    g_type_low = garment_type_lower
+    if "saree" in g_type_low:
+        outfit_desc = "The saree is draped beautifully over the shoulder, paired with a matching blouse and traditional sandals. "
+    elif "lehenga" in g_type_low:
+        outfit_desc = "The lehenga consists of a matching choli blouse, a flared heavy-embroidered skirt, and a matching dupatta draped gracefully. "
+    elif any(k in g_type_low for k in ["salwar", "sharara", "anarkali", "kurta", "churidar", "kameez"]):
+        if is_men:
+            outfit_desc = "The outfit is a complete matching kurta set with traditional churidar or pajama pants. "
+        else:
+            outfit_desc = "The outfit is a complete matching set with salwar/churidar pants and a matching dupatta or stole. "
+    elif "sherwani" in g_type_low:
+        outfit_desc = "The sherwani is a complete set with matching churidar pajama pants and traditional mojaris. "
+    elif "dress" in g_type_low:
+        outfit_desc = "Paired with matching high heels and elegant posture. "
+    else:
+        outfit_desc = "Wearing clean dark blue denim jeans and white fashion sneakers. "
     shot_type = "professional fashion photography, RAW photo, Canon EOS R5, 85mm f/1.4 lens, ISO 100, ultra sharp focus, natural skin texture, photorealistic fabric rendering, 8K UHD"
 
     # Custom Poses for Men's Upperwear based on Camera Angles
@@ -316,7 +332,18 @@ def build_tryon_prompt(garment: dict, persona: dict, camera_angle: str = "Front 
             shot_type = "Three-quarter elegant fashion shot, professional studio lighting"
         else:
             pose_desc = "Graceful natural pose, leaning slightly on a tall wooden fashion studio stool, relaxed expression. "
-        outfit_desc = "Wearing clean dark blue denim jeans and white fashion sneakers. "
+        # Dynamic outfit description to prevent conflicts with ethnic garments or dresses
+        g_type_low = garment_type_lower
+        if "saree" in g_type_low:
+            outfit_desc = "The saree is draped beautifully over the shoulder, paired with a matching blouse and traditional sandals. "
+        elif "lehenga" in g_type_low:
+            outfit_desc = "The lehenga consists of a matching choli blouse, a flared heavy-embroidered skirt, and a matching dupatta draped gracefully. "
+        elif any(k in g_type_low for k in ["salwar", "sharara", "anarkali", "kurta", "churidar", "kameez"]):
+            outfit_desc = "The outfit is a complete matching set with salwar/churidar pants and a matching dupatta or stole. "
+        elif "dress" in g_type_low:
+            outfit_desc = "Paired with matching high heels and elegant posture. "
+        else:
+            outfit_desc = "Wearing clean dark blue denim jeans and white fashion sneakers. "
 
     positive = (
         f"{shot_type}. "

@@ -250,50 +250,18 @@ async def generate_tryon(
                 g_type = current_garment_data.get("garment_type", garment_category or "")
                 strategy = get_tryon_strategy(g_type)
                 
-                if strategy == "drape":
-                    color = current_garment_data.get("primary_color", "red")
-                    pattern = current_garment_data.get("pattern", "embroidered")
-                    drape_prompt = (
-                        f"A professional studio fashion photography, full body shot of a beautiful "
-                        f"female model, Indian ethnicity, wearing a {color} {pattern} saree, "
-                        f"traditional pallu drape over left shoulder, solid neutral studio grey background, "
-                        f"photorealistic, sharp focus, e-commerce fashion photo, high resolution"
-                    )
-                    print(f"Saree Drape Strategy: Generating matching saree base using FLUX: {drape_prompt}")
-                    draped_avatar_b64 = await generate_tryon_image(
-                        positive_prompt=drape_prompt,
-                        negative_prompt="deformed, bad anatomy, disfigured, low quality",
+                if strategy in ("drape", "layered"):
+                    # Use FLUX directly to generate a photorealistic try-on image of the full outfit
+                    positive_prompt, negative_prompt = build_tryon_prompt(current_garment_data, persona, camera_angle=angle)
+                    print(f"Ethnic Wear FLUX Direct Strategy ({strategy}): positive_prompt={positive_prompt}")
+                    flux_img_b64 = await generate_tryon_image(
+                        positive_prompt=positive_prompt,
+                        negative_prompt=negative_prompt,
                         camera_angle=angle,
-                        garment_bytes=b"",
-                        person_bytes=None
+                        garment_bytes=current_garment_bytes,
+                        person_bytes=person_bytes,
                     )
-                    import base64
-                    draped_avatar_bytes = base64.b64decode(draped_avatar_b64)
-                    
-                    print("Saree Drape Strategy: Refining texture with IDM-VTON...")
-                    vton_img_b64 = await generate_tryon_vton(
-                        avatar_bytes=draped_avatar_bytes,
-                        garment_bytes=normalized_garment_bytes,
-                        garment_description=g_desc
-                    )
-                    images.append(vton_img_b64)
-                    vton_success = True
-                    
-                elif strategy == "layered":
-                    color = current_garment_data.get("primary_color", "")
-                    pattern = current_garment_data.get("pattern", "")
-                    outfit_prompt = (
-                        f"Photorealistic Indian model wearing a {color} {pattern} {g_type}, "
-                        f"full outfit with dupatta, matching set, studio lighting, e-commerce photo"
-                    )
-                    print(f"Layered Strategy: Calling IDM-VTON with outfit prompt: {outfit_prompt}")
-                    vton_img_b64 = await generate_tryon_vton(
-                        avatar_bytes=avatar_bytes,
-                        garment_bytes=normalized_garment_bytes,
-                        garment_description=g_desc,
-                        extra_prompt=outfit_prompt
-                    )
-                    images.append(vton_img_b64)
+                    images.append(flux_img_b64)
                     vton_success = True
                     
                 else:  # standard
