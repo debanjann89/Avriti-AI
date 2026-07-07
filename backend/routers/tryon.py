@@ -11,8 +11,35 @@ from sqlalchemy.orm import Session
 from database import get_db
 import models
 
-from services.gemini_service import analyze_garment, build_tryon_prompt
+from services.gemini_service import analyze_garment, build_tryon_prompt, detect_photo_angle
 from services.hf_service import generate_tryon_image, generate_tryon_variants, generate_tryon_vton
+
+MODEL_ANGLE_MAP = {
+    "women": {
+        "front_straight":  "static/models/women_front_straight.jpg",
+        "front_3quarter":  "static/models/women_front_3quarter.jpg",
+        "full_length":     "static/models/women_full_length.jpg",
+        "back_view":       "static/models/women_back.jpg",
+    },
+    "men": {
+        "front_straight":  "static/models/men_front_straight.jpg",
+        "front_3quarter":  "static/models/men_front_3quarter.jpg",
+        "full_length":     "static/models/men_full_length.jpg",
+        "back_view":       "static/models/men_back.jpg",
+    }
+}
+
+DRAPED_GARMENTS   = ["saree", "dupatta", "pallu"]
+LAYERED_GARMENTS  = ["lehenga", "salwar", "sharara", "anarkali", "churidar", "kameez", "kurta set"]
+
+def get_tryon_strategy(garment_type: str) -> str:
+    gt = (garment_type or "").lower()
+    if any(dg in gt for dg in DRAPED_GARMENTS):
+        return "drape"
+    elif any(lg in gt for lg in LAYERED_GARMENTS):
+        return "layered"
+    else:
+        return "standard"
 
 router = APIRouter()
 
@@ -126,7 +153,20 @@ async def generate_tryon(
     if person_image and person_image.content_type in ALLOWED_TYPES:
         person_bytes = await person_image.read()
 
-    # Step 1: Analyze front garment with Gemini Vision and category/subcategory/description hints
+    # Step 1: Detect photo angle using Gemini Vision
+    try:
+        angle_info = await detect_photo_angle(garment_bytes, garment_image.content_type)
+        print(f"Detected photo angle and pose recommendations: {angle_info}")
+    except Exception as e:
+        print(f"Angle detection failed: {e}")
+        angle_info = {
+            "photo_angle": "flat_lay",
+            "garment_visible_side": "front",
+            "recommended_model_pose": "front_straight",
+            "reason": "Fallback angle detection"
+        }
+
+    # Step 2: Analyze front garment with Gemini Vision and category/subcategory/description hints
     try:
         garment_data = await analyze_garment(
             garment_bytes, 
@@ -153,7 +193,7 @@ async def generate_tryon(
             print(f"Back garment analysis failed, falling back to front: {e}")
             garment_back_data = garment_data
 
-    # Step 2 & 3: Loop over selected camera angles, generate custom prompt, and call generate_tryon_image
+    # Step 3 & 4: Loop over selected camera angles, generate custom prompt, and call VTON strategy
     persona = {
         "age_group": age_group,
         "ethnicity": ethnicity,
@@ -181,54 +221,91 @@ async def generate_tryon(
                 if person_bytes:
                     avatar_bytes = person_bytes
                 else:
-                    # Generate a neutral model avatar with FLUX
-                    gender_str = gender.lower()
-                    eth_str = ethnicity or "South Asian"
-                    
-                    if is_back:
-                        avatar_prompt = (
-                            f"A professional studio fashion photography, full body shot of a beautiful "
-                            f"{gender_str} model from behind, back view, standing straight, neutral pose, "
-                            f"wearing simple tight white crop top and blue jeans, solid neutral studio grey background, "
-                            f"sharp focus, RAW photo" if gender_str in ("female", "woman") else
-                            f"A professional studio fashion photography, full body shot of a handsome "
-                            f"{gender_str} model from behind, back view, standing straight, neutral pose, "
-                            f"wearing simple tight white t-shirt and blue jeans, solid neutral studio grey background, "
-                            f"sharp focus, RAW photo"
-                        )
+                    # Select from curated base model photos
+                    angle_lower = angle.lower()
+                    if "back" in angle_lower:
+                        pose_name = "back_view"
+                    elif "three" in angle_lower or "3/4" in angle_lower:
+                        pose_name = "front_3quarter"
+                    elif "wide" in angle_lower or "full" in angle_lower:
+                        pose_name = "full_length"
                     else:
-                        avatar_prompt = (
-                            f"A professional studio fashion photography, full body shot of a beautiful "
-                            f"{gender_str} model, {eth_str}, facing front, standing straight, neutral pose, "
-                            f"wearing simple tight white crop top and blue jeans, solid neutral studio grey background, "
-                            f"sharp focus, RAW photo" if gender_str in ("female", "woman") else
-                            f"A professional studio fashion photography, full body shot of a handsome "
-                            f"{gender_str} model, {eth_str}, facing front, standing straight, neutral pose, "
-                            f"wearing simple tight white t-shirt and blue jeans, solid neutral studio grey background, "
-                            f"sharp focus, RAW photo"
-                        )
+                        pose_name = angle_info.get("recommended_model_pose", "front_straight")
+
+                    gender_val = current_garment_data.get("gender", gender or "women").lower()
+                    gender_key = "men" if gender_val in ("men", "man", "male") else "women"
+                    model_path = MODEL_ANGLE_MAP.get(gender_key, MODEL_ANGLE_MAP["women"]).get(pose_name, MODEL_ANGLE_MAP[gender_key]["front_straight"])
                     
-                    print(f"Generating neutral avatar with prompt: {avatar_prompt}")
-                    avatar_b64 = await generate_tryon_image(
-                        positive_prompt=avatar_prompt,
+                    print(f"Loading local base model photo: {model_path}")
+                    import os
+                    if os.path.exists(model_path):
+                         with open(model_path, "rb") as f:
+                             avatar_bytes = f.read()
+                    else:
+                         print(f"Warning: {model_path} not found! Empty avatar bytes.")
+                         avatar_bytes = b""
+                
+                # 3. Call IDM-VTON based on strategy
+                g_desc = current_garment_data.get("description", garment_description or "clothing item")
+                g_type = current_garment_data.get("garment_type", garment_category or "")
+                strategy = get_tryon_strategy(g_type)
+                
+                if strategy == "drape":
+                    color = current_garment_data.get("primary_color", "red")
+                    pattern = current_garment_data.get("pattern", "embroidered")
+                    drape_prompt = (
+                        f"A professional studio fashion photography, full body shot of a beautiful "
+                        f"female model, Indian ethnicity, wearing a {color} {pattern} saree, "
+                        f"traditional pallu drape over left shoulder, solid neutral studio grey background, "
+                        f"photorealistic, sharp focus, e-commerce fashion photo, high resolution"
+                    )
+                    print(f"Saree Drape Strategy: Generating matching saree base using FLUX: {drape_prompt}")
+                    draped_avatar_b64 = await generate_tryon_image(
+                        positive_prompt=drape_prompt,
                         negative_prompt="deformed, bad anatomy, disfigured, low quality",
                         camera_angle=angle,
-                        garment_bytes=b"", # empty garment to generate base model avatar
+                        garment_bytes=b"",
                         person_bytes=None
                     )
                     import base64
-                    avatar_bytes = base64.b64decode(avatar_b64)
+                    draped_avatar_bytes = base64.b64decode(draped_avatar_b64)
+                    
+                    print("Saree Drape Strategy: Refining texture with IDM-VTON...")
+                    vton_img_b64 = await generate_tryon_vton(
+                        avatar_bytes=draped_avatar_bytes,
+                        garment_bytes=normalized_garment_bytes,
+                        garment_description=g_desc
+                    )
+                    images.append(vton_img_b64)
+                    vton_success = True
+                    
+                elif strategy == "layered":
+                    color = current_garment_data.get("primary_color", "")
+                    pattern = current_garment_data.get("pattern", "")
+                    outfit_prompt = (
+                        f"Photorealistic Indian model wearing a {color} {pattern} {g_type}, "
+                        f"full outfit with dupatta, matching set, studio lighting, e-commerce photo"
+                    )
+                    print(f"Layered Strategy: Calling IDM-VTON with outfit prompt: {outfit_prompt}")
+                    vton_img_b64 = await generate_tryon_vton(
+                        avatar_bytes=avatar_bytes,
+                        garment_bytes=normalized_garment_bytes,
+                        garment_description=g_desc,
+                        extra_prompt=outfit_prompt
+                    )
+                    images.append(vton_img_b64)
+                    vton_success = True
+                    
+                else:  # standard
+                    print("Standard Strategy: Calling IDM-VTON direct...")
+                    vton_img_b64 = await generate_tryon_vton(
+                        avatar_bytes=avatar_bytes,
+                        garment_bytes=normalized_garment_bytes,
+                        garment_description=g_desc
+                    )
+                    images.append(vton_img_b64)
+                    vton_success = True
                 
-                # 3. Call IDM-VTON space
-                g_desc = current_garment_data.get("description", garment_description or "clothing item")
-                print(f"Calling remote IDM-VTON Space for garment: {g_desc}...")
-                vton_img_b64 = await generate_tryon_vton(
-                    avatar_bytes=avatar_bytes,
-                    garment_bytes=normalized_garment_bytes,
-                    garment_description=g_desc
-                )
-                images.append(vton_img_b64)
-                vton_success = True
                 print("VTON try-on generation successful!")
                 
             except Exception as e:

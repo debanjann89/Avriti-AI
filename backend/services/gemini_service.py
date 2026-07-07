@@ -14,6 +14,7 @@ Analyze this garment image and return ONLY a valid JSON object (no markdown, no 
 
 {
   "garment_type": "specific item e.g. anarkali kurta, shirt, blazer, saree, wrap dress",
+  "gender": "women | men | unisex",
   "primary_color": "precise color e.g. deep burgundy, ivory, cobalt blue",
   "secondary_color": "e.g. gold, ecru, charcoal (or null if none)",
   "pattern": "e.g. solid, floral, paisley, geometric, block print, embroidered, striped",
@@ -23,6 +24,7 @@ Analyze this garment image and return ONLY a valid JSON object (no markdown, no 
   "silhouette": "e.g. A-line, fitted, flowy, straight, empire waist, bodycon",
   "hem_length": "e.g. mini, knee length, midi, maxi, ankle length",
   "style": "e.g. casual, ethnic, formal, fusion, bohemian, streetwear, couture",
+  "ethnic_style": "western | indo-western | traditional | fusion",
   "occasion": "e.g. festive, office, wedding, daily wear, cocktail, beach",
   "key_details": "precise styling details e.g. 'intricate zari embroidery on hem, side slit, self-fabric belt'"
 }
@@ -160,8 +162,16 @@ async def analyze_garment(
         elif "sleeveless" in desc_lower:
             sleeve_type = "sleeveless"
 
+        # Infer gender and ethnic style
+        gender_val = "women"
+        if "man" in desc_lower or "men" in desc_lower or "boy" in desc_lower or garment_type in ["sherwani", "t-shirt", "shirt"]:
+            gender_val = "men"
+            
+        ethnic_style_val = "traditional" if (garment_type in ["saree", "lehenga", "kurta", "sherwani", "kurti"]) else "western"
+
         return {
             "garment_type": garment_type,
+            "gender": gender_val,
             "primary_color": primary_color,
             "secondary_color": None,
             "pattern": "graphic print" if (desc_lower and "graphic" in desc_lower or "print" in desc_lower) else "solid",
@@ -171,6 +181,7 @@ async def analyze_garment(
             "silhouette": "relaxed fit",
             "hem_length": "standard length",
             "style": "casual" if (garment_type in ["t-shirt", "shirt", "polo shirt", "jacket"]) else "ethnic",
+            "ethnic_style": ethnic_style_val,
             "occasion": "daily wear",
             "key_details": description
         }
@@ -430,4 +441,52 @@ def extract_product_from_html(html_text: str) -> dict:
             "craft_technique": "Hand Block Print",
             "wash_care": "Dry Clean Recommended",
             "country_of_origin": "India"
+        }
+
+
+class GarmentAngleResult(BaseModel):
+    photo_angle: str
+    garment_visible_side: str
+    recommended_model_pose: str
+    reason: str
+
+
+async def detect_photo_angle(
+    image_bytes: bytes,
+    mime_type: str = "image/jpeg"
+) -> dict:
+    """
+    Use Gemini Vision to detect what angle the garment is photographed at.
+    Returns the best matching e-commerce pose to use.
+    """
+    prompt = """
+    Look at this clothing photo. Identify:
+    1. photo_angle: flat_lay | hanging | front_worn | side_worn | back_worn | folded
+    2. garment_visible_side: front | back | side | unclear
+    3. recommended_model_pose: front_straight | front_3quarter | full_length | back_view
+    4. reason: one sentence explaining why
+    
+    Answer ONLY with a valid JSON object matching the requested schema. No explanation, just the JSON.
+    """
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=[
+                types.Part.from_bytes(data=image_bytes, mime_type=mime_type),
+                prompt
+            ],
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=GarmentAngleResult,
+            )
+        )
+        raw = response.text.strip()
+        return json.loads(raw)
+    except Exception as e:
+        print(f"WARNING: Gemini angle detection failed: {e}. Using fallback straight angle.")
+        return {
+            "photo_angle": "flat_lay",
+            "garment_visible_side": "front",
+            "recommended_model_pose": "front_straight",
+            "reason": f"Fallback due to exception: {e}"
         }

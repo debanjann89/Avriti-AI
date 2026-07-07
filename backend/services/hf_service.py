@@ -117,6 +117,8 @@ async def generate_tryon_vton(
     avatar_bytes: bytes,
     garment_bytes: bytes,
     garment_description: str,
+    extra_prompt: str = None,
+    denoise_steps: int = 30,
 ) -> str:
     """
     Calls yisol/IDM-VTON Gradio API via gradio_client to perform real virtual try-on.
@@ -128,6 +130,19 @@ async def generate_tryon_vton(
     import asyncio
     from gradio_client import Client, handle_file
     
+    # Photorealism Prompts
+    PHOTOREALISM_POSITIVE_PROMPT = (
+        "photorealistic, professional fashion photography, studio lighting, "
+        "sharp focus, high resolution, real skin texture, natural pose, "
+        "e-commerce product photo, white studio background"
+    )
+
+    # Combine description and prompts
+    full_des = garment_description or "clothing item"
+    if extra_prompt:
+        full_des = f"{full_des}. {extra_prompt}"
+    full_des = f"{full_des}. {PHOTOREALISM_POSITIVE_PROMPT}"
+
     # Write bytes to temporary files for gradio_client
     temp_dir = tempfile.mkdtemp()
     avatar_path = os.path.join(temp_dir, "avatar.png")
@@ -149,10 +164,10 @@ async def generate_tryon_vton(
                     "composite": None
                 },
                 garm_img=handle_file(garment_path),
-                garment_des=garment_description or "clothing item",
+                garment_des=full_des,
                 is_checked=True,
                 is_checked_crop=False,
-                denoise_steps=30,
+                denoise_steps=denoise_steps,
                 seed=42,
                 api_name="/tryon"
             )
