@@ -114,6 +114,97 @@ def remove_bg_and_normalize_safe(image_bytes: bytes) -> bytes:
         print(f"Garment normalization failed: {e}")
         return image_bytes
 
+async def tryon_layered_hybrid(
+    avatar_bytes: bytes,
+    garment_bytes: bytes,
+    g_desc: str,
+) -> str:
+    """
+    Splits a layered garment (like a Lehenga) into blouse and skirt.
+    Warps the blouse onto the upper body via IDM-VTON, and composites
+    the skirt onto the lower body via Pillow, preserving the full outfit!
+    """
+    from PIL import Image
+    import io
+    import base64
+    from rembg import remove
+    from services.hf_service import generate_tryon_vton
+
+    # 1. Load garment and split vertically
+    garment = Image.open(io.BytesIO(garment_bytes))
+    w, h = garment.size
+    
+    left_half = garment.crop((0, 0, int(w * 0.48), h))
+    right_half = garment.crop((int(w * 0.48), 0, w, h))
+    
+    # Remove background for both halves
+    left_nobg = remove(left_half)
+    right_nobg = remove(right_half)
+    
+    left_bbox = left_nobg.getbbox()
+    right_bbox = right_nobg.getbbox()
+    
+    left_cropped = left_nobg.crop(left_bbox) if left_bbox else left_nobg
+    right_cropped = right_nobg.crop(right_bbox) if right_bbox else right_nobg
+    
+    # Count alpha pixels to identify blouse and skirt
+    left_alpha = sum(1 for p in left_cropped.convert("RGBA").getdata() if p[3] > 10)
+    right_alpha = sum(1 for p in right_cropped.convert("RGBA").getdata() if p[3] > 10)
+    
+    if left_alpha > right_alpha:
+        skirt = left_cropped
+        blouse = right_cropped
+    else:
+        skirt = right_cropped
+        blouse = left_cropped
+        
+    # 2. Normalize blouse to 768x1024 canvas for IDM-VTON
+    canvas = Image.new("RGBA", (768, 1024), (0, 0, 0, 0))
+    bw, bh = blouse.size
+    scale_b = min(500 / bw, 400 / bh)
+    new_bw = int(bw * scale_b)
+    new_bh = int(bh * scale_b)
+    blouse_resized = blouse.resize((new_bw, new_bh), Image.Resampling.LANCZOS)
+    canvas.paste(blouse_resized, ((768 - new_bw) // 2, 180), blouse_resized)
+    
+    # Save normalized blouse to temporary bytes
+    blouse_buf = io.BytesIO()
+    canvas.save(blouse_buf, format="PNG")
+    blouse_bytes = blouse_buf.getvalue()
+    
+    # 3. Call IDM-VTON for the blouse warp
+    print("Hybrid Try-On: Warping blouse...")
+    vton_blouse_b64 = await generate_tryon_vton(
+        avatar_bytes=avatar_bytes,
+        garment_bytes=blouse_bytes,
+        garment_description=f"blouse, {g_desc}"
+    )
+    
+    # 4. Composite the skirt onto the warped avatar
+    warped_avatar = Image.open(io.BytesIO(base64.b64decode(vton_blouse_b64))).convert("RGBA")
+    
+    # Resize skirt to lower body dimensions
+    target_h = 520
+    sw, sh = skirt.size
+    scale_s = target_h / sh
+    target_w = int(sw * scale_s)
+    if target_w > 520:
+        target_w = 520
+        target_h = int(sh * (520 / sw))
+        
+    skirt_resized = skirt.resize((target_w, target_h), Image.Resampling.LANCZOS)
+    
+    # Paste skirt starting slightly higher (overlap waistline) at y=435
+    offset_x = (768 - target_w) // 2
+    offset_y = 435
+    warped_avatar.paste(skirt_resized, (offset_x, offset_y), skirt_resized)
+    
+    # Return as base64 string
+    out_buf = io.BytesIO()
+    warped_avatar.convert("RGB").save(out_buf, format="JPEG")
+    return base64.b64encode(out_buf.getvalue()).decode("utf-8")
+
+
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
 @router.post("/generate")
@@ -250,15 +341,29 @@ async def generate_tryon(
                 g_type = current_garment_data.get("garment_type", garment_category or "")
                 strategy = get_tryon_strategy(g_type)
                 
-                # Direct VTON warping for all garments to preserve exact garment texture/look
-                print(f"Calling IDM-VTON direct for garment warp: {g_desc}...")
-                vton_img_b64 = await generate_tryon_vton(
-                    avatar_bytes=avatar_bytes,
-                    garment_bytes=normalized_garment_bytes,
-                    garment_description=g_desc
-                )
-                images.append(vton_img_b64)
-                vton_success = True
+                if strategy in ("drape", "layered"):
+                    try:
+                        print(f"Calling Hybrid Lehenga/Saree warp and composite pipeline for {g_type}...")
+                        vton_img_b64 = await tryon_layered_hybrid(
+                            avatar_bytes=avatar_bytes,
+                            garment_bytes=current_garment_bytes,
+                            g_desc=g_desc
+                        )
+                        images.append(vton_img_b64)
+                        vton_success = True
+                    except Exception as e_hybrid:
+                        print(f"Hybrid Try-On failed: {e_hybrid}. Falling back to standard IDM-VTON.")
+                        
+                if not vton_success:
+                    # Direct VTON warping for all garments to preserve exact garment texture/look
+                    print(f"Calling IDM-VTON direct for garment warp: {g_desc}...")
+                    vton_img_b64 = await generate_tryon_vton(
+                        avatar_bytes=avatar_bytes,
+                        garment_bytes=normalized_garment_bytes,
+                        garment_description=g_desc
+                    )
+                    images.append(vton_img_b64)
+                    vton_success = True
                 
                 print("VTON try-on generation successful!")
                 
