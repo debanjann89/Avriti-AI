@@ -295,6 +295,7 @@ async def generate_tryon(
     
     images = []
     last_positive_prompt = ""
+    used_model = "IDM-VTON"
     
     try:
         for angle in angles_list:
@@ -368,21 +369,13 @@ async def generate_tryon(
                 print("VTON try-on generation successful!")
                 
             except Exception as e:
-                print(f"VTON pipeline failed or timed out: {e}. Falling back to FLUX generation.")
+                print(f"VTON pipeline failed or timed out: {e}. Falling back to clean base model for Exact overlay.")
+                used_model = "Exact-Fit-Fallback"
                 
             if not vton_success:
-                # Build custom hyperrealistic prompt tailored to this specific camera angle / pose
-                positive_prompt, negative_prompt = build_tryon_prompt(current_garment_data, persona, camera_angle=angle)
-                last_positive_prompt = positive_prompt # Save for returning metadata
-                
-                # Generate the image for this specific view
-                img_b64 = await generate_tryon_image(
-                    positive_prompt=positive_prompt,
-                    negative_prompt=negative_prompt,
-                    camera_angle=angle,
-                    garment_bytes=current_garment_bytes,
-                    person_bytes=person_bytes,
-                )
+                # Fallback to returning base model photo directly for local exact fit overlay
+                import base64
+                img_b64 = base64.b64encode(avatar_bytes).decode("utf-8")
                 images.append(img_b64)
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Image generation failed: {e}")
@@ -391,7 +384,7 @@ async def generate_tryon(
         "garment_analysis": garment_data,
         "positive_prompt": last_positive_prompt,
         "images": images,
-        "model": "Stable Diffusion / FLUX", 
+        "model": used_model, 
         "fitting_mode": "person_reference" if person_bytes else "garment_reference",
     }
 

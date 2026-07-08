@@ -272,7 +272,8 @@ function ResultPanel({
   removedBgFront,
   removedBgBack,
   bgRemovingFront,
-  bgRemovingBack
+  bgRemovingBack,
+  model
 }) {
   const [selected, setSelected] = useState(0);
   const [publishName, setPublishName] = useState("");
@@ -284,6 +285,15 @@ function ResultPanel({
   const [garmentY, setGarmentY] = useState(60);
   const [garmentX, setGarmentX] = useState(0);
   const [garmentRotate, setGarmentRotate] = useState(0);
+
+  // Auto-switch to exact overlay mode if VTON fails and returns the base model fallback
+  useEffect(() => {
+    if (model === "Exact-Fit-Fallback") {
+      setTryonMode("exact");
+    } else {
+      setTryonMode("creative");
+    }
+  }, [model]);
 
   if (!images?.length) return null;
 
@@ -1519,6 +1529,7 @@ export default function TryOnStudio() {
                   removedBgBack={removedBgBack}
                   bgRemovingFront={bgRemovingFront}
                   bgRemovingBack={bgRemovingBack}
+                  model={result.model}
                 />
                 <details className="group">
                   <summary className="text-xs text-gray-400 cursor-pointer hover:text-gray-600 flex items-center gap-1.5">
