@@ -185,18 +185,39 @@ async def generate_tryon_vton(
             
         def _run_vton():
             import os
-            # Backup and temporarily clear HF_TOKEN to prevent gradio-client from loading it
-            hf_token_val = os.environ.get("HF_TOKEN")
-            if "HF_TOKEN" in os.environ:
-                del os.environ["HF_TOKEN"]
-                
-            spaces = ["debanjan909/Aavriti-VTON", "yisol/IDM-VTON", "hysts-duplicates/IDM-VTON"]
-            last_err = None
+            from PIL import Image
+            
+            # Flatten inputs to clean RGB JPEGs to prevent server-side RGBA/JPEG serialization issues
             try:
-                for space_name in spaces:
-                    try:
-                        print(f"Connecting to VTON Space: {space_name}...")
-                        client = Client(space_name)
+                with Image.open(avatar_path) as img:
+                    img.convert("RGB").save(avatar_path, "JPEG")
+                with Image.open(garment_path) as img:
+                    img.convert("RGB").save(garment_path, "JPEG")
+            except Exception as e_conv:
+                print(f"Image conversion warning: {e_conv}")
+
+            # Always load and pass HF_TOKEN to bypass the 429 anonymous rate limit blocks
+            hf_token_val = os.environ.get("HF_TOKEN")
+                
+            # Unified Multi-engine VTON fallback list
+            spaces = [
+                {"name": "debanjan909/Aavriti-VTON", "type": "idm"},
+                {"name": "yisol/IDM-VTON", "type": "idm"},
+                {"name": "hysts-duplicates/IDM-VTON", "type": "idm"},
+                {"name": "zhengchong/CatVTON", "type": "cat"},
+                {"name": "multimodalart/CatVTON-zerogpu", "type": "cat"},
+                {"name": "zhoujing204/Kolors-Virtual-Try-On", "type": "kolors"}
+            ]
+            
+            last_err = None
+            for sp in spaces:
+                space_name = sp["name"]
+                space_type = sp["type"]
+                try:
+                    print(f"Connecting to VTON Space: {space_name} (Type: {space_type})...")
+                    client = Client(space_name, token=hf_token_val)
+                    
+                    if space_type == "idm":
                         result = client.predict(
                             dict={
                                 "background": handle_file(avatar_path),
@@ -211,20 +232,65 @@ async def generate_tryon_vton(
                             seed=42,
                             api_name="/tryon"
                         )
-                        print(f"Successfully processed try-on using Space: {space_name}!")
-                        return result
-                    except Exception as e:
-                        print(f"VTON Space {space_name} failed: {e}")
-                        last_err = e
-            finally:
-                if hf_token_val:
-                    os.environ["HF_TOKEN"] = hf_token_val
-            # If all spaces fail, raise the last exception
+                        output_path = result[0]
+                    elif space_type == "cat":
+                        # Step 1: prep person
+                        person_image_dict = client.predict(
+                            image_path=handle_file(avatar_path),
+                            api_name="/person_example_fn"
+                        )
+                        # Wrap for EditorData schema
+                        wrapped_person = {
+                            "background": {
+                                "path": person_image_dict["background"],
+                                "meta": {"_type": "gradio.FileData"}
+                            } if person_image_dict.get("background") else None,
+                            "layers": [
+                                {
+                                    "path": layer,
+                                    "meta": {"_type": "gradio.FileData"}
+                                } for layer in person_image_dict.get("layers", [])
+                            ],
+                            "composite": {
+                                "path": person_image_dict["composite"],
+                                "meta": {"_type": "gradio.FileData"}
+                            } if person_image_dict.get("composite") else None
+                        }
+                        wrapped_garment = {
+                            "path": garment_path,
+                            "meta": {"_type": "gradio.FileData"}
+                        }
+                        result = client.predict(
+                            person_image=wrapped_person,
+                            cloth_image=wrapped_garment,
+                            cloth_type="upper",
+                            num_inference_steps=20,
+                            guidance_scale=2.5,
+                            seed=42,
+                            show_type="result only",
+                            api_name="/submit_function"
+                        )
+                        output_path = result["path"]
+                    elif space_type == "kolors":
+                        result = client.predict(
+                            person_img=handle_file(avatar_path),
+                            garment_img=handle_file(garment_path),
+                            seed=42,
+                            randomize_seed=True,
+                            api_name="/tryon"
+                        )
+                        output_path = result[0]
+                        
+                    print(f"Successfully processed try-on using Space: {space_name}!")
+                    return output_path
+                except Exception as e:
+                    print(f"VTON Space {space_name} failed: {e}")
+                    last_err = e
+                    
             raise last_err
             
         # Run synchronous predict call in an executor thread
-        result = await asyncio.to_thread(_run_vton)
-        output_image_path = result[0] # output is the first element in returned tuple
+        output_image_path = await asyncio.to_thread(_run_vton)
         
         # Read resulting image
         with open(output_image_path, "rb") as f:
