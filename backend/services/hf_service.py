@@ -27,17 +27,13 @@ BROWSER_HEADERS = {
 def _patched_get(self, url, **kwargs):
     if "headers" not in kwargs or kwargs["headers"] is None:
         kwargs["headers"] = {}
-    for k, v in BROWSER_HEADERS.items():
-        if k not in kwargs["headers"]:
-            kwargs["headers"][k] = v
+    kwargs["headers"].update(BROWSER_HEADERS)
     return _orig_session_get(self, url, **kwargs)
 
 def _patched_post(self, url, **kwargs):
     if "headers" not in kwargs or kwargs["headers"] is None:
         kwargs["headers"] = {}
-    for k, v in BROWSER_HEADERS.items():
-        if k not in kwargs["headers"]:
-            kwargs["headers"][k] = v
+    kwargs["headers"].update(BROWSER_HEADERS)
     return _orig_session_post(self, url, **kwargs)
 
 requests.Session.get = _patched_get
