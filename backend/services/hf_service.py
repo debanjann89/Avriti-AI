@@ -197,7 +197,13 @@ async def generate_tryon_vton(
                 print(f"Image conversion warning: {e_conv}")
 
             # Always load and pass HF_TOKEN to bypass the 429 anonymous rate limit blocks
+            # Load tokens list to support ZeroGPU quota rotation and bypass rate-limiting
             hf_token_val = os.environ.get("HF_TOKEN")
+            hf_tokens_str = os.environ.get("HF_TOKENS", "")
+            if hf_tokens_str:
+                tokens = [t.strip() for t in hf_tokens_str.split(",") if t.strip()]
+            else:
+                tokens = [hf_token_val] if hf_token_val else [None]
                 
             # Unified Multi-engine VTON fallback list
             spaces = [
@@ -213,80 +219,92 @@ async def generate_tryon_vton(
             for sp in spaces:
                 space_name = sp["name"]
                 space_type = sp["type"]
-                try:
-                    print(f"Connecting to VTON Space: {space_name} (Type: {space_type})...")
-                    client = Client(space_name, token=hf_token_val)
-                    
-                    if space_type == "idm":
-                        result = client.predict(
-                            dict={
-                                "background": handle_file(avatar_path),
-                                "layers": [],
-                                "composite": None
-                            },
-                            garm_img=handle_file(garment_path),
-                            garment_des=full_des,
-                            is_checked=True,
-                            is_checked_crop=False,
-                            denoise_steps=denoise_steps,
-                            seed=42,
-                            api_name="/tryon"
-                        )
-                        output_path = result[0]
-                    elif space_type == "cat":
-                        # Step 1: prep person
-                        person_image_dict = client.predict(
-                            image_path=handle_file(avatar_path),
-                            api_name="/person_example_fn"
-                        )
-                        # Wrap for EditorData schema
-                        wrapped_person = {
-                            "background": {
-                                "path": person_image_dict["background"],
-                                "meta": {"_type": "gradio.FileData"}
-                            } if person_image_dict.get("background") else None,
-                            "layers": [
-                                {
-                                    "path": layer,
-                                    "meta": {"_type": "gradio.FileData"}
-                                } for layer in person_image_dict.get("layers", [])
-                            ],
-                            "composite": {
-                                "path": person_image_dict["composite"],
-                                "meta": {"_type": "gradio.FileData"}
-                            } if person_image_dict.get("composite") else None
-                        }
-                        wrapped_garment = {
-                            "path": garment_path,
-                            "meta": {"_type": "gradio.FileData"}
-                        }
-                        result = client.predict(
-                            person_image=wrapped_person,
-                            cloth_image=wrapped_garment,
-                            cloth_type="upper",
-                            num_inference_steps=20,
-                            guidance_scale=2.5,
-                            seed=42,
-                            show_type="result only",
-                            api_name="/submit_function"
-                        )
-                        output_path = result["path"]
-                    elif space_type == "kolors":
-                        result = client.predict(
-                            person_img=handle_file(avatar_path),
-                            garment_img=handle_file(garment_path),
-                            seed=42,
-                            randomize_seed=True,
-                            api_name="/tryon"
-                        )
-                        output_path = result[0]
+                
+                # Try all available tokens for this space before moving to fallback space
+                for token_item in tokens:
+                    try:
+                        token_display = token_item[:8] + "..." if token_item else "None"
+                        print(f"Connecting to VTON Space: {space_name} (Type: {space_type}, Token: {token_display})...")
+                        client = Client(space_name, token=token_item)
                         
-                    print(f"Successfully processed try-on using Space: {space_name}!")
-                    return output_path
-                except Exception as e:
-                    print(f"VTON Space {space_name} failed: {e}")
-                    last_err = e
-                    
+                        if space_type == "idm":
+                            result = client.predict(
+                                dict={
+                                    "background": handle_file(avatar_path),
+                                    "layers": [],
+                                    "composite": None
+                                },
+                                garm_img=handle_file(garment_path),
+                                garment_des=full_des,
+                                is_checked=True,
+                                is_checked_crop=False,
+                                denoise_steps=denoise_steps,
+                                seed=42,
+                                api_name="/tryon"
+                            )
+                            output_path = result[0]
+                        elif space_type == "cat":
+                            # Step 1: prep person
+                            person_image_dict = client.predict(
+                                image_path=handle_file(avatar_path),
+                                api_name="/person_example_fn"
+                            )
+                            # Wrap for EditorData schema
+                            wrapped_person = {
+                                "background": {
+                                    "path": person_image_dict["background"],
+                                    "meta": {"_type": "gradio.FileData"}
+                                } if person_image_dict.get("background") else None,
+                                "layers": [
+                                    {
+                                        "path": layer,
+                                        "meta": {"_type": "gradio.FileData"}
+                                    } for layer in person_image_dict.get("layers", [])
+                                ],
+                                "composite": {
+                                    "path": person_image_dict["composite"],
+                                    "meta": {"_type": "gradio.FileData"}
+                                } if person_image_dict.get("composite") else None
+                            }
+                            wrapped_garment = {
+                                "path": garment_path,
+                                "meta": {"_type": "gradio.FileData"}
+                            }
+                            result = client.predict(
+                                person_image=wrapped_person,
+                                cloth_image=wrapped_garment,
+                                cloth_type="upper",
+                                num_inference_steps=20,
+                                guidance_scale=2.5,
+                                seed=42,
+                                show_type="result only",
+                                api_name="/submit_function"
+                            )
+                            output_path = result["path"]
+                        elif space_type == "kolors":
+                            result = client.predict(
+                                person_img=handle_file(avatar_path),
+                                garment_img=handle_file(garment_path),
+                                seed=42,
+                                randomize_seed=True,
+                                api_name="/tryon"
+                            )
+                            output_path = result[0]
+                            
+                        print(f"Successfully processed try-on using Space: {space_name}!")
+                        return output_path
+                    except Exception as e:
+                        err_msg = str(e)
+                        print(f"VTON Space {space_name} failed with token {token_display}: {err_msg}")
+                        last_err = e
+                        # If the error is a rate limit or quota issue, proceed to rotate tokens
+                        if "quota" in err_msg.lower() or "limit" in err_msg.lower() or "too many requests" in err_msg.lower() or "busy" in err_msg.lower():
+                            print("Quota/Rate-limit hit. Rotating to next token...")
+                            continue
+                        else:
+                            # For other exceptions (like layout errors), skip to fallback space
+                            break
+                            
             raise last_err
             
         # Run synchronous predict call in an executor thread
