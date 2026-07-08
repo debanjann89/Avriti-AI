@@ -444,7 +444,8 @@ function ResultPanel({
                     width: "55%",
                     height: "auto",
                     transformOrigin: "center center",
-                    filter: "drop-shadow(0 8px 16px rgba(0,0,0,0.15))"
+                    filter: "drop-shadow(0 8px 16px rgba(0,0,0,0.15))",
+                    zIndex: 10
                   }}
                 />
               ) : (
