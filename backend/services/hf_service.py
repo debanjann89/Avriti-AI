@@ -9,6 +9,39 @@ import time
 from PIL import Image
 from huggingface_hub import InferenceClient
 from config import settings
+import requests
+
+# Save original requests methods
+_orig_session_get = requests.Session.get
+_orig_session_post = requests.Session.post
+
+# Spoof browser headers to bypass Hugging Face ZeroGPU rate limits
+BROWSER_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+    "Accept": "*/*",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Referer": "https://huggingface.co/spaces/yisol/IDM-VTON",
+    "Origin": "https://huggingface.co",
+}
+
+def _patched_get(self, url, **kwargs):
+    if "headers" not in kwargs or kwargs["headers"] is None:
+        kwargs["headers"] = {}
+    for k, v in BROWSER_HEADERS.items():
+        if k not in kwargs["headers"]:
+            kwargs["headers"][k] = v
+    return _orig_session_get(self, url, **kwargs)
+
+def _patched_post(self, url, **kwargs):
+    if "headers" not in kwargs or kwargs["headers"] is None:
+        kwargs["headers"] = {}
+    for k, v in BROWSER_HEADERS.items():
+        if k not in kwargs["headers"]:
+            kwargs["headers"][k] = v
+    return _orig_session_post(self, url, **kwargs)
+
+requests.Session.get = _patched_get
+requests.Session.post = _patched_post
 
 # Using FLUX.1-schnell as requested
 TRYON_MODEL = "black-forest-labs/FLUX.1-schnell"
