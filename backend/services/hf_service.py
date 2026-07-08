@@ -155,8 +155,8 @@ async def generate_tryon_vton(
             f.write(garment_bytes)
             
         def _run_vton():
-            # Connect to yisol/IDM-VTON Space on HF
-            client = Client("yisol/IDM-VTON")
+            # Connect to yisol/IDM-VTON Space on HF using the authenticated token
+            client = Client("yisol/IDM-VTON", hf_token=settings.HF_TOKEN)
             result = client.predict(
                 dict={
                     "background": handle_file(avatar_path),
