@@ -184,31 +184,41 @@ async def generate_tryon_vton(
             f.write(garment_bytes)
             
         def _run_vton():
+            import os
+            # Backup and temporarily clear HF_TOKEN to prevent gradio-client from loading it
+            hf_token_val = os.environ.get("HF_TOKEN")
+            if "HF_TOKEN" in os.environ:
+                del os.environ["HF_TOKEN"]
+                
             spaces = ["debanjan909/Aavriti-VTON", "yisol/IDM-VTON", "hysts-duplicates/IDM-VTON"]
             last_err = None
-            for space_name in spaces:
-                try:
-                    print(f"Connecting to VTON Space: {space_name}...")
-                    client = Client(space_name)
-                    result = client.predict(
-                        dict={
-                            "background": handle_file(avatar_path),
-                            "layers": [],
-                            "composite": None
-                        },
-                        garm_img=handle_file(garment_path),
-                        garment_des=full_des,
-                        is_checked=True,
-                        is_checked_crop=False,
-                        denoise_steps=denoise_steps,
-                        seed=42,
-                        api_name="/tryon"
-                    )
-                    print(f"Successfully processed try-on using Space: {space_name}!")
-                    return result
-                except Exception as e:
-                    print(f"VTON Space {space_name} failed: {e}")
-                    last_err = e
+            try:
+                for space_name in spaces:
+                    try:
+                        print(f"Connecting to VTON Space: {space_name}...")
+                        client = Client(space_name)
+                        result = client.predict(
+                            dict={
+                                "background": handle_file(avatar_path),
+                                "layers": [],
+                                "composite": None
+                            },
+                            garm_img=handle_file(garment_path),
+                            garment_des=full_des,
+                            is_checked=True,
+                            is_checked_crop=False,
+                            denoise_steps=denoise_steps,
+                            seed=42,
+                            api_name="/tryon"
+                        )
+                        print(f"Successfully processed try-on using Space: {space_name}!")
+                        return result
+                    except Exception as e:
+                        print(f"VTON Space {space_name} failed: {e}")
+                        last_err = e
+            finally:
+                if hf_token_val:
+                    os.environ["HF_TOKEN"] = hf_token_val
             # If all spaces fail, raise the last exception
             raise last_err
             
