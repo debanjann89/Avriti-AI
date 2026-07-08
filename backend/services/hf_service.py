@@ -184,7 +184,7 @@ async def generate_tryon_vton(
             f.write(garment_bytes)
             
         def _run_vton():
-            spaces = ["yisol/IDM-VTON", "hysts-duplicates/IDM-VTON"]
+            spaces = ["debanjan909/Aavriti-VTON", "yisol/IDM-VTON", "hysts-duplicates/IDM-VTON"]
             last_err = None
             for space_name in spaces:
                 try:
