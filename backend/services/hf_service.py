@@ -155,23 +155,33 @@ async def generate_tryon_vton(
             f.write(garment_bytes)
             
         def _run_vton():
-            # Connect to yisol/IDM-VTON Space on HF using the authenticated token
-            client = Client("yisol/IDM-VTON", token=settings.HF_TOKEN)
-            result = client.predict(
-                dict={
-                    "background": handle_file(avatar_path),
-                    "layers": [],
-                    "composite": None
-                },
-                garm_img=handle_file(garment_path),
-                garment_des=full_des,
-                is_checked=True,
-                is_checked_crop=False,
-                denoise_steps=denoise_steps,
-                seed=42,
-                api_name="/tryon"
-            )
-            return result
+            spaces = ["yisol/IDM-VTON", "hysts-duplicates/IDM-VTON"]
+            last_err = None
+            for space_name in spaces:
+                try:
+                    print(f"Connecting to VTON Space: {space_name}...")
+                    client = Client(space_name, token=settings.HF_TOKEN)
+                    result = client.predict(
+                        dict={
+                            "background": handle_file(avatar_path),
+                            "layers": [],
+                            "composite": None
+                        },
+                        garm_img=handle_file(garment_path),
+                        garment_des=full_des,
+                        is_checked=True,
+                        is_checked_crop=False,
+                        denoise_steps=denoise_steps,
+                        seed=42,
+                        api_name="/tryon"
+                    )
+                    print(f"Successfully processed try-on using Space: {space_name}!")
+                    return result
+                except Exception as e:
+                    print(f"VTON Space {space_name} failed: {e}")
+                    last_err = e
+            # If all spaces fail, raise the last exception
+            raise last_err
             
         # Run synchronous predict call in an executor thread
         result = await asyncio.to_thread(_run_vton)
