@@ -160,7 +160,7 @@ async def generate_tryon_vton(
             for space_name in spaces:
                 try:
                     print(f"Connecting to VTON Space: {space_name}...")
-                    client = Client(space_name, token=settings.HF_TOKEN)
+                    client = Client(space_name)
                     result = client.predict(
                         dict={
                             "background": handle_file(avatar_path),
