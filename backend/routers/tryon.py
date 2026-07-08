@@ -296,6 +296,7 @@ async def generate_tryon(
     images = []
     last_positive_prompt = ""
     used_model = "IDM-VTON"
+    vton_error = None
     
     try:
         for angle in angles_list:
@@ -369,8 +370,18 @@ async def generate_tryon(
                 print("VTON try-on generation successful!")
                 
             except Exception as e:
-                print(f"VTON pipeline failed or timed out: {e}. Falling back to clean base model for Exact overlay.")
+                err_msg = str(e)
+                print(f"VTON pipeline failed or timed out: {err_msg}. Falling back to clean base model for Exact overlay.")
                 used_model = "Exact-Fit-Fallback"
+                
+                # Parse rate limit and cooldown information
+                import re
+                if "ZeroGPU" in err_msg or "quota" in err_msg:
+                    match = re.search(r"Try again in (\d+:\d+:\d+|[^.\'\"]+)", err_msg)
+                    cooldown_str = match.group(1) if match else "a few hours"
+                    vton_error = f"Hugging Face ZeroGPU quota exceeded. Cooldown: Try again in {cooldown_str}."
+                else:
+                    vton_error = f"Virtual Try-On server is currently busy: {err_msg}"
                 
             if not vton_success:
                 # Fallback to returning base model photo directly for local exact fit overlay
@@ -386,6 +397,7 @@ async def generate_tryon(
         "images": images,
         "model": used_model, 
         "fitting_mode": "person_reference" if person_bytes else "garment_reference",
+        "vton_error": vton_error,
     }
 
 

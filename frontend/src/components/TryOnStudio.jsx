@@ -273,7 +273,8 @@ function ResultPanel({
   removedBgBack,
   bgRemovingFront,
   bgRemovingBack,
-  model
+  model,
+  vton_error
 }) {
   const [selected, setSelected] = useState(0);
   const [publishName, setPublishName] = useState("");
@@ -376,6 +377,20 @@ function ResultPanel({
 
   return (
     <div className="flex flex-col gap-4">
+      {vton_error && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-left shadow-sm flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <h4 className="text-xs font-bold text-amber-900">Hugging Face Server Rate-Limit Active</h4>
+            <p className="text-[11px] text-amber-700 leading-relaxed font-medium">
+              {vton_error}
+            </p>
+            <p className="text-[10px] text-amber-600 leading-normal">
+              To bypass the rate limit instantly, connect to a **VPN** or switch to your **mobile phone's hotspot**, then try again. In the meantime, the system has loaded the **Exact Product Fit** overlay mode below.
+            </p>
+          </div>
+        </div>
+      )}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <label className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
           Try-On Result
@@ -1531,6 +1546,7 @@ export default function TryOnStudio() {
                   bgRemovingFront={bgRemovingFront}
                   bgRemovingBack={bgRemovingBack}
                   model={result.model}
+                  vton_error={result.vton_error}
                 />
                 <details className="group">
                   <summary className="text-xs text-gray-400 cursor-pointer hover:text-gray-600 flex items-center gap-1.5">
