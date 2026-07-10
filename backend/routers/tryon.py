@@ -327,10 +327,33 @@ async def generate_tryon(
 
                     gender_val = current_garment_data.get("gender", gender or "women").lower()
                     gender_key = "men" if gender_val in ("men", "man", "male") else "women"
-                    model_path = MODEL_ANGLE_MAP.get(gender_key, MODEL_ANGLE_MAP["women"]).get(pose_name, MODEL_ANGLE_MAP[gender_key]["front_straight"])
                     
-                    print(f"Loading local base model photo: {model_path}")
+                    # Normalize body type size mapping (e.g. Average -> m, XS -> xs)
+                    bt_norm = (body_type or "m").lower().strip()
+                    if bt_norm == "average":
+                        bt_norm = "m"
+                        
                     import os
+                    # Build size-specific model path
+                    model_path = f"static/models/{gender_key}/{bt_norm}/{pose_name}.jpg"
+                    
+                    # Fallback chain:
+                    # 1. Specific size + pose: static/models/{gender}/{size}/{pose}.jpg
+                    # 2. Fallback to Medium size: static/models/{gender}/m/{pose}.jpg
+                    # 3. Fallback to legacy path: static/models/{gender}_{pose}.jpg
+                    if not os.path.exists(model_path):
+                        fallback_path = f"static/models/{gender_key}/m/{pose_name}.jpg"
+                        if os.path.exists(fallback_path):
+                            model_path = fallback_path
+                        else:
+                            legacy_filename = f"{gender_key}_back.jpg" if pose_name == "back_view" else f"{gender_key}_{pose_name}.jpg"
+                            legacy_path = f"static/models/{legacy_filename}"
+                            if os.path.exists(legacy_path):
+                                model_path = legacy_path
+                            else:
+                                model_path = "static/models/women_front_straight.jpg"
+                    
+                    print(f"Loading local base model photo: {model_path} (Size: {bt_norm.upper()})")
                     if os.path.exists(model_path):
                          with open(model_path, "rb") as f:
                              avatar_bytes = f.read()
