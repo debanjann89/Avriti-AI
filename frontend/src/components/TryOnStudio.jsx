@@ -704,9 +704,8 @@ export default function TryOnStudio() {
 
   // 🚨 NEW: Catalog Browser States
   const [wizardStep, setWizardStep] = useState(1);
-  const [activeCategory, setActiveCategory] = useState("Indian Ethnic Wear");
-  const [activeSubcategory, setActiveSubcategory] = useState("Saree");
-  const [selectedPreset, setSelectedPreset] = useState(null);
+  const [activeCategory, setActiveCategory] = useState("Upper Body");
+  const [activeSubcategory, setActiveSubcategory] = useState("Polo Shirt");
 
   // Sync Category tabs when Gender selection changes
   useEffect(() => {
@@ -716,7 +715,6 @@ export default function TryOnStudio() {
       setActiveCategory(firstCategory);
       const subcategories = Object.keys(genderPresets[firstCategory]);
       setActiveSubcategory(subcategories[0]);
-      setSelectedPreset(null);
     }
   }, [persona.gender]);
 
@@ -726,7 +724,6 @@ export default function TryOnStudio() {
     if (genderPresets && genderPresets[activeCategory]) {
       const subcategories = Object.keys(genderPresets[activeCategory]);
       setActiveSubcategory(subcategories[0]);
-      setSelectedPreset(null);
     }
   }, [activeCategory]);
  
@@ -805,7 +802,7 @@ export default function TryOnStudio() {
       const categoryHints = {
         category: activeCategory,
         subcategory: activeSubcategory,
-        description: selectedPreset ? `${selectedPreset.name}. ${selectedPreset.description}` : ""
+        description: ""
       };
       const data = await generateTryOn(fileToUpload, personFile, persona, categoryHints, garmentBackFile);
       timers.forEach(t => clearTimeout(t));
@@ -860,7 +857,7 @@ export default function TryOnStudio() {
         brand: "Aavriti AI",
         price: Number(price),
         image: `data:image/png;base64,${b64}`,
-        category: selectedPreset ? activeCategory : "Custom Try-On",
+        category: activeCategory || "Custom Try-On",
         description: "Custom generated virtual try-on product.",
         tryOnCompatible: true
       });
@@ -872,7 +869,7 @@ export default function TryOnStudio() {
     }
   };
 
-  const canGenerate = (!!garmentFile || !!selectedPreset) && !loading;
+  const canGenerate = !!garmentFile && !loading;
 
   const stepLabel = step === "analyzing"
     ? "✦ Analyzing garment with Gemini…"
@@ -1145,81 +1142,6 @@ export default function TryOnStudio() {
                   </div>
                 </div>
 
-                {/* 2. OPTIONAL STYLE PRESETS CATALOG (To guide prompting) */}
-                <div className="space-y-4 pt-5 border-t border-gray-100">
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">
-                      Clothing Style Reference <span className="text-gray-400 font-medium normal-case">(Optional - guides AI prompting)</span>
-                    </label>
-                    <div className="flex items-start gap-2 bg-pink-50/30 p-3 rounded-xl border border-pink-100/30">
-                      <Info className="w-4 h-4 text-pink-600 shrink-0 mt-0.5 stroke-[2]" />
-                      <span className="text-[10px] text-gray-500 leading-relaxed">
-                        Select a style reference below that matches your product. This guides Gemini to extract high-fidelity details (e.g. fabric weave, embroidery, collars, sleeves) for photorealism.
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Subcategory Scrollbar */}
-                  <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-pink-200">
-                    {genderPresets[activeCategory] &&
-                      Object.keys(genderPresets[activeCategory]).map((sub) => {
-                        const isSubActive = activeSubcategory === sub;
-                        return (
-                          <button
-                            type="button"
-                            key={sub}
-                            onClick={() => {
-                              setActiveSubcategory(sub);
-                              setSelectedPreset(null);
-                            }}
-                            className={`py-1 px-4 rounded-full text-xs font-bold whitespace-nowrap transition-all border tracking-wide ${
-                              isSubActive
-                                ? "bg-pink-600 text-white border-pink-600 shadow-sm"
-                                : "bg-white text-gray-500 border-gray-200 hover:border-pink-300 hover:text-pink-600"
-                            }`}
-                          >
-                            {sub}
-                          </button>
-                        );
-                      })}
-                  </div>
-
-                  {/* Presets Grid */}
-                  <div className="grid grid-cols-2 gap-3 max-h-[220px] overflow-y-auto pr-1">
-                    {genderPresets[activeCategory] &&
-                      genderPresets[activeCategory][activeSubcategory] &&
-                      genderPresets[activeCategory][activeSubcategory].map((item) => {
-                        const isSelected = selectedPreset?.id === item.id;
-                        return (
-                          <div
-                            key={item.id}
-                            onClick={() => {
-                              setSelectedPreset(item);
-                            }}
-                            className={`flex items-center gap-3.5 p-3 rounded-xl border transition-all hover:scale-[1.01] hover:bg-pink-50/20 ${
-                              isSelected
-                                ? "border-pink-500 bg-pink-50/10 shadow-sm"
-                                : "border-gray-100 bg-gray-50/30 hover:border-pink-300"
-                            }`}
-                          >
-                            {/* Premium Mini Circle Badge according to the name */}
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-all ${
-                              isSelected
-                                ? "bg-pink-100/60 border border-pink-300 shadow-inner"
-                                : "bg-gray-100 border border-gray-200"
-                            }`}>
-                              {getOptionIcon(item.name)}
-                            </div>
-                            <div className="flex flex-col min-w-0">
-                              <span className="text-xs font-extrabold text-gray-700 truncate leading-snug">{item.name}</span>
-                              <span className="text-[9px] text-gray-400 font-medium truncate mt-0.5">Prompt Guide Profile</span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                  </div>
-                </div>
-
                 {/* Continue button */}
                 <button
                   type="button"
@@ -1266,14 +1188,7 @@ export default function TryOnStudio() {
                         <span className="text-xs font-extrabold text-pink-600 truncate">
                           {garmentBackPreview ? "Front & Back view uploaded" : "Product photo uploaded"}
                         </span>
-                        {selectedPreset ? (
-                          <span className="text-[9px] text-gray-400 font-bold truncate flex items-center gap-1.5 mt-0.5">
-                            {getOptionIcon(selectedPreset.name)}
-                            <span>Style guide: {selectedPreset.name}</span>
-                          </span>
-                        ) : (
-                          <span className="text-[9px] text-gray-400 font-bold truncate mt-0.5">No style guide selected (using auto-prompt)</span>
-                        )}
+                        <span className="text-[9px] text-gray-400 font-bold truncate mt-0.5">Using automatic detail extraction</span>
                       </div>
                     </div>
                   </div>
