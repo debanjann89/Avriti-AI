@@ -1336,10 +1336,8 @@ export default function TryOnStudio() {
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {[
                       "Front View",
-                      "Three-Quarter",
-                      "Side Profile",
                       "Back View",
-                      "Wide Shot",
+                      "Side Profile",
                       "Close-Up (Detail)"
                     ].map((angle) => {
                       const isSelected = persona.angles.includes(angle);
