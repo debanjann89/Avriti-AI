@@ -1340,9 +1340,7 @@ export default function TryOnStudio() {
                       "Side Profile",
                       "Back View",
                       "Wide Shot",
-                      "Close-Up (Detail)",
-                      "Low Angle (Hero)",
-                      "Dynamic Walking"
+                      "Close-Up (Detail)"
                     ].map((angle) => {
                       const isSelected = persona.angles.includes(angle);
                       return (
