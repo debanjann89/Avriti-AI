@@ -24,7 +24,7 @@ export default function Footer() {
   return (
     <footer
       className="mt-0 font-sans relative overflow-hidden text-left"
-      style={{ background: 'linear-gradient(135deg, #5c1a3a 0%, #3d0f28 40%, #2a0a1c 100%)' }}
+      style={{ background: 'linear-gradient(135deg, #2D0B18 0%, #1A050E 50%, #100208 100%)' }}
     >
       {/* Ambient glows */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-pink-400/10 rounded-full filter blur-[100px] pointer-events-none -translate-y-1/2" />

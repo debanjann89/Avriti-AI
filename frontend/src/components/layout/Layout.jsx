@@ -10,7 +10,14 @@ export default function Layout() {
         <Outlet />
       </main>
       {/* Gradient bridge – fades page white into the deep footer */}
-      <div className="h-16 bg-gradient-to-b from-white to-[#5c1a3a] pointer-events-none" />
+      {/* Seamless fade into footer — multi-stop so the blend is invisible */}
+      <div
+        className="h-28 pointer-events-none"
+        style={{
+          background:
+            'linear-gradient(to bottom, #ffffff 0%, rgba(255,255,255,0.85) 20%, rgba(45,11,24,0.35) 55%, rgba(45,11,24,0.80) 78%, #2D0B18 100%)',
+        }}
+      />
       <Footer />
     </div>
   );
