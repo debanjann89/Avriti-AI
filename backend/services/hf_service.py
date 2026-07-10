@@ -175,8 +175,8 @@ async def generate_tryon_vton(
 
     # Write bytes to temporary files for gradio_client
     temp_dir = tempfile.mkdtemp()
-    avatar_path = os.path.join(temp_dir, "avatar.png")
-    garment_path = os.path.join(temp_dir, "garment.png")
+    avatar_path = os.path.join(temp_dir, "avatar.jpg")
+    garment_path = os.path.join(temp_dir, "garment.jpg")
     
     try:
         with open(avatar_path, "wb") as f:
@@ -193,7 +193,12 @@ async def generate_tryon_vton(
                 with Image.open(avatar_path) as img:
                     img.convert("RGB").save(avatar_path, "JPEG")
                 with Image.open(garment_path) as img:
-                    img.convert("RGB").save(garment_path, "JPEG")
+                    if img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info):
+                        background = Image.new("RGB", img.size, (255, 255, 255))
+                        background.paste(img, mask=img.split()[3])
+                        background.save(garment_path, "JPEG")
+                    else:
+                        img.convert("RGB").save(garment_path, "JPEG")
             except Exception as e_conv:
                 print(f"Image conversion warning: {e_conv}")
 
@@ -208,14 +213,11 @@ async def generate_tryon_vton(
                 
             # Unified Multi-engine VTON fallback list
             if category == "lower":
-                # Prioritize CatVTON for lower-body pants/jeans
+                # Prioritize CatVTON and tonyassi for lower-body pants/jeans (NO IDM-VTON)
                 spaces = [
                     {"name": "zhengchong/CatVTON", "type": "cat"},
                     {"name": "multimodalart/CatVTON-zerogpu", "type": "cat"},
-                    {"name": "debanjan909/Aavriti-VTON", "type": "idm"},
-                    {"name": "yisol/IDM-VTON", "type": "idm"},
-                    {"name": "hysts-duplicates/IDM-VTON", "type": "idm"},
-                    {"name": "zhoujing204/Kolors-Virtual-Try-On", "type": "kolors"}
+                    {"name": "tonyassi/fashion-try-on", "type": "tonyassi"}
                 ]
             else:
                 spaces = [
@@ -224,6 +226,7 @@ async def generate_tryon_vton(
                     {"name": "hysts-duplicates/IDM-VTON", "type": "idm"},
                     {"name": "zhengchong/CatVTON", "type": "cat"},
                     {"name": "multimodalart/CatVTON-zerogpu", "type": "cat"},
+                    {"name": "tonyassi/fashion-try-on", "type": "tonyassi"},
                     {"name": "zhoujing204/Kolors-Virtual-Try-On", "type": "kolors"}
                 ]
             
@@ -293,6 +296,13 @@ async def generate_tryon_vton(
                                 api_name="/submit_function"
                             )
                             output_path = result["path"]
+                        elif space_type == "tonyassi":
+                            result = client.predict(
+                                person=handle_file(avatar_path),
+                                clothing=handle_file(garment_path),
+                                api_name="/generate"
+                            )
+                            output_path = result
                         elif space_type == "kolors":
                             result = client.predict(
                                 person_img=handle_file(avatar_path),
