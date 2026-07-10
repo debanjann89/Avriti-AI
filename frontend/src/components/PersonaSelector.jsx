@@ -1,17 +1,10 @@
 const PERSONA_OPTIONS = {
   gender: ["Woman", "Man"],
-  ageGroup: ["Teen", "Young Adult", "Adult", "Senior"],
-  ethnicity: [
-    "South Asian", "East Asian", "African",
-    "Caucasian", "Hispanic", "Middle Eastern",
-  ],
   bodyType: ["XS", "S", "M", "L", "XL", "XXL"],
 };
 
 const LABELS = {
   gender: "Gender",
-  ageGroup: "Age Group",
-  ethnicity: "Ethnicity",
   bodyType: "Model Size",
 };
 
