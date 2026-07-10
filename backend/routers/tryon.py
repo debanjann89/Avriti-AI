@@ -318,6 +318,10 @@ async def generate_tryon(
                     angle_lower = angle.lower()
                     if "back" in angle_lower:
                         pose_name = "back_view"
+                    elif "side" in angle_lower:
+                        pose_name = "side_profile"
+                    elif "close" in angle_lower:
+                        pose_name = "close_up"
                     elif "three" in angle_lower or "3/4" in angle_lower:
                         pose_name = "front_3quarter"
                     elif "wide" in angle_lower or "full" in angle_lower:
