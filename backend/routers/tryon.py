@@ -384,12 +384,21 @@ async def generate_tryon(
                         print(f"Hybrid Try-On failed: {e_hybrid}. Falling back to standard IDM-VTON.")
                         
                 if not vton_success:
+                    # Map category to "upper", "lower", or "overall"
+                    cat_lower = str(garment_category or "").lower().strip()
+                    vton_category = "upper"
+                    if "lower" in cat_lower or "bottom" in cat_lower:
+                        vton_category = "lower"
+                    elif "full" in cat_lower or "dress" in cat_lower:
+                        vton_category = "overall"
+
                     # Direct VTON warping for all garments to preserve exact garment texture/look
-                    print(f"Calling IDM-VTON direct for garment warp: {g_desc}...")
+                    print(f"Calling VTON direct for garment warp (Category: {vton_category}): {g_desc}...")
                     vton_img_b64 = await generate_tryon_vton(
                         avatar_bytes=avatar_bytes,
                         garment_bytes=normalized_garment_bytes,
-                        garment_description=g_desc
+                        garment_description=g_desc,
+                        category=vton_category
                     )
                     images.append(vton_img_b64)
                     vton_success = True

@@ -148,6 +148,7 @@ async def generate_tryon_vton(
     garment_description: str,
     extra_prompt: str = None,
     denoise_steps: int = 30,
+    category: str = "upper",
 ) -> str:
     """
     Calls yisol/IDM-VTON Gradio API via gradio_client to perform real virtual try-on.
@@ -206,14 +207,25 @@ async def generate_tryon_vton(
                 tokens = [hf_token_val] if hf_token_val else [None]
                 
             # Unified Multi-engine VTON fallback list
-            spaces = [
-                {"name": "debanjan909/Aavriti-VTON", "type": "idm"},
-                {"name": "yisol/IDM-VTON", "type": "idm"},
-                {"name": "hysts-duplicates/IDM-VTON", "type": "idm"},
-                {"name": "zhengchong/CatVTON", "type": "cat"},
-                {"name": "multimodalart/CatVTON-zerogpu", "type": "cat"},
-                {"name": "zhoujing204/Kolors-Virtual-Try-On", "type": "kolors"}
-            ]
+            if category == "lower":
+                # Prioritize CatVTON for lower-body pants/jeans
+                spaces = [
+                    {"name": "zhengchong/CatVTON", "type": "cat"},
+                    {"name": "multimodalart/CatVTON-zerogpu", "type": "cat"},
+                    {"name": "debanjan909/Aavriti-VTON", "type": "idm"},
+                    {"name": "yisol/IDM-VTON", "type": "idm"},
+                    {"name": "hysts-duplicates/IDM-VTON", "type": "idm"},
+                    {"name": "zhoujing204/Kolors-Virtual-Try-On", "type": "kolors"}
+                ]
+            else:
+                spaces = [
+                    {"name": "debanjan909/Aavriti-VTON", "type": "idm"},
+                    {"name": "yisol/IDM-VTON", "type": "idm"},
+                    {"name": "hysts-duplicates/IDM-VTON", "type": "idm"},
+                    {"name": "zhengchong/CatVTON", "type": "cat"},
+                    {"name": "multimodalart/CatVTON-zerogpu", "type": "cat"},
+                    {"name": "zhoujing204/Kolors-Virtual-Try-On", "type": "kolors"}
+                ]
             
             last_err = None
             for sp in spaces:
@@ -273,7 +285,7 @@ async def generate_tryon_vton(
                             result = client.predict(
                                 person_image=wrapped_person,
                                 cloth_image=wrapped_garment,
-                                cloth_type="upper",
+                                cloth_type=category,
                                 num_inference_steps=20,
                                 guidance_scale=2.5,
                                 seed=42,
