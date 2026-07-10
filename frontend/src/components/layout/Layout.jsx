@@ -10,7 +10,7 @@ export default function Layout() {
         <Outlet />
       </main>
       {/* Gradient bridge – fades page white into the deep footer */}
-      <div className="h-16 bg-gradient-to-b from-white to-[#2D0B18] pointer-events-none" />
+      <div className="h-16 bg-gradient-to-b from-white to-[#5c1a3a] pointer-events-none" />
       <Footer />
     </div>
   );
