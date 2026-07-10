@@ -531,16 +531,16 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100/50 py-10 px-4 sm:px-6 font-sans">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-pink-50/15 py-12 px-4 sm:px-6 font-sans">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 items-start animate-fadeIn">
         
-        {/* ================= LEFT SIDEBAR (Flipkart Style) ================= */}
-        <div className="col-span-1 space-y-4">
+        {/* ================= LEFT SIDEBAR ================= */}
+        <div className="col-span-1 space-y-5">
           
           {/* 1. Greeting Card */}
-          <div className="bg-white rounded-lg border border-gray-200/80 p-4 shadow-sm flex items-center gap-4">
+          <div className="bg-white/80 backdrop-blur-md rounded-3xl border border-pink-100 p-5 shadow-sm flex items-center gap-4">
             {/* Avatar image on the left */}
-            <div className="relative group cursor-pointer w-12 h-12 rounded-full overflow-hidden border border-pink-200 shadow-sm shrink-0">
+            <div className="relative group cursor-pointer w-14 h-14 rounded-full overflow-hidden border-2 border-pink-500 shadow-md shrink-0">
               <img 
                 src={user.profile_picture || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80"} 
                 alt={user.name} 
@@ -559,94 +559,94 @@ export default function ProfilePage() {
             {/* Hello text on the right */}
             <div className="min-w-0 flex-1">
               <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider leading-none">Hello,</p>
-              <h2 className="text-sm font-black text-gray-800 truncate mt-1 leading-none">{user.name}</h2>
-              <span className="inline-block mt-1 text-[8px] font-extrabold uppercase tracking-widest bg-pink-100 text-pink-700 px-2 py-0.2 rounded-full border border-pink-200/40">
+              <h2 className="text-sm font-black text-slate-800 truncate mt-1 leading-none">{user.name}</h2>
+              <span className="inline-block mt-2.5 text-[8px] font-extrabold uppercase tracking-widest bg-pink-100 text-pink-700 px-2 py-0.5 rounded-full border border-pink-200/50">
                 {user.role}
               </span>
             </div>
           </div>
 
           {/* 2. Menu Navigation Settings */}
-          <div className="bg-white rounded-lg border border-gray-200/80 shadow-sm overflow-hidden divide-y divide-gray-100">
+          <div className="bg-white/85 backdrop-blur-md rounded-[32px] border border-pink-100 p-3 shadow-md space-y-1.5">
             
-            {/* Tab: Orders */}
+            {/* Tab: My Orders */}
             <button
               onClick={() => handleTabChange('orders')}
-              className={`w-full py-4 px-4 text-xs font-bold uppercase tracking-wider text-left transition-all flex items-center justify-between group ${
+              className={`w-full py-3.5 px-4 rounded-2xl text-xs font-bold uppercase tracking-wider text-left transition-all flex items-center justify-between group cursor-pointer ${
                 activeTab === 'orders'
-                  ? 'bg-pink-50/20 text-pink-600 border-l-4 border-pink-600 pl-3'
-                  : 'text-gray-600 hover:bg-slate-50/50 hover:text-pink-600'
+                  ? 'bg-pink-600 text-white shadow-md'
+                  : 'text-slate-700 hover:bg-pink-50/30 hover:text-pink-600'
               }`}
             >
               <div className="flex items-center gap-3">
-                <ShoppingBag className={`w-4.5 h-4.5 ${activeTab === 'orders' ? 'text-pink-600' : 'text-gray-400'}`} />
+                <ShoppingBag className={`w-4.5 h-4.5 ${activeTab === 'orders' ? 'text-white' : 'text-gray-400 group-hover:text-pink-500'}`} />
                 <span>My Orders</span>
               </div>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
+              <ChevronRight className={`w-4 h-4 ${activeTab === 'orders' ? 'text-white' : 'text-gray-300'}`} />
             </button>
 
             {/* Tab: Virtual Wardrobe */}
             <button
               onClick={() => handleTabChange('wardrobe')}
-              className={`w-full py-4 px-4 text-xs font-bold uppercase tracking-wider text-left transition-all flex items-center justify-between group ${
+              className={`w-full py-3.5 px-4 rounded-2xl text-xs font-bold uppercase tracking-wider text-left transition-all flex items-center justify-between group cursor-pointer ${
                 activeTab === 'wardrobe'
-                  ? 'bg-pink-50/20 text-pink-600 border-l-4 border-pink-600 pl-3'
-                  : 'text-gray-600 hover:bg-slate-50/50 hover:text-pink-600'
+                  ? 'bg-pink-600 text-white shadow-md'
+                  : 'text-slate-700 hover:bg-pink-50/30 hover:text-pink-600'
               }`}
             >
               <div className="flex items-center gap-3">
-                <Heart className={`w-4.5 h-4.5 ${activeTab === 'wardrobe' ? 'text-pink-600' : 'text-gray-450'}`} />
+                <Heart className={`w-4.5 h-4.5 ${activeTab === 'wardrobe' ? 'text-white' : 'text-gray-400 group-hover:text-pink-500'}`} />
                 <span>Virtual Wardrobe</span>
               </div>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
+              <ChevronRight className={`w-4 h-4 ${activeTab === 'wardrobe' ? 'text-white' : 'text-gray-300'}`} />
             </button>
 
             {/* Tab: Seller Dashboard */}
             {(user.role === 'seller' || user.role === 'admin') && (
               <button
                 onClick={() => handleTabChange('seller-dashboard')}
-                className={`w-full py-4 px-4 text-xs font-bold uppercase tracking-wider text-left transition-all flex items-center justify-between group ${
+                className={`w-full py-3.5 px-4 rounded-2xl text-xs font-bold uppercase tracking-wider text-left transition-all flex items-center justify-between group cursor-pointer ${
                   activeTab === 'seller-dashboard'
-                    ? 'bg-pink-50/20 text-pink-600 border-l-4 border-pink-600 pl-3'
-                    : 'text-gray-600 hover:bg-slate-50/50 hover:text-pink-600'
+                    ? 'bg-pink-600 text-white shadow-md'
+                    : 'text-slate-700 hover:bg-pink-50/30 hover:text-pink-600'
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <BarChart2 className={`w-4.5 h-4.5 ${activeTab === 'seller-dashboard' ? 'text-pink-600' : 'text-gray-450'}`} />
+                  <BarChart2 className={`w-4.5 h-4.5 ${activeTab === 'seller-dashboard' ? 'text-white' : 'text-gray-400 group-hover:text-pink-500'}`} />
                   <span>Seller Dashboard</span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-gray-400" />
+                <ChevronRight className={`w-4 h-4 ${activeTab === 'seller-dashboard' ? 'text-white' : 'text-gray-300'}`} />
               </button>
             )}
             
-            {/* Heading: Settings */}
-            <div className="p-4 bg-slate-50/20">
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Account Settings</p>
-              <div className="mt-3 space-y-2.5 pl-1.5">
+            {/* Section: Account Settings */}
+            <div className="px-4 py-2 bg-slate-50/20 rounded-2xl">
+              <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Account Settings</p>
+              <div className="mt-3.5 space-y-3 pl-0.5 pb-1">
                 
                 {/* Tab: Profile Info */}
                 <button
                   onClick={() => handleTabChange('profile')}
-                  className={`w-full text-left text-xs font-bold tracking-wide transition-colors flex items-center gap-2 ${
+                  className={`w-full text-left text-xs font-bold tracking-wide transition-colors flex items-center gap-2.5 cursor-pointer ${
                     activeTab === 'profile'
                       ? 'text-pink-600 font-black'
-                      : 'text-gray-600 hover:text-pink-600'
+                      : 'text-slate-600 hover:text-pink-600'
                   }`}
                 >
-                  <User className="w-3.5 h-3.5 shrink-0" />
-                  <span>Profile Information</span>
+                  <User className="w-4 h-4 shrink-0 text-pink-500" />
+                  <span>Profile & Sizing</span>
                 </button>
                 
                 {/* Tab: Addresses */}
                 <button
                   onClick={() => handleTabChange('addresses')}
-                  className={`w-full text-left text-xs font-bold tracking-wide transition-colors flex items-center gap-2 ${
+                  className={`w-full text-left text-xs font-bold tracking-wide transition-colors flex items-center gap-2.5 cursor-pointer ${
                     activeTab === 'addresses'
                       ? 'text-pink-600 font-black'
-                      : 'text-gray-600 hover:text-pink-600'
+                      : 'text-slate-600 hover:text-pink-600'
                   }`}
                 >
-                  <MapPin className="w-3.5 h-3.5 shrink-0" />
+                  <MapPin className="w-4 h-4 shrink-0 text-pink-500" />
                   <span>Manage Addresses</span>
                 </button>
 
@@ -654,13 +654,13 @@ export default function ProfilePage() {
                 {(user?.role === 'buyer' || activeTab === 'become-seller') && (
                   <button
                     onClick={() => handleTabChange('become-seller')}
-                    className={`w-full text-left text-xs font-bold tracking-wide transition-colors flex items-center gap-2 ${
+                    className={`w-full text-left text-xs font-bold tracking-wide transition-colors flex items-center gap-2.5 cursor-pointer ${
                       activeTab === 'become-seller'
                         ? 'text-pink-600 font-black'
-                        : 'text-gray-600 hover:text-pink-600'
+                        : 'text-slate-600 hover:text-pink-600'
                     }`}
                   >
-                    <Sparkles className="w-3.5 h-3.5 shrink-0 text-pink-600" />
+                    <Sparkles className="w-4 h-4 shrink-0 text-pink-600" />
                     <span>Become a Seller</span>
                   </button>
                 )}
@@ -671,9 +671,9 @@ export default function ProfilePage() {
             {/* Logout button */}
             <button
               onClick={handleLogout}
-              className="w-full py-4 px-4 text-xs font-bold uppercase tracking-wider text-left text-rose-500 hover:bg-rose-50/30 transition-all flex items-center gap-3"
+              className="w-full py-3.5 px-4 rounded-2xl text-xs font-bold uppercase tracking-wider text-left text-rose-500 hover:bg-rose-50/50 transition-all flex items-center gap-3 cursor-pointer group"
             >
-              <LogOut className="w-4.5 h-4.5 text-rose-500" />
+              <LogOut className="w-4.5 h-4.5 text-rose-500 group-hover:text-rose-600" />
               <span>Logout Account</span>
             </button>
 
@@ -689,9 +689,9 @@ export default function ProfilePage() {
             <div className="space-y-6">
               
               {/* Personal Information card */}
-              <div className="bg-white rounded-lg border border-gray-200/80 p-6 shadow-sm space-y-6">
+              <div className="bg-white rounded-[28px] border border-pink-100 p-7 shadow-md space-y-6 text-left">
                 <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-                  <h3 className="text-sm font-black text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                  <h3 className="text-xs font-black text-gray-900 uppercase tracking-wider flex items-center gap-2">
                     <User className="w-4.5 h-4.5 text-pink-600" />
                     <span>Personal Information</span>
                   </h3>
@@ -753,9 +753,9 @@ export default function ProfilePage() {
               </div>
 
               {/* Sizing Profile card */}
-              <div className="bg-white rounded-lg border border-gray-200/80 p-6 shadow-sm space-y-6">
+              <div className="bg-white rounded-[28px] border border-pink-100 p-7 shadow-md space-y-6 text-left">
                 <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-                  <h3 className="text-sm font-black text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                  <h3 className="text-xs font-black text-gray-900 uppercase tracking-wider flex items-center gap-2">
                     <Sliders className="w-4.5 h-4.5 text-pink-600" />
                     <span>Dressing Room Sizing Profile</span>
                   </h3>
@@ -767,25 +767,25 @@ export default function ProfilePage() {
                       <div className="space-y-1">
                         <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Height (cm)</label>
                         <input 
-                          type="text" 
-                          name="height"
-                          disabled={!isEditing}
-                          placeholder="e.g. 175"
-                          value={formData.height}
-                          onChange={handleInputChange}
-                          className="w-full bg-gray-50/50 disabled:bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-medium focus:outline-none transition-all"
+                           type="text" 
+                           name="height"
+                           disabled={!isEditing}
+                           placeholder="e.g. 175"
+                           value={formData.height}
+                           onChange={handleInputChange}
+                           className="w-full bg-gray-50/50 disabled:bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-medium focus:outline-none transition-all"
                         />
                       </div>
                       <div className="space-y-1">
                         <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Weight (kg)</label>
                         <input 
-                          type="text" 
-                          name="weight"
-                          disabled={!isEditing}
-                          placeholder="e.g. 68"
-                          value={formData.weight}
-                          onChange={handleInputChange}
-                          className="w-full bg-gray-50/50 disabled:bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-medium focus:outline-none transition-all"
+                           type="text" 
+                           name="weight"
+                           disabled={!isEditing}
+                           placeholder="e.g. 68"
+                           value={formData.weight}
+                           onChange={handleInputChange}
+                           className="w-full bg-gray-50/50 disabled:bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-medium focus:outline-none transition-all"
                         />
                       </div>
                     </div>
@@ -808,7 +808,7 @@ export default function ProfilePage() {
                           <option value="XL">Extra Large (XL)</option>
                           <option value="XXL">Double Extra Large (XXL)</option>
                         </select>
-                        <ChevronDown className="absolute right-3.5 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
+                        <ChevronDown className="absolute right-3.5 top-3.5 w-4 h-4 text-gray-400 pointer-events-none" />
                       </div>
                     </div>
 
@@ -816,25 +816,25 @@ export default function ProfilePage() {
                       <div className="space-y-1">
                         <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Shoulder Width (in)</label>
                         <input 
-                          type="text" 
-                          name="shoulder_width"
-                          disabled={!isEditing}
-                          placeholder="e.g. 18"
-                          value={formData.shoulder_width}
-                          onChange={handleInputChange}
-                          className="w-full bg-gray-50/50 disabled:bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-medium focus:outline-none transition-all"
+                           type="text" 
+                           name="shoulder_width"
+                           disabled={!isEditing}
+                           placeholder="e.g. 18"
+                           value={formData.shoulder_width}
+                           onChange={handleInputChange}
+                           className="w-full bg-gray-50/50 disabled:bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-medium focus:outline-none transition-all"
                         />
                       </div>
                       <div className="space-y-1">
                         <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Waist Size (in)</label>
                         <input 
-                          type="text" 
-                          name="waist_size"
-                          disabled={!isEditing}
-                          placeholder="e.g. 32"
-                          value={formData.waist_size}
-                          onChange={handleInputChange}
-                          className="w-full bg-gray-50/50 disabled:bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-medium focus:outline-none transition-all"
+                           type="text" 
+                           name="waist_size"
+                           disabled={!isEditing}
+                           placeholder="e.g. 32"
+                           value={formData.waist_size}
+                           onChange={handleInputChange}
+                           className="w-full bg-gray-50/50 disabled:bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-medium focus:outline-none transition-all"
                         />
                       </div>
                     </div>
@@ -861,197 +861,238 @@ export default function ProfilePage() {
                 </form>
               </div>
 
+              {/* Sizing Visual Silhouette Summary (To fill space beautifully and premium) */}
+              <div className="bg-gradient-to-r from-pink-500 to-rose-500 rounded-[28px] p-8 text-white shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 text-left">
+                <div className="absolute right-0 bottom-0 opacity-10 pointer-events-none transform translate-x-12 translate-y-12">
+                  <Sliders className="w-96 h-96" />
+                </div>
+                <div className="space-y-3 max-w-md z-10">
+                  <span className="text-[10px] bg-white/20 px-3 py-1 rounded-full uppercase tracking-widest font-black">AI Sizing Engine Active</span>
+                  <h4 className="text-xl font-black">Personalized try-on profile is ready.</h4>
+                  <p className="text-xs text-white/80 leading-relaxed font-bold">
+                    Your shoulder width, waist size, body shape, and height are analyzed to automatically adjust virtual try-on items to your exact body type for realistic overlay scaling.
+                  </p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-5 min-w-[200px] text-center shrink-0 z-10">
+                  <span className="text-[10px] text-white/60 font-black uppercase tracking-wider block">Recommended Size</span>
+                  <span className="text-4xl font-black block mt-2 text-white drop-shadow-sm">{formData.body_type || "M"}</span>
+                  <span className="text-[9px] text-pink-100 font-bold block mt-2">{formData.height || "—"} cm | {formData.weight || "—"} kg</span>
+                </div>
+              </div>
             </div>
           )}
 
-          {/* TAB CONTENT: MANAGE ADDRESSES */}
+                    {/* TAB CONTENT: MANAGE ADDRESSES */}
           {activeTab === 'addresses' && (
-            <div className="bg-white rounded-lg border border-gray-200/80 p-6 shadow-sm space-y-6">
-              <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-                <h3 className="text-sm font-black text-gray-900 uppercase tracking-wider flex items-center gap-2 font-jakarta">
-                  <MapPin className="w-4.5 h-4.5 text-pink-600" />
-                  <span>Manage Shipping Addresses</span>
-                </h3>
-                {!isEditing && (
-                  <button
-                    type="button"
-                    onClick={() => setIsEditing(true)}
-                    className="text-xs font-bold text-pink-600 hover:underline flex items-center gap-1 cursor-pointer"
-                  >
-                    <Edit2 className="w-3.5 h-3.5" />
-                    <span>Edit Info</span>
-                  </button>
+            <div className="space-y-6">
+              <div className="bg-white rounded-[28px] border border-pink-100 p-7 shadow-md space-y-6 text-left">
+                <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+                  <h3 className="text-xs font-black text-gray-900 uppercase tracking-wider flex items-center gap-2 font-jakarta">
+                    <MapPin className="w-4.5 h-4.5 text-pink-600" />
+                    <span>Manage Shipping Addresses</span>
+                  </h3>
+                  {!isEditing && (
+                    <button
+                      type="button"
+                      onClick={() => setIsEditing(true)}
+                      className="text-xs font-bold text-pink-600 hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                      <span>Edit Info</span>
+                    </button>
+                  )}
+                </div>
+
+                {!isEditing ? (
+                  <div className="bg-slate-50 border border-gray-150 rounded-2xl p-5 space-y-4 text-xs font-medium relative overflow-hidden text-left animate-fadeIn">
+                    <div className="flex justify-between items-center border-b border-gray-100 pb-3">
+                      <span className="bg-pink-100 text-pink-700 border border-pink-200 text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full shadow-2xs">
+                        {addressDetails.type || "Home"}
+                      </span>
+                      <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Primary Delivery Destination</span>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <span className="text-[9px] text-gray-450 block uppercase tracking-wider font-bold">Contact Mobile</span>
+                        <span className="text-slate-800 text-xs font-bold block">{formData.phone || "No contact number added"}</span>
+                      </div>
+                      
+                      <div className="space-y-1">
+                        <span className="text-[9px] text-gray-450 block uppercase tracking-wider font-bold">Pincode / ZIP</span>
+                        <span className="text-slate-800 text-xs font-bold block">{addressDetails.pincode || "Not specified"}</span>
+                      </div>
+
+                      <div className="space-y-1 md:col-span-2">
+                        <span className="text-[9px] text-gray-450 block uppercase tracking-wider font-bold">Street Address</span>
+                        <span className="text-slate-800 text-xs font-semibold block leading-relaxed">{addressDetails.street || "No address added yet."}</span>
+                      </div>
+
+                      <div className="space-y-1">
+                        <span className="text-[9px] text-gray-450 block uppercase tracking-wider font-bold">Landmark</span>
+                        <span className="text-slate-800 text-xs font-medium block">{addressDetails.landmark || "None"}</span>
+                      </div>
+
+                      <div className="space-y-1">
+                        <span className="text-[9px] text-gray-450 block uppercase tracking-wider font-bold">City & State</span>
+                        <span className="text-slate-800 text-xs font-bold block">
+                          {addressDetails.city || "Not specified"}{addressDetails.state ? `, ${addressDetails.state}` : ""}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSave} className="space-y-4 text-left animate-fadeIn">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Address Label / Type</label>
+                        <div className="flex gap-2">
+                          {['Home', 'Office', 'Other'].map((t) => (
+                            <button
+                              key={t}
+                              type="button"
+                              onClick={() => setAddressDetails(prev => ({ ...prev, type: t }))}
+                              className={`flex-1 py-2 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
+                                addressDetails.type === t
+                                  ? "bg-pink-600 text-white border-pink-600 shadow-sm"
+                                  : "bg-gray-50/50 text-gray-655 border-gray-200 hover:border-pink-300"
+                              }`}
+                            >
+                              {t}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Contact Mobile Number</label>
+                        <input 
+                          type="text" 
+                          name="phone"
+                          placeholder="e.g. +91 9876543210"
+                          value={formData.phone}
+                          onChange={handleInputChange}
+                          className="w-full bg-gray-50/50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Street Address / House No. / Apartment</label>
+                      <textarea 
+                        required
+                        placeholder="Enter flat/house no., building, street address"
+                        value={addressDetails.street}
+                        onChange={(e) => setAddressDetails(prev => ({ ...prev, street: e.target.value }))}
+                        rows="2"
+                        className="w-full bg-gray-50/50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none transition-all resize-none animate-none"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Landmark (Optional)</label>
+                        <input 
+                          type="text" 
+                          placeholder="e.g. Near Metro Station"
+                          value={addressDetails.landmark}
+                          onChange={(e) => setAddressDetails(prev => ({ ...prev, landmark: e.target.value }))}
+                          className="w-full bg-gray-50/50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none transition-all"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Pincode / ZIP Code</label>
+                        <input 
+                          required
+                          type="text" 
+                          placeholder="e.g. 560001"
+                          value={addressDetails.pincode}
+                          onChange={(e) => setAddressDetails(prev => ({ ...prev, pincode: e.target.value }))}
+                          className="w-full bg-gray-50/50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">City</label>
+                        <input 
+                          required
+                          type="text" 
+                          placeholder="e.g. Bengaluru"
+                          value={addressDetails.city}
+                          onChange={(e) => setAddressDetails(prev => ({ ...prev, city: e.target.value }))}
+                          className="w-full bg-gray-50/50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none transition-all"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">State</label>
+                        <div className="relative">
+                          <select
+                            required
+                            value={addressDetails.state}
+                            onChange={(e) => setAddressDetails(prev => ({ ...prev, state: e.target.value }))}
+                            className="w-full bg-gray-50/50 border border-gray-200 rounded-xl px-4 py-2.5 pr-10 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none appearance-none cursor-pointer transition-all"
+                          >
+                            <option value="">Select State</option>
+                            {INDIAN_STATES.map((st) => (
+                              <option key={st} value={st}>{st}</option>
+                            ))}
+                          </select>
+                          <ChevronDown className="absolute right-3.5 top-3.5 w-4 h-4 text-gray-400 pointer-events-none" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end gap-2 pt-3 border-t border-gray-100">
+                      <button
+                        type="button"
+                        onClick={() => setIsEditing(false)}
+                        className="px-4 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 rounded-xl border border-gray-200 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isSaving}
+                        className="bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold px-6 py-2 rounded-xl shadow-md transition-all flex items-center gap-1 cursor-pointer hover:scale-[1.01]"
+                      >
+                        {isSaving ? "Saving..." : "Save Address"}
+                      </button>
+                    </div>
+                  </form>
                 )}
               </div>
 
-              {!isEditing ? (
-                <div className="bg-slate-50 border border-gray-150 rounded-2xl p-5 space-y-4 text-xs font-medium relative overflow-hidden text-left animate-fadeIn">
-                  <div className="flex justify-between items-center border-b border-gray-100 pb-3">
-                    <span className="bg-pink-100 text-pink-700 border border-pink-200 text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full shadow-2xs">
-                      {addressDetails.type || "Home"}
-                    </span>
-                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Primary Delivery Destination</span>
+              {/* Shipping Guarantee Card to fill space */}
+              <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-[28px] p-8 text-white shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 text-left">
+                <div className="space-y-2.5 max-w-md">
+                  <span className="text-[9px] bg-pink-600 text-white px-2.5 py-0.5 rounded-full uppercase tracking-widest font-black">Fast Delivery</span>
+                  <h4 className="text-lg font-black">Free Express Delivery & Returns</h4>
+                  <p className="text-xs text-slate-300 leading-relaxed font-bold">
+                    All deliveries are handled via Aavriti Premium Express courier. Delivery to primary metros is completed in 2-3 business days with full end-to-end SMS status tracking.
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-4 text-center shrink-0">
+                  <div className="bg-white/5 border border-white/10 rounded-2xl p-4 min-w-[120px]">
+                    <span className="text-[18px] font-black text-pink-500">2-3 Days</span>
+                    <span className="text-[9px] text-slate-400 block mt-1 uppercase tracking-wider font-bold">Standard Metros</span>
                   </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <span className="text-[9px] text-gray-450 block uppercase tracking-wider font-bold">Contact Mobile</span>
-                      <span className="text-slate-800 text-xs font-bold block">{formData.phone || "No contact number added"}</span>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <span className="text-[9px] text-gray-450 block uppercase tracking-wider font-bold">Pincode / ZIP</span>
-                      <span className="text-slate-800 text-xs font-bold block">{addressDetails.pincode || "Not specified"}</span>
-                    </div>
-
-                    <div className="space-y-1 md:col-span-2">
-                      <span className="text-[9px] text-gray-450 block uppercase tracking-wider font-bold">Street Address</span>
-                      <span className="text-slate-800 text-xs font-semibold block leading-relaxed">{addressDetails.street || "No address added yet."}</span>
-                    </div>
-
-                    <div className="space-y-1">
-                      <span className="text-[9px] text-gray-450 block uppercase tracking-wider font-bold">Landmark</span>
-                      <span className="text-slate-800 text-xs font-medium block">{addressDetails.landmark || "None"}</span>
-                    </div>
-
-                    <div className="space-y-1">
-                      <span className="text-[9px] text-gray-450 block uppercase tracking-wider font-bold">City & State</span>
-                      <span className="text-slate-800 text-xs font-bold block">
-                        {addressDetails.city || "Not specified"}{addressDetails.state ? `, ${addressDetails.state}` : ""}
-                      </span>
-                    </div>
+                  <div className="bg-white/5 border border-white/10 rounded-2xl p-4 min-w-[120px]">
+                    <span className="text-[18px] font-black text-pink-500">Free</span>
+                    <span className="text-[9px] text-slate-400 block mt-1 uppercase tracking-wider font-bold">On All Orders</span>
                   </div>
                 </div>
-              ) : (
-                <form onSubmit={handleSave} className="space-y-4 text-left animate-fadeIn">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Address Label / Type</label>
-                      <div className="flex gap-2">
-                        {['Home', 'Office', 'Other'].map((t) => (
-                          <button
-                            key={t}
-                            type="button"
-                            onClick={() => setAddressDetails(prev => ({ ...prev, type: t }))}
-                            className={`flex-1 py-2 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
-                              addressDetails.type === t
-                                ? "bg-pink-600 text-white border-pink-600 shadow-sm"
-                                : "bg-gray-50/50 text-gray-650 border-gray-200 hover:border-pink-300"
-                            }`}
-                          >
-                            {t}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Contact Mobile Number</label>
-                      <input 
-                        type="text" 
-                        name="phone"
-                        placeholder="e.g. +91 9876543210"
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                        className="w-full bg-gray-50/50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none transition-all"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Street Address / House No. / Apartment</label>
-                    <textarea 
-                      required
-                      placeholder="Enter flat/house no., building, street address"
-                      value={addressDetails.street}
-                      onChange={(e) => setAddressDetails(prev => ({ ...prev, street: e.target.value }))}
-                      rows="2"
-                      className="w-full bg-gray-50/50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none transition-all resize-none animate-none"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Landmark (Optional)</label>
-                      <input 
-                        type="text" 
-                        placeholder="e.g. Near Metro Station"
-                        value={addressDetails.landmark}
-                        onChange={(e) => setAddressDetails(prev => ({ ...prev, landmark: e.target.value }))}
-                        className="w-full bg-gray-50/50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none transition-all"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Pincode / ZIP Code</label>
-                      <input 
-                        required
-                        type="text" 
-                        placeholder="e.g. 560001"
-                        value={addressDetails.pincode}
-                        onChange={(e) => setAddressDetails(prev => ({ ...prev, pincode: e.target.value }))}
-                        className="w-full bg-gray-50/50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none transition-all"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">City</label>
-                      <input 
-                        required
-                        type="text" 
-                        placeholder="e.g. Bengaluru"
-                        value={addressDetails.city}
-                        onChange={(e) => setAddressDetails(prev => ({ ...prev, city: e.target.value }))}
-                        className="w-full bg-gray-50/50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none transition-all"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">State</label>
-                      <div className="relative">
-                        <select
-                          required
-                          value={addressDetails.state}
-                          onChange={(e) => setAddressDetails(prev => ({ ...prev, state: e.target.value }))}
-                          className="w-full bg-gray-50/50 border border-gray-200 rounded-xl px-4 py-2.5 pr-10 text-xs font-medium focus:ring-1 focus:ring-pink-500 focus:outline-none appearance-none cursor-pointer transition-all"
-                        >
-                          <option value="">Select State</option>
-                          {INDIAN_STATES.map((st) => (
-                            <option key={st} value={st}>{st}</option>
-                          ))}
-                        </select>
-                        <ChevronDown className="absolute right-3.5 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end gap-2 pt-3 border-t border-gray-100">
-                    <button
-                      type="button"
-                      onClick={() => setIsEditing(false)}
-                      className="px-4 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 rounded-xl border border-gray-200 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={isSaving}
-                      className="bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold px-6 py-2 rounded-xl shadow-md transition-all flex items-center gap-1 cursor-pointer hover:scale-[1.01]"
-                    >
-                      {isSaving ? "Saving..." : "Save Address"}
-                    </button>
-                  </div>
-                </form>
-              )}
+              </div>
             </div>
           )}
 
           {/* TAB CONTENT: VIRTUAL WARDROBE */}
           {activeTab === 'wardrobe' && (
-            <div className="bg-white rounded-lg border border-gray-200/80 p-6 shadow-sm space-y-6">
-              <h2 className="text-sm font-black text-gray-900 uppercase tracking-wider flex items-center gap-2 border-b border-gray-100 pb-4">
+            <div className="bg-white rounded-[28px] border border-pink-100 p-7 shadow-md space-y-6 text-left">
+              <h2 className="text-xs font-black text-gray-900 uppercase tracking-wider flex items-center gap-2 border-b border-gray-100 pb-4">
                 <Heart className="w-4.5 h-4.5 text-pink-600 fill-pink-600/10" />
                 <span>Virtual Wardrobe & Try-On Gallery</span>
               </h2>
@@ -1062,22 +1103,22 @@ export default function ProfilePage() {
                   <span className="text-xs text-gray-400 font-bold uppercase tracking-widest animate-pulse">Loading wardrobe history...</span>
                 </div>
               ) : wardrobeImages.length === 0 ? (
-                <div className="text-center py-16 border border-dashed border-gray-200 rounded-2xl bg-gray-50/20">
-                  <Heart className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  <h3 className="text-xs font-bold text-gray-700">Virtual Wardrobe Empty</h3>
-                  <p className="text-[11px] text-gray-400 mt-1 max-w-sm mx-auto leading-normal">
+                <div className="text-center py-20 border-2 border-dashed border-pink-150 rounded-3xl bg-pink-50/10 max-w-2xl mx-auto space-y-5 animate-fadeIn">
+                  <Heart className="w-16 h-16 text-pink-300 mx-auto animate-pulse" />
+                  <h3 className="text-sm font-black text-gray-800">Your Virtual Wardrobe is Empty</h3>
+                  <p className="text-xs text-gray-450 mt-1 max-w-sm mx-auto leading-relaxed">
                     You haven't saved any try-on generated results yet. Try on clothes in the Studio or consult our AI Stylist to generate custom outfits and save them here!
                   </p>
-                  <div className="mt-5">
-                    <a href="/tryon" className="inline-block bg-pink-600 hover:bg-pink-700 text-white font-extrabold text-[9px] uppercase tracking-wider px-5 py-2.5 rounded-full shadow-md transition-all">
+                  <div className="pt-2">
+                    <Link to="/tryon" className="inline-block bg-pink-600 hover:bg-pink-700 text-white font-extrabold text-[10px] uppercase tracking-wider px-6 py-3 rounded-full shadow-md transition-all hover:scale-102 cursor-pointer">
                       Go to Try-On Studio
-                    </a>
+                    </Link>
                   </div>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
                   {wardrobeImages.map((img) => (
-                    <div key={img.id} className="relative group border border-gray-150 rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:border-pink-300 transition-all duration-300 bg-gray-50 aspect-[3/4]">
+                    <div key={img.id} className="relative group border border-gray-155 rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:border-pink-300 transition-all duration-300 bg-gray-50 aspect-[3/4]">
                       <img 
                         src={img.image_url.startsWith('http') ? img.image_url : `http://127.0.0.1:8000${img.image_url}`} 
                         alt="Try-on Outfit" 
@@ -1086,7 +1127,7 @@ export default function ProfilePage() {
                       />
                       <button
                         onClick={() => handleDeleteWardrobeImage(img.id)}
-                        className="absolute bottom-3 right-3 w-8 h-8 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600 rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                        className="absolute bottom-3 right-3 w-8 h-8 bg-rose-50 hover:bg-rose-100 border border-rose-250 text-rose-600 rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
                         title="Delete Outfit"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -1810,18 +1851,17 @@ export default function ProfilePage() {
               )}
             </div>
           )}
-
           {/* TAB CONTENT: BECOME A SELLER */}
           {activeTab === 'become-seller' && (
             <div className="space-y-6">
               {loadingApp ? (
-                <div className="bg-white rounded-lg border border-gray-200/80 p-12 text-center shadow-sm">
+                <div className="bg-white rounded-[28px] border border-pink-100 p-12 text-center shadow-md">
                   <div className="w-8 h-8 border-4 border-pink-100 border-t-pink-600 rounded-full animate-spin mx-auto mb-3"></div>
                   <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Loading Application Status...</p>
                 </div>
               ) : appStatus === "pending" ? (
                 /* Application Under Review */
-                <div className="bg-white rounded-lg border border-yellow-200 p-6 sm:p-8 shadow-sm space-y-6 relative overflow-hidden animate-fadeIn">
+                <div className="bg-white rounded-[28px] border border-yellow-250 p-8 shadow-md space-y-6 relative overflow-hidden animate-fadeIn text-left">
                   <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-yellow-500/5 to-transparent rounded-bl-[160px] pointer-events-none" />
                   
                   <div className="border-b border-gray-100 pb-5">
@@ -1885,7 +1925,7 @@ export default function ProfilePage() {
                   <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
                     <button
                       onClick={fetchApplicationStatus}
-                      className="bg-white hover:bg-gray-50 border border-gray-200 text-gray-600 text-xs font-extrabold uppercase tracking-widest px-6 py-3 rounded-xl shadow-sm transition-all"
+                      className="bg-white hover:bg-gray-50 border border-gray-200 text-gray-600 text-xs font-extrabold uppercase tracking-widest px-6 py-3 rounded-xl shadow-sm transition-all cursor-pointer"
                     >
                       Refresh Status
                     </button>
@@ -1893,7 +1933,7 @@ export default function ProfilePage() {
                 </div>
               ) : appStatus === "rejected" ? (
                 /* Application Declined */
-                <div className="bg-white rounded-lg border border-red-200 p-6 sm:p-8 shadow-sm space-y-8 relative overflow-hidden animate-fadeIn">
+                <div className="bg-white rounded-[28px] border border-red-200 p-8 shadow-md space-y-8 relative overflow-hidden animate-fadeIn text-left">
                   <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-red-500/5 to-transparent rounded-bl-[160px] pointer-events-none" />
                   
                   <div className="border-b border-gray-100 pb-5">
@@ -1912,7 +1952,7 @@ export default function ProfilePage() {
                   {/* Decline feedback card */}
                   <div className="p-5 rounded-2xl bg-rose-50/20 border border-rose-100/50 text-left space-y-2">
                     <span className="text-[9px] font-black text-rose-600 uppercase tracking-wider">Decline Reason / Feedback:</span>
-                    <p className="text-xs font-bold text-gray-705 leading-normal italic">
+                    <p className="text-xs font-bold text-gray-700 leading-normal italic">
                       "{appData?.rejection_reason || 'No specific reasons provided.'}"
                     </p>
                   </div>
@@ -1944,7 +1984,7 @@ export default function ProfilePage() {
                         });
                         setAppStatus("none");
                       }}
-                      className="bg-pink-600 hover:bg-pink-700 text-white text-xs font-extrabold uppercase tracking-widest px-8 py-3.5 rounded-xl shadow-lg transition-all transform hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+                      className="bg-pink-600 hover:bg-pink-700 text-white text-xs font-extrabold uppercase tracking-widest px-8 py-3.5 rounded-xl shadow-lg transition-all transform hover:scale-[1.01] active:scale-[0.99] cursor-pointer border-0"
                     >
                       Edit & Re-Apply
                     </button>
@@ -1952,7 +1992,7 @@ export default function ProfilePage() {
                 </div>
               ) : user?.role === 'seller' || appStatus === 'approved' ? (
                 /* Upgrade Congratulations Screen */
-                <div className="bg-white rounded-lg border border-pink-200 p-8 sm:p-12 shadow-md text-center space-y-6 relative overflow-hidden animate-fadeIn">
+                <div className="bg-white rounded-[28px] border border-pink-200 p-8 sm:p-12 shadow-md text-center space-y-6 relative overflow-hidden animate-fadeIn">
                   {/* Decorative Confetti Background Glow */}
                   <div className="absolute top-[-20%] left-[-10%] w-72 h-72 bg-gradient-to-tr from-pink-500/10 to-transparent rounded-full filter blur-2xl pointer-events-none" />
                   <div className="absolute bottom-[-20%] right-[-10%] w-72 h-72 bg-gradient-to-br from-pink-500/10 to-transparent rounded-full filter blur-2xl pointer-events-none" />
@@ -1969,14 +2009,14 @@ export default function ProfilePage() {
                       Your Aavriti Seller Account is Now Active
                     </p>
                     <p className="text-xs text-gray-500 max-w-md mx-auto leading-relaxed pt-2">
-                      You have successfully upgraded your account. The AI Stylist studio, realistic fabric physics draping pipelines, and interactive canvas tools are now unlocked in your workspace.
+                      You have successfully upgraded your account. The AI Stylist studio, realistic fabric physics drapes, and interactive boutique listings are now unlocked in your dashboard.
                     </p>
                   </div>
 
                   <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
                     <button
                       onClick={() => navigate('/try-on')}
-                      className="bg-pink-600 hover:bg-pink-700 text-white text-xs font-extrabold uppercase tracking-widest px-8 py-4 rounded-xl shadow-lg shadow-pink-200 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
+                      className="bg-pink-600 hover:bg-pink-700 text-white text-xs font-extrabold uppercase tracking-widest px-8 py-4 rounded-xl shadow-lg shadow-pink-200 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer border-0"
                     >
                       <Sparkles className="w-4 h-4 text-white fill-white" />
                       <span>Open AI Try-On Studio</span>
@@ -1994,7 +2034,7 @@ export default function ProfilePage() {
                 </div>
               ) : (
                 /* Seller Application Form Display */
-                <div className="bg-white rounded-lg border border-gray-200/80 p-6 sm:p-8 shadow-sm space-y-8 relative overflow-hidden">
+                <div className="bg-white rounded-[28px] border border-pink-100 p-8 shadow-md space-y-8 relative overflow-hidden text-left">
                   <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-pink-500/5 to-transparent rounded-bl-[160px] pointer-events-none" />
                   
                   <div className="border-b border-gray-100 pb-5">
@@ -2076,7 +2116,7 @@ export default function ProfilePage() {
                             <option value="Western Wear">Western Fashion</option>
                             <option value="Accessories">Accessories & Jewelry</option>
                           </select>
-                          <ChevronDown className="absolute right-3.5 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
+                          <ChevronDown className="absolute right-3.5 top-3.5 w-4 h-4 text-gray-400 pointer-events-none" />
                         </div>
                       </div>
 
@@ -2121,7 +2161,7 @@ export default function ProfilePage() {
                       <button
                         type="submit"
                         disabled={isSubmittingApp}
-                        className="bg-pink-600 hover:bg-pink-700 disabled:bg-pink-400 text-white text-xs font-extrabold uppercase tracking-widest px-8 py-3.5 rounded-xl shadow-lg shadow-pink-200 transition-all hover:scale-[1.01] active:scale-[0.99] flex items-center gap-2 cursor-pointer"
+                        className="bg-pink-600 hover:bg-pink-700 disabled:bg-pink-400 text-white text-xs font-extrabold uppercase tracking-widest px-8 py-3.5 rounded-xl shadow-lg shadow-pink-200 transition-all hover:scale-[1.01] active:scale-[0.99] flex items-center gap-2 cursor-pointer border-0"
                       >
                         {isSubmittingApp ? (
                           <>
