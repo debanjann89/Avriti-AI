@@ -1,6 +1,6 @@
 export const TRY_ON_PRESETS = {
   Man: {
-    "Western Casual": {
+    "Upper Body": {
       "Polo Shirt": [
         {
           id: "style-m-polo-1",
@@ -31,40 +31,21 @@ export const TRY_ON_PRESETS = {
           name: "Stone-Wash Denim Jacket",
           description: "Classic heavy denim jacket with vintage wash textures, metallic buttons, and chest flap pockets."
         }
-      ]
-    },
-    "Formal & Outerwear": {
+      ],
       "Structured Blazer": [
         {
           id: "style-m-blazer-1",
           name: "Charcoal Wool Blazer",
           description: "Sleek structured wool blazer with a modern slim silhouette, classic lapels, and double button closure."
-        },
-        {
-          id: "style-m-blazer-2",
-          name: "Burgundy Velvet Blazer",
-          description: "Luxurious deep evening velvet blazer featuring premium satin lapels and a refined silhouette."
-        }
-      ],
-      "Double-Breasted Suit": [
-        {
-          id: "style-m-suit-1",
-          name: "Classic Black Tuxedo Suit",
-          description: "Double-breasted wool tuxedo set featuring satin peak lapels, matching trousers, and high-fashion tailoring."
         }
       ]
     },
-    "Bottomwear": {
+    "Lower Body": {
       "Chinos": [
         {
           id: "style-m-chino-1",
           name: "Khaki Stretch Chinos",
           description: "Tailored slim-fit stretch cotton chinos with a clean front and versatile everyday styling."
-        },
-        {
-          id: "style-m-chino-2",
-          name: "Slim Twill Chinos",
-          description: "Lightweight premium twill cotton trousers with modern tapered legs."
         }
       ],
       "Slim Jeans": [
@@ -75,100 +56,21 @@ export const TRY_ON_PRESETS = {
         }
       ]
     },
-    "Indian Ethnic Wear": {
-      "Kurta Pyjama": [
+    "Full Body (Western)": {
+      "Tuxedo Suit": [
         {
-          id: "style-m-ethnic-1",
-          name: "Saffron Festive Kurta",
-          description: "Vibrant saffron art silk festive kurta featuring a mandarin collar and straight-cut straight pyjamas."
-        },
-        {
-          id: "style-m-ethnic-2",
-          name: "Mint Chikankari Kurta",
-          description: "Soft georgette kurta displaying detailed Lucknowi chikankari thread embroidery throughout."
-        }
-      ],
-      "Sherwani": [
-        {
-          id: "style-m-ethnic-3",
-          name: "Ivory Golden Sherwani",
-          description: "Exquisite wedding sherwani with detailed hand-embroidered golden zari threads and button ornaments."
+          id: "style-m-suit-1",
+          name: "Classic Black Tuxedo Suit",
+          description: "Double-breasted wool tuxedo set featuring satin peak lapels, matching trousers, and high-fashion tailoring."
         }
       ]
     },
-    "Sunglasses & Accessories": {
-      "Aviator Sunglasses": [
-        {
-          id: "style-m-acc-1",
-          name: "Gold Rimmed Aviators",
-          description: "Classic gold-rimmed aviator sunglasses with dark polarized high-fashion lenses."
-        }
-      ],
-      "Wristwatch": [
-        {
-          id: "style-m-acc-2",
-          name: "Minimalist Chronograph Watch",
-          description: "Sleek chronograph watch featuring a genuine leather strap and minimal black finish dial."
-        }
-      ]
-    },
-    "Footwear": {
-      "Sneakers": [
-        {
-          id: "style-m-shoes-1",
-          name: "White Leather Sneakers",
-          description: "Ultra-clean low-top white leather sneakers with a minimal profile and modern cup sole."
-        }
-      ],
-      "Mojaris": [
-        {
-          id: "style-m-shoes-2",
-          name: "Traditional Mojari Shoes",
-          description: "Handcrafted leather Mojari shoes featuring traditional embroidered ethnic patterns."
-        }
-      ]
-    }
+    "Footwear": {},
+    "Indian Traditionals": {},
+    "Accessories (Sunglasses, etc.)": {}
   },
   Woman: {
-    "Indian Ethnic Wear": {
-      "Saree": [
-        {
-          id: "style-w-ethnic-1",
-          name: "Banarasi Silk Saree",
-          description: "Traditional pure Banarasi silk saree adorned with rich golden brocade zari work and heavy border."
-        },
-        {
-          id: "style-w-ethnic-2",
-          name: "Kanjeevaram Silk Saree",
-          description: "Magnificent pure Kanjeevaram silk saree featuring grand golden thread borders and intricate traditional weaves."
-        },
-        {
-          id: "style-w-ethnic-3",
-          name: "Chikankari Cotton Saree",
-          description: "Delicate lightweight cotton saree styled with beautiful handwoven Lucknowi chikankari embroidery patterns."
-        }
-      ],
-      "Lehenga": [
-        {
-          id: "style-w-ethnic-4",
-          name: "Bridal Embroidered Lehenga",
-          description: "Luxury crimson lehenga set heavily embroidered with gold dabka thread, sequins, and zari work."
-        },
-        {
-          id: "style-w-ethnic-5",
-          name: "Floral Silk Lehenga",
-          description: "Stunning modern silk lehenga set highlighting detailed floral thread handwork and matching dupatta."
-        }
-      ],
-      "Anarkali Suit": [
-        {
-          id: "style-w-ethnic-6",
-          name: "Lucknowi Chikankari Anarkali",
-          description: "Ethereal ivory white pure cotton Anarkali set featuring detailed chikankari hand embroidery."
-        }
-      ]
-    },
-    "Upperwear": {
+    "Upper Body": {
       "Top": [
         {
           id: "style-w-top-1",
@@ -189,7 +91,7 @@ export const TRY_ON_PRESETS = {
         }
       ]
     },
-    "Bottomwear": {
+    "Lower Body": {
       "Palazzo Pants": [
         {
           id: "style-w-bottom-1",
@@ -198,30 +100,17 @@ export const TRY_ON_PRESETS = {
         }
       ]
     },
-    "Sunglasses & Accessories": {
-      "Cat-Eye Sunglasses": [
+    "Full Body (Western)": {
+      "Summer Dress": [
         {
-          id: "style-w-acc-1",
-          name: "Onyx Cat-Eye Sunglasses",
-          description: "Sleek retro-inspired black cat-eye sunglasses featuring polarized dark UV lenses."
-        }
-      ],
-      "Ethnic Earrings": [
-        {
-          id: "style-w-acc-2",
-          name: "Kundan Jhumka Earrings",
-          description: "Premium golden jhumki earrings studded with authentic Kundan stones and tiny dangling pearls."
+          id: "style-w-dress-1",
+          name: "Floral Summer Dress",
+          description: "Lightweight, flowy floral summer dress with a refined visual silhouette and clean lines."
         }
       ]
     },
-    "Footwear": {
-      "Ethnic Juttis": [
-        {
-          id: "style-w-shoes-1",
-          name: "Embroidered Bridal Juttis",
-          description: "Luxurious soft leather ethnic juttis featuring detailed sequin work and dori embroidery."
-        }
-      ]
-    }
+    "Footwear": {},
+    "Indian Traditionals": {},
+    "Accessories (Sunglasses, etc.)": {}
   }
 };

@@ -1013,51 +1013,71 @@ export default function TryOnStudio() {
 
                 <div className="grid grid-cols-2 gap-3">
                   {Object.keys(genderPresets).map((cat) => {
+                    const isComingSoon = [
+                      "Footwear",
+                      "Indian Traditionals",
+                      "Accessories (Sunglasses, etc.)"
+                    ].includes(cat);
+
                     let iconComponent = <Shirt className="w-5 h-5 text-pink-600 stroke-[1.5]" />;
                     let desc = "Boutique collection";
-                    if (cat === "Indian Ethnic Wear") {
-                      iconComponent = <Sparkles className="w-5 h-5 text-pink-600 stroke-[1.5]" />;
-                      desc = persona.gender === "Woman" ? "Sarees, Lehengas, Anarkalis" : "Sherwanis & Kurta Pyjamas";
-                    } else if (cat === "Western Casual" || cat === "Upperwear") {
+                    
+                    if (cat === "Upper Body") {
                       iconComponent = <Shirt className="w-5 h-5 text-pink-600 stroke-[1.5]" />;
-                      desc = persona.gender === "Woman" ? "Tops & Denim Jackets" : "Polo T-shirts, Shirts & Jackets";
-                    } else if (cat === "Formal & Outerwear") {
+                      desc = persona.gender === "Woman" ? "Tops & Denim Jackets" : "Polo T-shirts, Shirts & Blazers";
+                    } else if (cat === "Lower Body") {
                       iconComponent = <Sliders className="w-5 h-5 text-pink-600 stroke-[1.5]" />;
-                      desc = "Structured Blazers & Tuxedo Suits";
-                    } else if (cat === "Bottomwear") {
-                      iconComponent = <Sliders className="w-5 h-5 text-pink-600 stroke-[1.5]" />;
-                      desc = "Chinos, Slim Jeans or Palazzos";
-                    } else if (cat === "Sunglasses & Accessories") {
-                      iconComponent = <Sliders className="w-5 h-5 text-pink-600 stroke-[1.5]" />;
-                      desc = "Aviators, Sunglasses & Watches";
+                      desc = persona.gender === "Woman" ? "Wide-Leg Palazzo Pants" : "Stretch Chinos & Slim Jeans";
+                    } else if (cat === "Full Body (Western)") {
+                      iconComponent = <Shirt className="w-5 h-5 text-pink-600 stroke-[1.5]" />;
+                      desc = persona.gender === "Woman" ? "Flowy Summer Dresses" : "Classic Black Tuxedo Suits";
+                    } else if (cat === "Indian Traditionals") {
+                      iconComponent = <Sparkles className="w-5 h-5 text-purple-500 stroke-[1.5]" />;
+                      desc = persona.gender === "Woman" ? "Banarasi Sarees & Lehengas" : "Festive Kurtas & Sherwanis";
                     } else if (cat === "Footwear") {
-                      iconComponent = <Sparkles className="w-5 h-5 text-pink-600 stroke-[1.5]" />;
-                      desc = persona.gender === "Woman" ? "Embroidered Bridal Juttis" : "Sneakers & Mojaris";
+                      iconComponent = <Sparkles className="w-5 h-5 text-purple-500 stroke-[1.5]" />;
+                      desc = persona.gender === "Woman" ? "Embroidered Bridal Juttis" : "White Sneakers & Mojaris";
+                    } else if (cat === "Accessories (Sunglasses, etc.)") {
+                      iconComponent = <Sliders className="w-5 h-5 text-purple-500 stroke-[1.5]" />;
+                      desc = "Aviator Sunglasses & Watches";
                     }
 
                     return (
                       <button
                         type="button"
                         key={cat}
+                        disabled={isComingSoon}
                         onClick={() => {
+                          if (isComingSoon) return;
                           setActiveCategory(cat);
                           setWizardStep(3);
                         }}
-                        className={`group flex flex-col p-4 rounded-xl border transition-all hover:scale-[1.01] hover:shadow-md text-left ${
-                          activeCategory === cat
-                            ? "border-pink-500 bg-pink-50/10"
-                            : "border-gray-100 bg-gray-50/30 hover:border-pink-200"
+                        className={`group relative flex flex-col p-4 rounded-xl border transition-all text-left ${
+                          isComingSoon
+                            ? "border-gray-200 bg-gray-50/50 opacity-60 cursor-not-allowed"
+                            : activeCategory === cat
+                            ? "border-pink-500 bg-pink-50/10 hover:scale-[1.01] hover:shadow-md"
+                            : "border-gray-100 bg-gray-50/30 hover:border-pink-200 hover:scale-[1.01] hover:shadow-md"
                         }`}
                       >
+                        {/* Coming Soon Badge */}
+                        {isComingSoon && (
+                          <span className="absolute top-2.5 right-2.5 text-[8px] font-extrabold bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full border border-purple-200/50 uppercase tracking-widest scale-[0.85] origin-top-right">
+                            Coming Soon
+                          </span>
+                        )}
+
                         {/* Premium Mini Circle Badge */}
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-3 transition-all duration-300 ${
-                          activeCategory === cat
+                          isComingSoon
+                            ? "bg-purple-50 border border-purple-100"
+                            : activeCategory === cat
                             ? "bg-pink-100/50 border border-pink-300 shadow-inner"
                             : "bg-gray-100 border border-gray-200 group-hover:bg-pink-50/30 group-hover:border-pink-300"
                         }`}>
                           {iconComponent}
                         </div>
-                        <span className="text-xs font-bold text-gray-800 tracking-tight">{cat}</span>
+                        <span className={`text-xs font-bold tracking-tight ${isComingSoon ? "text-gray-500" : "text-gray-800"}`}>{cat}</span>
                         <span className="text-[10px] text-gray-400 mt-1 leading-snug line-clamp-2">{desc}</span>
                       </button>
                     );
