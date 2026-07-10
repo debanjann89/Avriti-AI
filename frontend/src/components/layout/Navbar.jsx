@@ -185,47 +185,89 @@ export default function Navbar() {
 
                   {/* Dropdown Card */}
                   {isDropdownOpen && (
-                    <div className="absolute right-0 mt-2.5 w-52 bg-white border border-pink-150 rounded-2xl shadow-xl py-2.5 z-50 animate-fadeIn font-sans">
-                      <div className="px-4 py-2 border-b border-gray-50 mb-1.5">
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Signed in as</p>
-                        <p className="text-xs font-black text-slate-800 truncate mt-0.5">{user.name}</p>
+                    <div className="absolute right-0 mt-3.5 w-72 bg-white/95 backdrop-blur-md border border-pink-100 rounded-[28px] shadow-2xl p-5 z-50 animate-dropdownOpen origin-top-right font-sans text-left">
+                      
+                      {/* Connected Arrow Indicator */}
+                      <div className="absolute right-4.5 -top-2 w-4.5 h-4.5 bg-white rotate-45 border-t border-l border-pink-100 z-50"></div>
+                      
+                      {/* Profile Card Header */}
+                      <div className="flex items-center gap-3.5 border-b border-gray-100/80 pb-4 mb-4 relative z-50">
+                        {user.profile_picture ? (
+                          <div className="w-12 h-12 rounded-full border-2 border-pink-500 overflow-hidden bg-white shadow-md flex items-center justify-center shrink-0">
+                            <img src={user.profile_picture} alt={user.name} className="w-full h-full object-cover" />
+                          </div>
+                        ) : (
+                          <div className="w-12 h-12 rounded-full border-2 border-pink-500 bg-pink-50 flex items-center justify-center text-pink-600 shadow-inner shrink-0">
+                            <User className="h-6 w-6 stroke-[2]" />
+                          </div>
+                        )}
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-xs font-black text-slate-800 truncate leading-snug">{user.name}</span>
+                          <span className="text-[10px] text-gray-400 truncate mt-0.5">{user.email || "Fashion Store Member"}</span>
+                          <span className="inline-flex items-center w-fit text-[8px] font-extrabold bg-pink-100 text-pink-700 px-2 py-0.5 rounded-full mt-1.5 uppercase tracking-widest border border-pink-200/50">
+                            Size Profile: {user.body_type || "M"}
+                          </span>
+                        </div>
                       </div>
                       
-                      <Link 
-                        to="/profile?tab=profile" 
-                        onClick={() => setIsDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-gray-600 hover:bg-pink-50/30 hover:text-pink-600 transition-colors"
-                      >
-                        <Sliders className="w-4 h-4 stroke-[2]" />
-                        <span>Profile & Sizing</span>
-                      </Link>
-                      
-                      <Link 
-                        to="/profile?tab=addresses" 
-                        onClick={() => setIsDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-gray-600 hover:bg-pink-50/30 hover:text-pink-600 transition-colors"
-                      >
-                        <MapPin className="w-4 h-4 stroke-[2]" />
-                        <span>Saved Addresses</span>
-                      </Link>
-                      
-                      <Link 
-                        to="/profile?tab=orders" 
-                        onClick={() => setIsDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-gray-600 hover:bg-pink-50/30 hover:text-pink-600 transition-colors"
-                      >
-                        <ShoppingBag className="w-4 h-4 stroke-[2]" />
-                        <span>Order History</span>
-                      </Link>
+                      {/* Dropdown Links List */}
+                      <div className="flex flex-col gap-1 relative z-50">
+                        <Link 
+                          to="/profile?tab=profile" 
+                          onClick={() => setIsDropdownOpen(false)}
+                          className="group flex items-start gap-3 p-2.5 rounded-2xl hover:bg-pink-50/30 transition-all"
+                        >
+                          <div className="w-8 h-8 rounded-xl bg-pink-50 border border-pink-100 flex items-center justify-center text-pink-600 shrink-0 group-hover:bg-pink-100 transition-colors">
+                            <Sliders className="w-4 h-4 stroke-[2]" />
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-xs font-bold text-gray-700 group-hover:text-pink-600 transition-colors">Profile & Sizing</span>
+                            <span className="text-[9px] text-gray-400 mt-0.5 leading-snug">Edit dimensions & fit preferences</span>
+                          </div>
+                        </Link>
+                        
+                        <Link 
+                          to="/profile?tab=addresses" 
+                          onClick={() => setIsDropdownOpen(false)}
+                          className="group flex items-start gap-3 p-2.5 rounded-2xl hover:bg-pink-50/30 transition-all"
+                        >
+                          <div className="w-8 h-8 rounded-xl bg-pink-50 border border-pink-100 flex items-center justify-center text-pink-600 shrink-0 group-hover:bg-pink-100 transition-colors">
+                            <MapPin className="w-4 h-4 stroke-[2]" />
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-xs font-bold text-gray-700 group-hover:text-pink-600 transition-colors">Saved Addresses</span>
+                            <span className="text-[9px] text-gray-400 mt-0.5 leading-snug">Manage shipping destinations</span>
+                          </div>
+                        </Link>
+                        
+                        <Link 
+                          to="/profile?tab=orders" 
+                          onClick={() => setIsDropdownOpen(false)}
+                          className="group flex items-start gap-3 p-2.5 rounded-2xl hover:bg-pink-50/30 transition-all"
+                        >
+                          <div className="w-8 h-8 rounded-xl bg-pink-50 border border-pink-100 flex items-center justify-center text-pink-600 shrink-0 group-hover:bg-pink-100 transition-colors">
+                            <ShoppingBag className="w-4 h-4 stroke-[2]" />
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-xs font-bold text-gray-700 group-hover:text-pink-600 transition-colors">Order History</span>
+                            <span className="text-[9px] text-gray-400 mt-0.5 leading-snug">Track shipment status & invoices</span>
+                          </div>
+                        </Link>
+                      </div>
 
-                      <hr className="border-gray-100 my-1.5" />
+                      <hr className="border-gray-100/80 my-3.5 relative z-50" />
                       
                       <button
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-rose-500 hover:bg-rose-50 transition-colors text-left cursor-pointer"
+                        className="group w-full flex items-center gap-3 p-2.5 rounded-2xl text-rose-500 hover:bg-rose-50/50 transition-all cursor-pointer text-left relative z-50"
                       >
-                        <LogOut className="w-4 h-4 stroke-[2]" />
-                        <span>Logout Account</span>
+                        <div className="w-8 h-8 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600 shrink-0 group-hover:bg-rose-100 transition-colors">
+                          <LogOut className="w-4 h-4 stroke-[2]" />
+                        </div>
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-xs font-bold text-rose-750">Logout Account</span>
+                          <span className="text-[9px] text-rose-450 mt-0.5 leading-snug">Sign out of Aavriti AI session</span>
+                        </div>
                       </button>
                     </div>
                   )}
