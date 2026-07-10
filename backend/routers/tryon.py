@@ -329,7 +329,7 @@ async def generate_tryon(
                     else:
                         pose_name = angle_info.get("recommended_model_pose", "front_straight")
 
-                    gender_val = current_garment_data.get("gender", gender or "women").lower()
+                    gender_val = (gender or current_garment_data.get("gender") or "women").lower()
                     gender_key = "men" if gender_val in ("men", "man", "male") else "women"
                     
                     # Normalize body type size mapping (e.g. Average -> m, XS -> xs)
