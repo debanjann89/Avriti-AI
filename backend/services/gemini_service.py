@@ -80,6 +80,52 @@ def detect_dominant_color(image_bytes: bytes) -> str:
         return "blue"
 
 
+def add_name_and_description(data: dict) -> dict:
+    # Construct a high-quality name and description from the structured garment data
+    g_type = str(data.get("garment_type") or "Garment").strip()
+    p_color = str(data.get("primary_color") or "").strip()
+    texture = str(data.get("fabric_texture") or "").strip()
+    
+    # 1. Title (e.g. "Deep Burgundy Silk Saree")
+    name_parts = []
+    if p_color and p_color.lower() != "null":
+        name_parts.append(p_color.title())
+    if texture and texture.lower() != "null" and "fabric" not in texture.lower():
+        name_parts.append(texture.title())
+    if g_type:
+        name_parts.append(g_type.title())
+        
+    title = " ".join(name_parts) if name_parts else "Premium Fashion Garment"
+    
+    # 2. Description
+    desc_parts = []
+    desc_parts.append(f"A premium {p_color or ''} {texture or ''} {g_type or 'garment'}".strip().replace("  ", " "))
+    
+    details_list = []
+    for k in ["neckline", "sleeve_type", "silhouette", "pattern", "key_details"]:
+        v = data.get(k)
+        if v and str(v).lower() != "null" and str(v).strip():
+            details_list.append(str(v).strip())
+            
+    if details_list:
+        desc_parts.append("featuring " + ", ".join(details_list))
+        
+    occasion = data.get("occasion")
+    if occasion and str(occasion).lower() != "null":
+        desc_parts.append(f"designed for {occasion} wear")
+        
+    description = ". ".join(desc_parts).replace(" .", ".") + "."
+    description = description.replace("  ", " ").strip()
+    
+    # Capitalize the first letter of description sentences properly
+    sentences = [s.strip().capitalize() for s in description.split(".") if s.strip()]
+    description = ". ".join(sentences) + "." if sentences else "Premium styling."
+    
+    data["name"] = title
+    data["description"] = description
+    return data
+
+
 async def analyze_garment(
     image_bytes: bytes, 
     mime_type: str = "image/jpeg",
@@ -113,7 +159,8 @@ async def analyze_garment(
             if raw.startswith("json"):
                 raw = raw[4:]
 
-        return json.loads(raw.strip())
+        res = json.loads(raw.strip())
+        return add_name_and_description(res)
 
     except Exception as e:
         print(f"WARNING: Gemini garment analysis failed: {e}. Using fallback mock analysis.")
@@ -169,7 +216,7 @@ async def analyze_garment(
             
         ethnic_style_val = "traditional" if (garment_type in ["saree", "lehenga", "kurta", "sherwani", "kurti"]) else "western"
 
-        return {
+        res = {
             "garment_type": garment_type,
             "gender": gender_val,
             "primary_color": primary_color,
@@ -185,6 +232,7 @@ async def analyze_garment(
             "occasion": "daily wear",
             "key_details": description
         }
+        return add_name_and_description(res)
 
 
 def build_tryon_prompt(garment: dict, persona: dict, camera_angle: str = "Front View") -> tuple[str, str]:
