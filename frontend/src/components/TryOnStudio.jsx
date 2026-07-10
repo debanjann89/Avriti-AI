@@ -274,11 +274,19 @@ function ResultPanel({
   bgRemovingFront,
   bgRemovingBack,
   model,
-  vton_error
+  vton_error,
+  analysis
 }) {
   const [selected, setSelected] = useState(0);
   const [publishName, setPublishName] = useState("");
   const [publishPrice, setPublishPrice] = useState("");
+
+  // Auto-fill publishName with the Gemini Vision analyzed name
+  useEffect(() => {
+    if (analysis?.name) {
+      setPublishName(analysis.name);
+    }
+  }, [analysis]);
 
   // New states for VTON overlay mode
   const [tryonMode, setTryonMode] = useState("creative"); // "creative" or "exact"
@@ -1463,7 +1471,16 @@ export default function TryOnStudio() {
               </div>
             ) : result ? (
               <>
-                <GarmentBadge analysis={result.garment_analysis} />
+                {result.garment_analysis?.description && (
+                  <div className="bg-pink-50/30 rounded-2xl p-4 border border-pink-100/30 text-left">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
+                      Garment Description
+                    </p>
+                    <p className="text-xs text-gray-600 leading-relaxed font-medium">
+                      {result.garment_analysis.description}
+                    </p>
+                  </div>
+                )}
                 <FittingModeBadge mode={result.fitting_mode} />
                 <ResultPanel 
                   images={result.images} 
@@ -1478,16 +1495,8 @@ export default function TryOnStudio() {
                   bgRemovingBack={bgRemovingBack}
                   model={result.model}
                   vton_error={result.vton_error}
+                  analysis={result.garment_analysis}
                 />
-                <details className="group">
-                  <summary className="text-xs text-gray-400 cursor-pointer hover:text-gray-600 flex items-center gap-1.5">
-                    <Eye className="w-3.5 h-3.5 font-bold" />
-                    <span>View generated prompt</span>
-                  </summary>
-                  <p className="text-xs text-gray-500 mt-2 bg-gray-50 rounded-xl p-3 leading-relaxed border border-gray-100">
-                    {result.positive_prompt}
-                  </p>
-                </details>
               </>
             ) : (
               <div className="h-full flex flex-col items-center justify-center text-center py-20 border-2 border-dashed border-gray-200 rounded-2xl bg-white/50 p-6">
