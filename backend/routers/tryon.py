@@ -304,6 +304,20 @@ async def generate_tryon(
             current_garment_data = garment_back_data if (is_back and garment_back_data) else garment_data
             current_garment_bytes = garment_back_bytes if (is_back and garment_back_bytes) else garment_bytes
 
+            g_desc = current_garment_data.get("description", garment_description or "clothing item")
+            g_type = current_garment_data.get("garment_type", garment_category or "")
+
+            # Robust VTON category classification (scans category hints, descriptions, and inferred garment types)
+            cat_lower = str(garment_category or "").lower().strip()
+            desc_lower = str(g_desc or "").lower().strip()
+            type_lower = str(g_type or "").lower().strip()
+
+            vton_category = "upper"
+            if any(kw in cat_lower or kw in desc_lower or kw in type_lower for kw in ("lower", "bottom", "jeans", "pants", "chino", "skirt", "trousers", "palazzo")):
+                vton_category = "lower"
+            elif any(kw in cat_lower or kw in desc_lower or kw in type_lower for kw in ("full", "overall", "dress", "saree", "lehenga", "anarkali", "suit", "sherwani", "gown")):
+                vton_category = "overall"
+
             # VTON pipeline
             vton_success = False
             try:
@@ -328,6 +342,10 @@ async def generate_tryon(
                         pose_name = "full_length"
                     else:
                         pose_name = angle_info.get("recommended_model_pose", "front_straight")
+
+                    # Force full_length model for lower-body and overall garments to ensure accurate placement on legs/body
+                    if vton_category in ("lower", "overall") and pose_name != "back_view":
+                        pose_name = "full_length"
 
                     gender_val = (gender or current_garment_data.get("gender") or "women").lower()
                     gender_key = "men" if gender_val in ("men", "man", "male") else "women"
@@ -366,8 +384,6 @@ async def generate_tryon(
                          avatar_bytes = b""
                 
                 # 3. Call IDM-VTON based on strategy
-                g_desc = current_garment_data.get("description", garment_description or "clothing item")
-                g_type = current_garment_data.get("garment_type", garment_category or "")
                 strategy = get_tryon_strategy(g_type)
                 
                 if strategy in ("drape", "layered"):
@@ -384,14 +400,6 @@ async def generate_tryon(
                         print(f"Hybrid Try-On failed: {e_hybrid}. Falling back to standard IDM-VTON.")
                         
                 if not vton_success:
-                    # Map category to "upper", "lower", or "overall"
-                    cat_lower = str(garment_category or "").lower().strip()
-                    vton_category = "upper"
-                    if "lower" in cat_lower or "bottom" in cat_lower:
-                        vton_category = "lower"
-                    elif "full" in cat_lower or "dress" in cat_lower:
-                        vton_category = "overall"
-
                     # Direct VTON warping for all garments to preserve exact garment texture/look
                     print(f"Calling VTON direct for garment warp (Category: {vton_category}): {g_desc}...")
                     vton_img_b64 = await generate_tryon_vton(

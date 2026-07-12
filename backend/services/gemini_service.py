@@ -173,10 +173,12 @@ async def analyze_garment(
         description = hint_description if hint_description else "premium styling"
         
         # Infer garment type from category / description / preset
-        garment_type = "t-shirt"
         desc_lower = description.lower()
         cat_lower = category.lower()
-        if "shirt" in desc_lower or "shirt" in cat_lower:
+        
+        if "jeans" in desc_lower or "denim" in desc_lower or "lower" in cat_lower or "bottom" in cat_lower or "pants" in cat_lower:
+            garment_type = "denim jeans"
+        elif "shirt" in desc_lower or "shirt" in cat_lower:
             if "t-shirt" in desc_lower or "t-shirt" in cat_lower or "casual" in desc_lower:
                 garment_type = "t-shirt"
             else:
@@ -193,8 +195,8 @@ async def analyze_garment(
             garment_type = "lehenga"
         elif "kurta" in desc_lower or "kurta" in cat_lower or "suits" in cat_lower:
             garment_type = "kurta"
-        elif "jeans" in desc_lower or "denim" in desc_lower:
-            garment_type = "denim jeans"
+        else:
+            garment_type = "t-shirt"
             
         # Infer sleeve and neckline
         neckline = "round neck"
@@ -222,7 +224,7 @@ async def analyze_garment(
             "primary_color": primary_color,
             "secondary_color": None,
             "pattern": "graphic print" if (desc_lower and "graphic" in desc_lower or "print" in desc_lower) else "solid",
-            "fabric_texture": "premium quality cotton fabric",
+            "fabric_texture": "premium durable denim fabric" if "jeans" in garment_type else "premium quality cotton fabric",
             "neckline": neckline,
             "sleeve_type": sleeve_type,
             "silhouette": "relaxed fit",
