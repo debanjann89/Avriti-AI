@@ -2,8 +2,60 @@ import { Link } from 'react-router-dom';
 import { useProducts } from '../hooks/useProducts';
 import ProductCard from '../components/ProductCard';
 import { Sparkles, ArrowRight, Play, ChevronRight, Star, Heart } from 'lucide-react';
-import { useContext } from 'react';
+import { useContext, useState, useEffect, useRef } from 'react';
 import { AuthContext } from '../context/AuthContext';
+
+// Advanced local ScrollReveal component for smooth page reveals
+function ScrollReveal({ children, className = "", delay = "0ms", animation = "fade-up" }) {
+  const [isIntersecting, setIsIntersecting] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsIntersecting(true);
+          observer.unobserve(entry.target);
+        }
+      },
+      { threshold: 0.05 }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => {
+      if (ref.current) {
+        observer.unobserve(ref.current);
+      }
+    };
+  }, []);
+
+  const getAnimClass = () => {
+    if (animation === "fade-left") {
+      return isIntersecting ? "opacity-100 translate-x-0" : "opacity-0 translate-x-12 pointer-events-none";
+    }
+    if (animation === "fade-right") {
+      return isIntersecting ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-12 pointer-events-none";
+    }
+    if (animation === "scale-up") {
+      return isIntersecting ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none";
+    }
+    // default: fade-up
+    return isIntersecting ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-12 scale-[0.99] pointer-events-none";
+  };
+
+  return (
+    <div
+      ref={ref}
+      style={{ transitionDelay: delay }}
+      className={`transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)] transform ${getAnimClass()} ${className}`}
+    >
+      {children}
+    </div>
+  );
+}
 
 export default function HomePage() {
   const { products } = useProducts();
@@ -129,6 +181,21 @@ export default function HomePage() {
         .btn-sheen-sweep:hover::before {
           animation: sheen-sweep 1.3s infinite ease-in-out;
         }
+
+        @keyframes fade-in-up {
+          0% { opacity: 0; transform: translateY(24px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes scale-up-entrance {
+          0% { opacity: 0; transform: scale(0.96) translateY(10px); }
+          100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .anim-fade-in-up {
+          animation: fade-in-up 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .anim-scale-up {
+          animation: scale-up-entrance 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
       `}} />
 
       {/* ================= 1. Standalone Full-Width 3D Editorial Hero ================= */}
@@ -188,13 +255,16 @@ export default function HomePage() {
             
             {/* --- LEFT COLUMN (45%) --- */}
             <div className="col-span-12 lg:col-span-5 space-y-8 text-center lg:text-left relative z-20 pb-8 lg:pb-0">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#F8D7DA] text-[#A30D45] font-extrabold text-[10px] uppercase tracking-widest shadow-sm shadow-pink-100/50">
+              <div 
+                className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#F8D7DA] text-[#A30D45] font-extrabold text-[10px] uppercase tracking-widest shadow-sm shadow-pink-100/50 anim-fade-in-up opacity-0"
+                style={{ animationDelay: '150ms' }}
+              >
                 <Sparkles className="w-3.5 h-3.5 fill-[#F8D7DA]" />
                 <span>Premium Editorial Edition</span>
               </div>
 
-              {/* Massive Bold Uppercase Fashion-Editorial Typography (Plus Jakarta Sans to avoid squeezed wide Syne stretch) */}
-              <div className="space-y-1">
+              {/* Massive Bold Uppercase Fashion-Editorial Typography */}
+              <div className="space-y-1 anim-fade-in-up opacity-0" style={{ animationDelay: '300ms' }}>
                 <h1 className="text-[64px] sm:text-[84px] lg:text-[96px] leading-[0.82] text-3d-luxury uppercase font-jakarta select-none">
                   Fashion<br/>Focused
                 </h1>
@@ -202,13 +272,13 @@ export default function HomePage() {
               </div>
 
               {/* Subheading Offer info */}
-              <div className="space-y-1.5 pl-1">
+              <div className="space-y-1.5 pl-1 anim-fade-in-up opacity-0" style={{ animationDelay: '450ms' }}>
                 <h3 className="text-3xl font-extrabold text-[#1E1E1E] font-display uppercase tracking-tight">25% OFF</h3>
                 <p className="text-xs text-[#1E1E1E]/60 font-semibold tracking-wide">Our all-new premium collections</p>
               </div>
 
               {/* 3D Depth CTA Buttons */}
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-3">
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-3 anim-fade-in-up opacity-0" style={{ animationDelay: '600ms' }}>
                 <Link 
                   to="/collections" 
                   className="w-full sm:w-auto px-10 py-4.5 rounded-full font-extrabold text-xs uppercase tracking-widest text-white btn-3d-primary btn-sheen-sweep flex items-center justify-center gap-2 transform active:scale-98 cursor-pointer"
@@ -234,8 +304,8 @@ export default function HomePage() {
                 )}
               </div>
 
-              {/* Premium Campaign Micro-Stats Tray to fill empty space under buttons */}
-              <div className="flex items-center gap-6 pt-6 border-t border-pink-100/30 w-full justify-center lg:justify-start">
+              {/* Premium Campaign Micro-Stats Tray */}
+              <div className="flex items-center gap-6 pt-6 border-t border-pink-100/30 w-full justify-center lg:justify-start anim-fade-in-up opacity-0" style={{ animationDelay: '750ms' }}>
                 <div className="text-center lg:text-left">
                   <span className="block text-lg font-black text-[#D81B60] font-jakarta leading-none">50K+</span>
                   <span className="text-[8px] text-[#1E1E1E]/50 font-bold uppercase tracking-wider mt-1 block">Happy Clients</span>
@@ -251,11 +321,9 @@ export default function HomePage() {
                   <span className="text-[8px] text-[#1E1E1E]/50 font-bold uppercase tracking-wider mt-1 block">AI Tailored Fit</span>
                 </div>
               </div>
-            </div>
-
-            {/* --- CENTER SECTION (35%): TRANSPARENT MODEL OVERLAPPING 3D SATURN RINGS & GEOMETRIC ELEMENTS --- */}
+            </div>            {/* --- CENTER SECTION (35%): TRANSPARENT MODEL OVERLAPPING 3D SATURN RINGS & GEOMETRIC ELEMENTS --- */}
             {/* Height scaled up to 700px to accommodate a massive, zoomed-in model and rings layout */}
-            <div className="col-span-12 lg:col-span-4 flex justify-center items-center relative py-12 lg:py-0 select-none h-[600px] lg:h-[700px] overflow-visible">
+            <div className="col-span-12 lg:col-span-4 flex justify-center items-center relative py-12 lg:py-0 select-none h-[600px] lg:h-[700px] overflow-visible anim-scale-up opacity-0" style={{ animationDelay: '200ms' }}>
               
               {/* === 3D Geometric Layers Backdrop === */}
               {/* Central Luxury Backdrop Studio Glow Effect */}
@@ -398,7 +466,7 @@ export default function HomePage() {
             </div>
 
             {/* --- RIGHT COLUMN (20%) --- */}
-            <div className="col-span-12 lg:col-span-3 flex flex-col items-center lg:items-end justify-center relative z-20 pl-0 lg:pl-16 pb-8 lg:pb-0 select-none text-center lg:text-right space-y-6">
+            <div className="col-span-12 lg:col-span-3 flex flex-col items-center lg:items-end justify-center relative z-20 pl-0 lg:pl-16 pb-8 lg:pb-0 select-none text-center lg:text-right space-y-6 anim-fade-in-up opacity-0" style={{ animationDelay: '450ms' }}>
               
               {/* Explore Badge with Creative Asymmetric Typography */}
               <div className="space-y-1.5 flex flex-col items-center lg:items-end select-none">
@@ -438,28 +506,33 @@ export default function HomePage() {
       {/* ================= 2. THE CURATED CATALOG Highlights (Fullpage Flow Design) ================= */}
       <section className="relative z-20 w-full bg-gradient-to-b from-[#FFF8F8] via-[#FFF8F8] to-white py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row justify-between items-center sm:items-end mb-10 gap-4">
-          <div className="text-center sm:text-left">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F8D7DA] text-[#A30D45] font-extrabold text-[9px] uppercase tracking-widest mb-2">
-              <Heart className="w-3 h-3 fill-[#D81B60] text-[#D81B60]" />
-              <span>Curated Festive Looks</span>
+        
+        <ScrollReveal delay="100ms">
+          <div className="flex flex-col sm:flex-row justify-between items-center sm:items-end mb-10 gap-4">
+            <div className="text-center sm:text-left">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F8D7DA] text-[#A30D45] font-extrabold text-[9px] uppercase tracking-widest mb-2">
+                <Heart className="w-3 h-3 fill-[#D81B60] text-[#D81B60]" />
+                <span>Curated Festive Looks</span>
+              </div>
+              <h2 className="text-3xl font-black text-[#1E1E1E] font-display tracking-tight leading-none mt-1">Festive Catalog Highlights</h2>
+              <p className="mt-2 text-xs text-[#1E1E1E]/50 font-semibold tracking-wide">Explore high-quality traditional sarees, lehengas, and ethnic options.</p>
             </div>
-            <h2 className="text-3xl font-black text-[#1E1E1E] font-display tracking-tight leading-none mt-1">Festive Catalog Highlights</h2>
-            <p className="mt-2 text-xs text-[#1E1E1E]/50 font-semibold tracking-wide">Explore high-quality traditional sarees, lehengas, and ethnic options.</p>
+            <Link 
+              to="/collections" 
+              className="text-[10px] font-black text-[#D81B60] hover:text-[#A30D45] uppercase tracking-widest border-b-2 border-[#D81B60]/20 pb-0.5 flex items-center gap-1 transition-all"
+            >
+              <span>View Full Catalog</span>
+              <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
+            </Link>
           </div>
-          <Link 
-            to="/collections" 
-            className="text-[10px] font-black text-[#D81B60] hover:text-[#A30D45] uppercase tracking-widest border-b-2 border-[#D81B60]/20 pb-0.5 flex items-center gap-1 transition-all"
-          >
-            <span>View Full Catalog</span>
-            <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
-          </Link>
-        </div>
+        </ScrollReveal>
         
         {/* Responsive Catalog Products Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {featuredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
+          {featuredProducts.map((product, idx) => (
+            <ScrollReveal key={product.id} delay={`${idx * 150}ms`} animation="scale-up">
+              <ProductCard product={product} />
+            </ScrollReveal>
           ))}
         </div>
       </div>
@@ -468,13 +541,15 @@ export default function HomePage() {
       {/* ================= 3. OUR VISION & PHILOSOPHY ================= */}
       <section className="relative z-20 w-full bg-white py-16 lg:py-24 border-t border-pink-100/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-xl mx-auto space-y-3 mb-16">
-            <span className="text-[9px] font-black uppercase tracking-wider text-[#D81B60] bg-[#FFF0F2] px-3 py-1 rounded-full border border-[#F8D7DA]/60">Our Core Vision</span>
-            <h2 className="text-3xl font-black font-jakarta text-gray-900 tracking-tight">Designing a Better Retail Journey</h2>
-            <p className="text-xs text-gray-500 font-medium leading-relaxed">
-              We design generative solutions that solve sizing uncertainty, reduce carbon output, and celebrate premium heritage craftsmanship.
-            </p>
-          </div>
+          <ScrollReveal delay="100ms">
+            <div className="text-center max-w-xl mx-auto space-y-3 mb-16">
+              <span className="text-[9px] font-black uppercase tracking-wider text-[#D81B60] bg-[#FFF0F2] px-3 py-1 rounded-full border border-[#F8D7DA]/60">Our Core Vision</span>
+              <h2 className="text-3xl font-black font-jakarta text-gray-900 tracking-tight">Designing a Better Retail Journey</h2>
+              <p className="text-xs text-gray-500 font-medium leading-relaxed">
+                We design generative solutions that solve sizing uncertainty, reduce carbon output, and celebrate premium heritage craftsmanship.
+              </p>
+            </div>
+          </ScrollReveal>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
@@ -515,18 +590,17 @@ export default function HomePage() {
                 )
               }
             ].map((vision, idx) => (
-              <div 
-                key={idx} 
-                className="bg-gradient-to-br from-slate-50/50 to-pink-50/10 border border-gray-100 p-8 rounded-[28px] shadow-sm flex flex-col justify-between text-left space-y-6 group hover:border-[#D81B60]/30 transition-all hover:scale-[1.02] duration-300 hover:shadow-md"
-              >
-                <div className="w-10 h-10 rounded-2xl bg-white border border-gray-150 flex items-center justify-center text-[#D81B60] group-hover:scale-115 group-hover:rotate-6 transition-transform shadow-sm relative z-10">
-                  {vision.icon}
+              <ScrollReveal key={idx} delay={`${idx * 150}ms`} animation="scale-up" className="h-full">
+                <div className="bg-gradient-to-br from-slate-50/50 to-pink-50/10 border border-gray-100 p-8 rounded-[28px] shadow-sm flex flex-col justify-between text-left space-y-6 group hover:border-[#D81B60]/30 transition-all hover:scale-[1.02] duration-300 hover:shadow-md h-full">
+                  <div className="w-10 h-10 rounded-2xl bg-white border border-gray-150 flex items-center justify-center text-[#D81B60] group-hover:scale-115 group-hover:rotate-6 transition-transform shadow-sm relative z-10">
+                    {vision.icon}
+                  </div>
+                  <div className="space-y-2 relative z-10">
+                    <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight font-jakarta">{vision.title}</h3>
+                    <p className="text-[11px] text-gray-500 font-medium leading-relaxed font-sans">{vision.desc}</p>
+                  </div>
                 </div>
-                <div className="space-y-2 relative z-10">
-                  <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight font-jakarta">{vision.title}</h3>
-                  <p className="text-[11px] text-gray-500 font-medium leading-relaxed font-sans">{vision.desc}</p>
-                </div>
-              </div>
+              </ScrollReveal>
             ))}
           </div>
         </div>
@@ -535,13 +609,15 @@ export default function HomePage() {
       {/* ================= 4. OUR PROCESS / HOW IT WORKS ================= */}
       <section className="relative z-20 w-full bg-[#FFF8F8] py-16 lg:py-24 border-t border-pink-100/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-xl mx-auto space-y-3 mb-16">
-            <span className="text-[9px] font-black uppercase tracking-wider text-[#D81B60] bg-[#FFF0F2] px-3 py-1 rounded-full border border-[#F8D7DA]/60">Our Process</span>
-            <h2 className="text-3xl font-black font-jakarta text-gray-900 tracking-tight">The Aavriti Fitting Path</h2>
-            <p className="text-xs text-gray-500 font-medium leading-relaxed">
-              We link high-fashion boutique listings with generative try-on shaders in three intuitive steps.
-            </p>
-          </div>
+          <ScrollReveal delay="100ms">
+            <div className="text-center max-w-xl mx-auto space-y-3 mb-16">
+              <span className="text-[9px] font-black uppercase tracking-wider text-[#D81B60] bg-[#FFF0F2] px-3 py-1 rounded-full border border-[#F8D7DA]/60">Our Process</span>
+              <h2 className="text-3xl font-black font-jakarta text-gray-900 tracking-tight">The Aavriti Fitting Path</h2>
+              <p className="text-xs text-gray-500 font-medium leading-relaxed">
+                We link high-fashion boutique listings with generative try-on shaders in three intuitive steps.
+              </p>
+            </div>
+          </ScrollReveal>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {[
@@ -561,21 +637,20 @@ export default function HomePage() {
                 desc: "Generate highly realistic model drapings. Review physical drape, folds, and color before buying."
               }
             ].map((stepItem, idx) => (
-              <div 
-                key={idx} 
-                className="bg-white border border-pink-100/40 p-8 rounded-[28px] shadow-sm flex flex-col justify-between text-left space-y-6 relative overflow-hidden group hover:border-[#D81B60]/30 transition-all duration-300"
-              >
-                <div className="absolute top-[-20px] right-[-10px] text-8xl font-black text-slate-100 opacity-20 select-none group-hover:scale-110 group-hover:text-[#D81B60]/5 transition-all duration-500 font-jakarta pointer-events-none">
-                  {stepItem.step}
+              <ScrollReveal key={idx} delay={`${idx * 150}ms`} animation={idx % 2 === 0 ? "fade-right" : "fade-left"} className="h-full">
+                <div className="bg-white border border-pink-100/40 p-8 rounded-[28px] shadow-sm flex flex-col justify-between text-left space-y-6 relative overflow-hidden group hover:border-[#D81B60]/30 transition-all duration-300 h-full">
+                  <div className="absolute top-[-20px] right-[-10px] text-8xl font-black text-slate-100 opacity-20 select-none group-hover:scale-110 group-hover:text-[#D81B60]/5 transition-all duration-500 font-jakarta pointer-events-none">
+                    {stepItem.step}
+                  </div>
+                  <div className="space-y-4 relative z-10 pt-4">
+                    <span className="text-[9px] font-black text-[#D81B60] uppercase tracking-widest bg-pink-50 border border-pink-100/60 px-2.5 py-0.5 rounded-full">
+                      Step {stepItem.step}
+                    </span>
+                    <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight font-jakarta pt-1">{stepItem.title}</h3>
+                    <p className="text-[11px] text-gray-500 font-medium leading-relaxed font-sans">{stepItem.desc}</p>
+                  </div>
                 </div>
-                <div className="space-y-4 relative z-10 pt-4">
-                  <span className="text-[9px] font-black text-[#D81B60] uppercase tracking-widest bg-pink-50 border border-pink-100/60 px-2.5 py-0.5 rounded-full">
-                    Step {stepItem.step}
-                  </span>
-                  <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight font-jakarta pt-1">{stepItem.title}</h3>
-                  <p className="text-[11px] text-gray-500 font-medium leading-relaxed font-sans">{stepItem.desc}</p>
-                </div>
-              </div>
+              </ScrollReveal>
             ))}
           </div>
         </div>
