@@ -24,7 +24,7 @@ export default function Footer() {
   return (
     <footer
       className="mt-0 font-sans relative overflow-hidden text-left"
-      style={{ background: 'linear-gradient(135deg, #D81B60 0%, #A30D45 50%, #76052F 100%)' }}
+      style={{ background: 'linear-gradient(135deg, #E35E8E 0%, #C2185B 50%, #7A0A3E 100%)' }}
     >
       {/* Ambient glows */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-white/10 rounded-full filter blur-[100px] pointer-events-none -translate-y-1/2 animate-pulse" />
@@ -59,16 +59,16 @@ export default function Footer() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={subscribeStatus !== 'idle'}
-                  className="flex-1 bg-white/15 border border-white/20 rounded-xl px-4 py-2.5 text-xs text-white placeholder-white/50 focus:outline-none focus:border-white/40 focus:bg-white/20 transition-all disabled:opacity-50 font-medium backdrop-blur-sm"
+                  className="flex-1 bg-white/15 border border-white/25 rounded-xl px-4 py-2.5 text-xs text-white placeholder-white/50 focus:outline-none focus:border-white/45 focus:bg-white/20 transition-all disabled:opacity-50 font-medium backdrop-blur-sm"
                 />
                 <button
                   type="submit"
                   disabled={subscribeStatus !== 'idle'}
-                  className="bg-white text-[#D81B60] hover:bg-pink-50 rounded-xl px-4.5 py-2.5 transition-all flex items-center justify-center cursor-pointer disabled:bg-emerald-600 border-0 shrink-0 shadow-lg shadow-pink-900/40 active:scale-95 font-bold"
+                  className="bg-white text-[#C2185B] hover:bg-pink-50 rounded-xl px-4.5 py-2.5 transition-all flex items-center justify-center cursor-pointer disabled:bg-emerald-600 border-0 shrink-0 shadow-lg shadow-pink-900/40 active:scale-95 font-bold"
                 >
-                  {subscribeStatus === 'submitting' && <Loader2 className="w-4 h-4 animate-spin text-[#D81B60]" />}
+                  {subscribeStatus === 'submitting' && <Loader2 className="w-4 h-4 animate-spin text-[#C2185B]" />}
                   {subscribeStatus === 'success'    && <Check  className="w-4 h-4 animate-bounce text-white" />}
-                  {subscribeStatus === 'idle'       && <Send   className="w-4 h-4 text-[#D81B60]" />}
+                  {subscribeStatus === 'idle'       && <Send   className="w-4 h-4 text-[#C2185B]" />}
                 </button>
               </form>
               {subscribeStatus === 'success' && (

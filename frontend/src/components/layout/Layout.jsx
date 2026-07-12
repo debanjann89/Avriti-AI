@@ -15,7 +15,7 @@ export default function Layout() {
         className="h-28 pointer-events-none"
         style={{
           background:
-            'linear-gradient(to bottom, #ffffff 0%, rgba(255,255,255,0.85) 20%, rgba(216,27,96,0.30) 55%, rgba(216,27,96,0.80) 78%, #D81B60 100%)',
+            'linear-gradient(to bottom, #ffffff 0%, rgba(255,255,255,0.85) 20%, rgba(227,94,142,0.30) 55%, rgba(227,94,142,0.80) 78%, #E35E8E 100%)',
         }}
       />
       <Footer />
