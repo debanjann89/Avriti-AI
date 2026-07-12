@@ -465,6 +465,122 @@ export default function HomePage() {
       </div>
     </section>
 
+      {/* ================= 3. OUR VISION & PHILOSOPHY ================= */}
+      <section className="relative z-20 w-full bg-white py-16 lg:py-24 border-t border-pink-100/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-xl mx-auto space-y-3 mb-16">
+            <span className="text-[9px] font-black uppercase tracking-wider text-[#D81B60] bg-[#FFF0F2] px-3 py-1 rounded-full border border-[#F8D7DA]/60">Our Core Vision</span>
+            <h2 className="text-3xl font-black font-jakarta text-gray-900 tracking-tight">Designing a Better Retail Journey</h2>
+            <p className="text-xs text-gray-500 font-medium leading-relaxed">
+              We design generative solutions that solve sizing uncertainty, reduce carbon output, and celebrate premium heritage craftsmanship.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              {
+                title: "Zero-Waste Trial",
+                desc: "Enable virtual product fittings before buying, reducing delivery return cycles by up to 60% and lowering transport fuel waste.",
+                icon: (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                )
+              },
+              {
+                title: "Artisanal Cooperatives",
+                desc: "Link local weavers and authentic handloom partners directly to global buyers, preserving generational heritage drapes.",
+                icon: (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                )
+              },
+              {
+                title: "Universal Body Fit",
+                desc: "Map and simulate garments across custom age profiles, ethnicities, and sizing parameters tailored to your exact shape.",
+                icon: (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                )
+              },
+              {
+                title: "Autonomous Studios",
+                desc: "Provide boutique designers with premium, scalable AI model catalogs, bypassing expensive physical photography requirements.",
+                icon: (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+                  </svg>
+                )
+              }
+            ].map((vision, idx) => (
+              <div 
+                key={idx} 
+                className="bg-gradient-to-br from-slate-50/50 to-pink-50/10 border border-gray-100 p-8 rounded-[28px] shadow-sm flex flex-col justify-between text-left space-y-6 group hover:border-[#D81B60]/30 transition-all hover:scale-[1.02] duration-300 hover:shadow-md"
+              >
+                <div className="w-10 h-10 rounded-2xl bg-white border border-gray-150 flex items-center justify-center text-[#D81B60] group-hover:scale-115 group-hover:rotate-6 transition-transform shadow-sm relative z-10">
+                  {vision.icon}
+                </div>
+                <div className="space-y-2 relative z-10">
+                  <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight font-jakarta">{vision.title}</h3>
+                  <p className="text-[11px] text-gray-500 font-medium leading-relaxed font-sans">{vision.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ================= 4. OUR PROCESS / HOW IT WORKS ================= */}
+      <section className="relative z-20 w-full bg-[#FFF8F8] py-16 lg:py-24 border-t border-pink-100/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-xl mx-auto space-y-3 mb-16">
+            <span className="text-[9px] font-black uppercase tracking-wider text-[#D81B60] bg-[#FFF0F2] px-3 py-1 rounded-full border border-[#F8D7DA]/60">Our Process</span>
+            <h2 className="text-3xl font-black font-jakarta text-gray-900 tracking-tight">The Aavriti Fitting Path</h2>
+            <p className="text-xs text-gray-500 font-medium leading-relaxed">
+              We link high-fashion boutique listings with generative try-on shaders in three intuitive steps.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {[
+              {
+                step: "01",
+                title: "Build Sizing Persona",
+                desc: "Save your measurements and persona factors inside your Profile. Shop custom scales tailored dynamically."
+              },
+              {
+                step: "02",
+                title: "Browse and Upload",
+                desc: "Browse our handloom catalog selections or upload any custom garment flat photo from your device."
+              },
+              {
+                step: "03",
+                title: "Render Fitting",
+                desc: "Generate highly realistic model drapings. Review physical drape, folds, and color before buying."
+              }
+            ].map((stepItem, idx) => (
+              <div 
+                key={idx} 
+                className="bg-white border border-pink-100/40 p-8 rounded-[28px] shadow-sm flex flex-col justify-between text-left space-y-6 relative overflow-hidden group hover:border-[#D81B60]/30 transition-all duration-300"
+              >
+                <div className="absolute top-[-20px] right-[-10px] text-8xl font-black text-slate-100 opacity-20 select-none group-hover:scale-110 group-hover:text-[#D81B60]/5 transition-all duration-500 font-jakarta pointer-events-none">
+                  {stepItem.step}
+                </div>
+                <div className="space-y-4 relative z-10 pt-4">
+                  <span className="text-[9px] font-black text-[#D81B60] uppercase tracking-widest bg-pink-50 border border-pink-100/60 px-2.5 py-0.5 rounded-full">
+                    Step {stepItem.step}
+                  </span>
+                  <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight font-jakarta pt-1">{stepItem.title}</h3>
+                  <p className="text-[11px] text-gray-500 font-medium leading-relaxed font-sans">{stepItem.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
     </div>
   );
 }
